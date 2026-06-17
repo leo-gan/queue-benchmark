@@ -10,16 +10,15 @@ async function benchmarkArrayQueue(data, totalBytes) {
 
     // Producer
     for (const item of data) {
-        queue.push(item);
+        queue.push({ item, start: process.hrtime.bigint() });
     }
 
     // Consumer
     let received = 0;
     while (received < data.length) {
-        const start = process.hrtime.bigint();
-        const item = queue.shift();
+        const task = queue.shift();
         const end = process.hrtime.bigint();
-        times_ns.push(Number(end - start));
+        times_ns.push(Number(end - task.start));
         received++;
     }
 
@@ -32,11 +31,9 @@ async function benchmarkFastq(data, totalBytes) {
     let received = 0;
 
     return new Promise((resolve) => {
-        const q = fastq(function worker(item, cb) {
-            const start = process.hrtime.bigint();
-            // simulate work
+        const q = fastq(function worker(task, cb) {
             const end = process.hrtime.bigint();
-            times_ns.push(Number(end - start));
+            times_ns.push(Number(end - task.start));
             received++;
             cb(null);
         }, 1);
@@ -50,7 +47,8 @@ async function benchmarkFastq(data, totalBytes) {
         };
 
         for (const item of data) {
-            q.push(item);
+            const start = process.hrtime.bigint();
+            q.push({ item, start });
         }
     });
 }
