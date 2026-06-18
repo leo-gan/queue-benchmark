@@ -188,3 +188,16 @@ FakesAssemblies/
 GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
+datasets/*.jsonl
+datasets/*.csv
+datasets/*.txt
+node_modules/
+target/
+__pycache__/
+*.pyc
+bin/
+obj/
+*.log
+venv/
+.venv/
+site/

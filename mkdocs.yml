@@ -1,0 +1,8 @@
+site_name: Queue Benchmark
+theme:
+  name: material
+nav:
+  - Home: index.md
+  - Methodology: methodology.md
+  - Languages: languages.md
+  - Custom Data: custom_data.md
