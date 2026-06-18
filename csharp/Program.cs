@@ -41,7 +41,6 @@ namespace CSharpBenchmarks
             var times = new List<long>();
             var sw = new Stopwatch();
 
-            // Producer
             var producerTask = Task.Run(() =>
             {
                 foreach (var item in data)
@@ -53,7 +52,6 @@ namespace CSharpBenchmarks
                 }
             });
 
-            // Consumer
             int received = 0;
             var consumerTask = Task.Run(() =>
             {
@@ -73,7 +71,7 @@ namespace CSharpBenchmarks
                     if (gotItem)
                     {
                         sw.Stop();
-                        times.Add(sw.Elapsed.Ticks * 100); // 1 tick = 100 ns
+                        times.Add(sw.Elapsed.Ticks * 100);
                         received++;
                     }
                 }
@@ -135,10 +133,10 @@ namespace CSharpBenchmarks
 
             var consumerTask = Task.Run(async () =>
             {
-                await foreach (var item in channel.Reader.ReadAllAsync())
+                for (int i = 0; i < data.Count; i++)
                 {
                     sw.Restart();
-                    // Just reading
+                    var item = await channel.Reader.ReadAsync();
                     sw.Stop();
                     times.Add(sw.Elapsed.Ticks * 100);
                 }

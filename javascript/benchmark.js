@@ -64,10 +64,93 @@ async function main() {
     const totalBytes = data.reduce((acc, val) => acc + Buffer.byteLength(val, 'utf8'), 0);
     console.log(`Loaded ${data.length} records, total size: ${totalBytes} bytes`);
 
+
     await benchmarkArrayQueue(data, totalBytes);
     await benchmarkFastq(data, totalBytes);
+    await benchmarkPQueue(data, totalBytes);
+    await benchmarkNpmQueue(data, totalBytes);
+    await benchmarkRxjs(data, totalBytes);
+    // Skipping bullmq, bee-queue, better-queue, workerpool, Node.js MessageChannel as they require
+    // external services like Redis or process forks which are beyond simple micro-benchmark scope here.
 
     console.log("JavaScript benchmarks completed.");
 }
 
+
 main().catch(console.error);
+
+const { default: PQueue } = require('p-queue');
+async function benchmarkPQueue(data, totalBytes) {
+    const queue = new PQueue({ concurrency: 1 });
+    const times_ns = [];
+
+    for (const item of data) {
+        const start = process.hrtime.bigint();
+        queue.add(async () => {
+            const end = process.hrtime.bigint();
+            times_ns.push(Number(end - start));
+        });
+    }
+
+    await queue.onIdle();
+    const stats = calculateStats(times_ns, totalBytes);
+    printStats("p-queue", stats);
+}
+
+
+
+const { default: Queue } = require('queue');
+async function benchmarkNpmQueue(data, totalBytes) {
+    const q = new Queue({ concurrency: 1, autostart: true });
+    const times_ns = [];
+
+    return new Promise((resolve) => {
+        let received = 0;
+
+        q.addEventListener('end', () => {
+            const stats = calculateStats(times_ns, totalBytes);
+            printStats("queue (npm)", stats);
+            resolve();
+        });
+
+        for (const item of data) {
+            const start = process.hrtime.bigint();
+            q.push((cb) => {
+                const end = process.hrtime.bigint();
+                times_ns.push(Number(end - start));
+                received++;
+                if (cb) cb();
+            });
+        }
+
+        // if autostart doesn't emit end when empty
+        if(data.length === 0) resolve();
+    });
+}
+
+const { Subject, concatMap, of } = require('rxjs');
+async function benchmarkRxjs(data, totalBytes) {
+    const subject = new Subject();
+    const times_ns = [];
+
+    return new Promise((resolve) => {
+        let received = 0;
+        const sub = subject.pipe(
+            concatMap((task) => of(task))
+        ).subscribe((task) => {
+            const end = process.hrtime.bigint();
+            times_ns.push(Number(end - task.start));
+            received++;
+            if (received === data.length) {
+                const stats = calculateStats(times_ns, totalBytes);
+                printStats("rxjs Subject + concatMap", stats);
+                sub.unsubscribe();
+                resolve();
+            }
+        });
+
+        for (const item of data) {
+            subject.next({ item, start: process.hrtime.bigint() });
+        }
+    });
+}

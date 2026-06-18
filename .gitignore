@@ -187,7 +187,8 @@ FakesAssemblies/
 # LightSwitch generated files
 GeneratedArtifacts/
 _Pvt_Extensions/
-ModelManifest.xmldatasets/*.jsonl
+ModelManifest.xml
+datasets/*.jsonl
 datasets/*.csv
 datasets/*.txt
 node_modules/

@@ -6,14 +6,15 @@
 
 StringArray load_data(const char *path) {
     StringArray arr = {NULL, 0};
-    // Very simplified implementation for C, mostly skipping JSON parsing
-    // In a real scenario, we'd use cJSON or similar.
-    // For now, we'll just support reading from a folder for simplicity in C
     DIR *d = opendir(path);
     if (d) {
         struct dirent *dir;
         size_t capacity = 10;
         arr.data = malloc(capacity * sizeof(char*));
+        if (!arr.data) {
+            closedir(d);
+            return arr;
+        }
         while ((dir = readdir(d)) != NULL) {
             if (dir->d_type == DT_REG) {
                 char filepath[1024];
@@ -24,13 +25,23 @@ StringArray load_data(const char *path) {
                     long length = ftell(f);
                     fseek(f, 0, SEEK_SET);
                     char *buffer = malloc(length + 1);
-                    fread(buffer, 1, length, f);
+                    if (fread(buffer, 1, length, f) != (size_t)length) {
+                        free(buffer);
+                        fclose(f);
+                        continue;
+                    }
                     buffer[length] = '\0';
                     fclose(f);
 
                     if (arr.count >= capacity) {
                         capacity *= 2;
-                        arr.data = realloc(arr.data, capacity * sizeof(char*));
+                        char **new_data = realloc(arr.data, capacity * sizeof(char*));
+                        if (!new_data) {
+                            free_data(arr);
+                            closedir(d);
+                            return (StringArray){NULL, 0};
+                        }
+                        arr.data = new_data;
                     }
                     arr.data[arr.count++] = buffer;
                 }

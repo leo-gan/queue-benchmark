@@ -40,7 +40,11 @@ void benchmark_zmq(StringArray data, size_t total_bytes) {
     pthread_create(&producer_thread, NULL, zmq_producer, &args);
 
     unsigned long long *times_ns = malloc(data.count * sizeof(unsigned long long));
-    char buffer[1024 * 1024]; // 1MB buffer
+    if (!times_ns) {
+        perror("Failed to allocate memory for times_ns");
+        return;
+    }
+    char buffer[65536]; // 64KB buffer is safe for stack and sufficient for benchmark payloads
 
     for (size_t i = 0; i < data.count; i++) {
         unsigned long long start = get_time_ns();
