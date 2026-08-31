@@ -1,0 +1,12 @@
+id: 01-spsc-handoff
+description: "SPSC handoff of a 256-byte message, 100 items per repetition"
+data_model_version: 2
+types:
+  - type_id: message
+    type_config: {}
+data_type_instance_count: [100]
+compression:
+  mode: none
+execution:
+  mode: all-single
+  io_modes: [bytes]

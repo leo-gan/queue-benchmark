@@ -1,0 +1,12 @@
+id: 02-payload-size
+description: "SPSC handoff of a 4 KiB document, 100 items per repetition"
+data_model_version: 2
+types:
+  - type_id: document
+    type_config: {}
+data_type_instance_count: [100]
+compression:
+  mode: none
+execution:
+  mode: all-single
+  io_modes: [bytes]

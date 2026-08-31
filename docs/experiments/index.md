@@ -1,9 +1,15 @@
 # Experiments
 
-One-question lab notebooks live under `experiments/`.
+One question per folder under `experiments/`. Read [PLAN.md](../../experiments/PLAN.md).
 
-They land in a later PR. Until then, run the suite:
+| # | Question |
+|---|----------|
+| [01-spsc-handoff](../../experiments/01-spsc-handoff/) | Which queue is fastest for SPSC handoff of a small message? |
+| [02-payload-size](../../experiments/02-payload-size/) | Does that ranking change at 4 KiB? |
 
 ```bash
-./scripts/run-all-benchmarks.sh --mode smoke
+./experiments/01-spsc-handoff/run.sh python
+python3 dashboard/scripts/sync-experiments.py
 ```
+
+Never compare times across languages.
