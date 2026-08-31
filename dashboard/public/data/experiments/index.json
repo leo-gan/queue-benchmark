@@ -1,0 +1,104 @@
+{
+  "schema": "gld.dashboard.experiments/1",
+  "generated_at": "2026-08-31T21:12:26Z",
+  "count": 2,
+  "with_results": 0,
+  "experiments": [
+    {
+      "id": "01-spsc-handoff",
+      "folder": "01-spsc-handoff",
+      "number": 1,
+      "slug": "spsc-handoff",
+      "title": "Which queue is fastest for SPSC handoff?",
+      "question": "One producer hands one small message (256 bytes) to one consumer, many times. Which in-process queue is fastest in each language?\n",
+      "story": {
+        "why": "Most services start with one writer and one reader in the same process.",
+        "example": "A request thread puts work on a queue; a worker thread takes it.",
+        "tradeoff": "A lock around a deque is simple. A lock-free or async channel may be faster, but only if the extra machinery is cheaper than the lock."
+      },
+      "sample_preview": [],
+      "has_results": false,
+      "payload": null,
+      "generated_at": null,
+      "sample": {
+        "kind": "message",
+        "n": 100
+      },
+      "languages": [
+        {
+          "id": "python",
+          "status": "planned",
+          "rows": 0
+        },
+        {
+          "id": "rust",
+          "status": "planned",
+          "rows": 0
+        },
+        {
+          "id": "javascript",
+          "status": "planned",
+          "rows": 0
+        },
+        {
+          "id": "csharp",
+          "status": "planned",
+          "rows": 0
+        },
+        {
+          "id": "c",
+          "status": "planned",
+          "rows": 0
+        }
+      ]
+    },
+    {
+      "id": "02-payload-size",
+      "folder": "02-payload-size",
+      "number": 2,
+      "slug": "payload-size",
+      "title": "Does payload size change the ranking?",
+      "question": "Same SPSC handoff as experiment 1, but the payload is a 4 KiB document instead of a 256-byte message. Does the ranking stay the same?\n",
+      "story": {
+        "why": "A ranking on tiny messages can hide copy cost that only shows up on bigger payloads.",
+        "example": "A worker queue that moves whole HTTP bodies, not 256-byte tickets.",
+        "tradeoff": "If the ranking flips, the \u201cfastest queue\u201d from experiment 1 is not a general answer."
+      },
+      "sample_preview": [],
+      "has_results": false,
+      "payload": null,
+      "generated_at": null,
+      "sample": {
+        "kind": "document",
+        "n": 100
+      },
+      "languages": [
+        {
+          "id": "python",
+          "status": "planned",
+          "rows": 0
+        },
+        {
+          "id": "rust",
+          "status": "planned",
+          "rows": 0
+        },
+        {
+          "id": "javascript",
+          "status": "planned",
+          "rows": 0
+        },
+        {
+          "id": "csharp",
+          "status": "planned",
+          "rows": 0
+        },
+        {
+          "id": "c",
+          "status": "planned",
+          "rows": 0
+        }
+      ]
+    }
+  ]
+}

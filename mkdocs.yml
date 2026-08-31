@@ -77,4 +77,5 @@ nav:
       - Test Data: analysis/test_data_configuration.md
       - Adding a Queue: analysis/ADDING_A_QUEUE.md
       - Adding a Language: analysis/ADDING_A_LANGUAGE.md
+  - Dashboard: dashboard/
   - Experiments: experiments/index.md
