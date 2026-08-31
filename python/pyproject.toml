@@ -1,0 +1,21 @@
+[project]
+name = "queue-benchmark-python"
+version = "0.1.0"
+description = "Python queue benchmark runner"
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [
+    { name = "Leonid Ganeline", email = "leo.gan.57@gmail.com" },
+]
+dependencies = [
+    "pyyaml>=6.0,<7",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

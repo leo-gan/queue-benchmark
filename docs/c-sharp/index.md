@@ -1,5 +1,14 @@
 # C#
 
-Language runner lives in `c-sharp/` (added in the harness PR).
+| | |
+|--|--|
+| Runner | `c-sharp/` |
+| Script | `./c-sharp/scripts/run-benchmarks.sh smoke` |
+| Logs | `logs/csharp/` |
+| Runtime | .NET 8 |
 
-Planned libraries: `Queue+lock`, `ConcurrentQueue`, `Channel`.
+| Log name | Category | Package | Notes |
+|----------|----------|---------|-------|
+| `Queue+lock` | locked | stdlib | `Queue<T>` + `lock` |
+| `ConcurrentQueue` | concurrent | stdlib | MPMC |
+| `Channel` | async | stdlib | Unbounded `Channel<T>` |
