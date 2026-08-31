@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.16)
+project(queue_benchmark_c C)
+set(CMAKE_C_STANDARD 11)
+add_executable(queue_benchmark_c src/main.c)
+target_link_libraries(queue_benchmark_c PRIVATE pthread)

@@ -1,0 +1,16 @@
+{
+  "name": "queue-benchmark-javascript",
+  "version": "0.1.0",
+  "description": "JavaScript in-process queue benchmark",
+  "type": "commonjs",
+  "scripts": {
+    "test": "node --test test/runner.test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "fastq": "^1.17.1",
+    "p-queue": "^8.0.1"
+  }
+}
