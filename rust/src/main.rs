@@ -3,8 +3,11 @@ use std::fs::{self, File};
 use std::io::{BufRead, BufReader, Write};
 use std::path::PathBuf;
 use std::sync::mpsc;
+use std::sync::Arc;
 use std::thread;
 use std::time::Instant;
+
+use crossbeam_queue::SegQueue;
 
 struct Cell {
     type_id: String,
@@ -168,6 +171,64 @@ fn bench_crossbeam(items: &[Vec<u8>], mpmc: bool) -> (u128, u128) {
     (wall / 2, wall - wall / 2)
 }
 
+fn bench_crossbeam_queue(items: &[Vec<u8>], mpmc: bool) -> (u128, u128) {
+    let q = Arc::new(SegQueue::new());
+    if !mpmc {
+        let t0 = Instant::now();
+        for it in items {
+            q.push(it.clone());
+        }
+        let enq = t0.elapsed().as_nanos();
+        let t1 = Instant::now();
+        for _ in items {
+            let _ = q.pop();
+        }
+        return (enq, t1.elapsed().as_nanos());
+    }
+    let half = items.len() / 2;
+    let a = items[..half].to_vec();
+    let b = items[half..].to_vec();
+    let q1 = Arc::clone(&q);
+    let q2 = Arc::clone(&q);
+    let q3 = Arc::clone(&q);
+    let q4 = Arc::clone(&q);
+    let t0 = Instant::now();
+    let p1 = thread::spawn(move || {
+        for it in a {
+            q1.push(it);
+        }
+    });
+    let p2 = thread::spawn(move || {
+        for it in b {
+            q2.push(it);
+        }
+    });
+    let n = items.len();
+    let c1n = n / 2;
+    let c1 = thread::spawn(move || {
+        let mut left = c1n;
+        while left > 0 {
+            if q3.pop().is_some() {
+                left -= 1;
+            }
+        }
+    });
+    let c2 = thread::spawn(move || {
+        let mut left = n - c1n;
+        while left > 0 {
+            if q4.pop().is_some() {
+                left -= 1;
+            }
+        }
+    });
+    p1.join().unwrap();
+    p2.join().unwrap();
+    c1.join().unwrap();
+    c2.join().unwrap();
+    let wall = t0.elapsed().as_nanos();
+    (wall / 2, wall - wall / 2)
+}
+
 async fn bench_tokio(items: &[Vec<u8>]) -> (u128, u128) {
     let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel();
     let t0 = Instant::now();
@@ -194,7 +255,7 @@ async fn main() {
     let path = dir.join(format!("{}.csv", stamp()));
     let mut w = File::create(&path).unwrap();
     write_header(&mut w);
-    let queues = ["std-mpsc", "crossbeam-channel", "tokio-mpsc"];
+    let queues = ["std-mpsc", "crossbeam-channel", "tokio-mpsc", "crossbeam-queue"];
     let mut order = 0usize;
     for cell in &cells {
         if !df.is_empty() && !cell.type_id.contains(&df) {
@@ -216,10 +277,12 @@ async fn main() {
                     "std-mpsc" => bench_std_mpsc(&items),
                     "crossbeam-channel" => bench_crossbeam(&items, mpmc),
                     "tokio-mpsc" => bench_tokio(&items).await,
+                    "crossbeam-queue" => bench_crossbeam_queue(&items, mpmc),
                     _ => (0, 0),
                 };
                 let ver = match name {
                     "crossbeam-channel" => env!("CARGO_PKG_VERSION"),
+                    "crossbeam-queue" => env!("CARGO_PKG_VERSION"),
                     "tokio-mpsc" => "1",
                     _ => env!("CARGO_PKG_VERSION"),
                 };

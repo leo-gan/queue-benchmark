@@ -21,7 +21,7 @@ rank them against each other.
 |--------|------------|---------|
 | **locked** | Mutex around a stdlib queue. Baseline. | Python `deque-lock`, C# `Queue+lock`, JS `Array`, C `mutex-queue` |
 | **concurrent** | Thread-safe MPSC/MPMC | Python `queue.Queue`, C# `ConcurrentQueue`, Rust `crossbeam-channel`, JS `fastq` |
-| **spsc** | Single-producer ring (no mutex on the happy path) | C `spsc-ring` |
+| **spsc** | Single-producer ring (no mutex on the happy path) | C `spsc-ring`, Python `spsc-ring` |
 
 ### A — async
 
