@@ -35,16 +35,22 @@ for ranking.
 ## Not published yet
 
 These are real categories. They get numbers only when a runner exists.
-They never share a violin or rank table with T.
+They never share a violin or rank table with T. The dashboard Category
+filter already has Thread / Async / Other; P, S, and D will appear there
+when a runner writes rows.
 
-| ID | Category | Why it is different |
-|----|----------|---------------------|
-| **P** | Process / IPC | Serialization and OS pipes dominate |
-| **S** | Shared memory | Same topology as P, different data path |
-| **D** | Durable / local disk | fsync / WAL, not coordination primitives |
-| **N** | Local broker | Client + localhost server — a **system** bench |
+| ID | Category | Why it is different | First tests when a runner exists |
+|----|----------|---------------------|----------------------------------|
+| **P** | Process / IPC | Serialization and OS pipes dominate | 1P1C 64 B vs 64 KiB vs 1 MB; report MB/s and msgs/s separately |
+| **S** | Shared memory | Same topology as P, different data path | 1P1C GB/s vs the P number on the same payload |
+| **D** | Durable / local disk | fsync / WAL, not coordination primitives | Durability off vs fsync on; kill −9 recovery |
+| **N** | Local broker | Client + localhost server — a **system** bench | Separate report, labeled “localhost” |
 
 Brokers (Redis, Kafka, ZeroMQ) stay out of T/A charts.
+
+The dashboard **Category** control filters the current language’s table
+to Thread (T), Async (A), or Other (`p-queue` today). P/S/D have no
+series yet.
 
 ## Not categories
 
