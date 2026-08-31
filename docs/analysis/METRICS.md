@@ -12,7 +12,7 @@ Times are **nanoseconds**. Throughput is `1e9 / time_ns`.
 | `SerializerName` / `SerializerVersion` | Queue library + installed version | high |
 | `FidelityScore` | 1.0 = every item arrived in order | high |
 | `MemoryPeakBytes` | Peak allocation when the runner can measure it | medium |
-| `StringOrStream` | `bytes` = SPSC, `stream` = MPMC | grouping |
+| `StringOrStream` | `bytes` = **SPSC**, `stream` = **MPMC** (not a stream API) | grouping |
 | `TestDataName` | Payload type id | grouping |
 
 Column names are the shared ABI with serializer-benchmark. Docs always use

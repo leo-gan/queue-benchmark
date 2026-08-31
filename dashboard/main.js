@@ -2401,8 +2401,8 @@ function normalizeMode(mode) {
 }
 
 function modeDisplayLabel(norm) {
-  if (norm === 'bytes') return 'bytes / string';
-  if (norm === 'stream') return 'stream';
+  if (norm === 'bytes') return 'SPSC';
+  if (norm === 'stream') return 'MPMC';
   return norm || '—';
 }
 
@@ -2456,16 +2456,16 @@ function updateStreamHonestyChip() {
   const allUnlabeled = unlabeled === streamRows;
   let text;
   if (allUnlabeled) {
-    text = 'stream rows unlabeled — treat as adapted';
+    text = 'MPMC rows unlabeled';
   } else if (allAdapted) {
-    text = 'stream: all adapted — not incremental I/O';
+    text = 'MPMC: adapted (not I/O)';
   } else {
     const parts = [];
     if (native) parts.push(`${native} native`);
     if (text_on_stream) parts.push(`${text_on_stream} text`);
     if (adapted) parts.push(`${adapted} adapted`);
     if (unlabeled) parts.push(`${unlabeled} unlabeled`);
-    text = `stream: ${parts.join(' · ')}`;
+    text = `MPMC: ${parts.join(' · ')}`;
   }
   chip.textContent = text;
   chip.title = text;

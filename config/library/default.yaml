@@ -22,7 +22,7 @@ compression:
 
 execution:
   mode: full
-  # bytes = SPSC; stream = MPMC (skipped by libraries that cannot do MPMC)
+  # bytes = SPSC; stream = MPMC (CSV ABI name; not a stream API)
   io_modes: [bytes, stream]
 
 budget:

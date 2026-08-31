@@ -7,8 +7,8 @@
 | Logs | `logs/csharp/` |
 | Runtime | .NET 8 |
 
-| Log name | Category | Package | Notes |
-|----------|----------|---------|-------|
-| `Queue+lock` | locked | stdlib | `Queue<T>` + `lock` |
-| `ConcurrentQueue` | concurrent | stdlib | MPMC |
-| `Channel` | async | stdlib | Unbounded `Channel<T>` |
+| Log name | Category | Communication | Package | Notes |
+|----------|----------|---------------|---------|-------|
+| `Queue+lock` | locked | T (thread) | stdlib | `Queue<T>` + `lock` |
+| `ConcurrentQueue` | concurrent | T (thread) | stdlib | MPMC |
+| `Channel` | async | A (async) | stdlib | Unbounded `Channel<T>` |

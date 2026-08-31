@@ -7,8 +7,8 @@
 | Logs | `logs/rust/` |
 | Runtime | rustc / cargo (stable) |
 
-| Log name | Category | Crate | Notes |
-|----------|----------|-------|-------|
-| `std-mpsc` | concurrent | std | MPSC only; MPMC cells skipped |
-| `crossbeam-channel` | concurrent | crossbeam-channel | Unbounded MPMC |
-| `tokio-mpsc` | async | tokio | Unbounded async MPSC |
+| Log name | Category | Communication | Crate | Notes |
+|----------|----------|---------------|-------|-------|
+| `std-mpsc` | concurrent | T (thread) | std | MPSC only; MPMC cells skipped |
+| `crossbeam-channel` | concurrent | T (thread) | crossbeam-channel | Unbounded MPMC |
+| `tokio-mpsc` | async | A (async) | tokio | Unbounded async MPSC |

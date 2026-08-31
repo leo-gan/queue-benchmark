@@ -12,4 +12,5 @@ The analysis package (`analyze-benchmarks`) never rewrites raw logs.
 8. **Regression gate**: fail only when the point estimate *and* the optimistic
    CI end are both more than `threshold_percent` slower than baseline.
 
-Compare queues inside one language (and ideally one category).
+Compare queues inside one language **and one communication category**
+(T or A). See [Benchmark design](BENCHMARK_DESIGN.md).

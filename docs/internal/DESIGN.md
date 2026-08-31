@@ -26,7 +26,7 @@ This document is the source of truth for the stacked PRs. Domain words change
    | `TimeDeser` | Dequeue (consume) ns |
    | `TimeSerAndDeser` | Handoff / round-trip ns |
    | `Size` | Payload bytes moved in that repetition |
-   | `StringOrStream` | Pattern: `spsc` (logged as `bytes`) or `mpmc` (logged as `stream`) |
+   | `StringOrStream` | Pattern: **SPSC** (logged as `bytes`) or **MPMC** (logged as `stream`) |
    | `TestDataName` | Payload type id (`message`, `document`, …) |
    | `FidelityScore` | 1.0 if every item arrived in order; else < 1 |
 
@@ -38,15 +38,20 @@ This document is the source of truth for the stacked PRs. Domain words change
 
 3. **Minimum libraries covering main queue types**
 
+   Communication categories **T** (thread) and **A** (async) are the
+   comparison boundary. Families inside T: locked, concurrent, spsc-ring.
+
    | Type | Meaning | Implementations |
    |------|---------|-----------------|
    | locked | Mutex + stdlib queue (baseline) | Python `deque-lock`, C# `Queue+lock`, JS `Array`, C `mutex-queue` |
    | concurrent | Thread-safe MPMC / MPSC | Python `queue.Queue`, C# `ConcurrentQueue`, Rust `std::sync::mpsc` + `crossbeam-channel`, JS `fastq` |
-   | async | Event-loop / async channel | Python `asyncio.Queue`, C# `Channel`, Rust `tokio::sync::mpsc`, JS `p-queue` |
+   | async | Event-loop / async channel (category A) | Python `asyncio.Queue`, C# `Channel`, Rust `tokio::sync::mpsc` |
    | spsc-ring | Single-producer ring | C `spsc-ring` |
+   | scheduler | Not a handoff queue | JS `p-queue` (concurrency limiter) |
 
-   Out of scope (need servers or are extra of the same type): Redis, ZeroMQ,
-   Celery, BullMQ, janus, flume, kanal, BufferBlock, rxjs.
+   Category plan: [CATEGORY_BENCHMARK_PLAN.md](CATEGORY_BENCHMARK_PLAN.md).
+   Out of scope for T/A charts: Redis, ZeroMQ, Celery, BullMQ, janus, flume,
+   kanal, BufferBlock, rxjs.
 
 4. **Same modes.** smoke=2, all-single=10, full=100, research=500.
 
