@@ -35,7 +35,7 @@ def _now_ns() -> int:
 
 
 def _run_sync(adapter: QueueAdapter, items: list[bytes]) -> tuple[int, int, float]:
-    q = adapter.create()
+    q = adapter.create(capacity=len(items))
     t0 = _now_ns()
     for item in items:
         adapter.enqueue(q, item)
@@ -51,7 +51,7 @@ def _run_sync(adapter: QueueAdapter, items: list[bytes]) -> tuple[int, int, floa
 def _run_sync_mpmc(adapter: QueueAdapter, items: list[bytes]) -> tuple[int, int, float]:
     import threading
 
-    q = adapter.create()
+    q = adapter.create(capacity=len(items))
     n = len(items)
     half = max(1, n // 2)
     batches = [items[:half], items[half:]]
@@ -91,7 +91,7 @@ def _run_sync_mpmc(adapter: QueueAdapter, items: list[bytes]) -> tuple[int, int,
 
 
 async def _run_async(adapter: QueueAdapter, items: list[bytes]) -> tuple[int, int, float]:
-    q = adapter.create()
+    q = adapter.create(capacity=len(items))
     t0 = _now_ns()
     for item in items:
         await adapter.enqueue_async(q, item)  # type: ignore[attr-defined]
@@ -104,7 +104,7 @@ async def _run_async(adapter: QueueAdapter, items: list[bytes]) -> tuple[int, in
 
 
 async def _run_async_mpmc(adapter: QueueAdapter, items: list[bytes]) -> tuple[int, int, float]:
-    q = adapter.create()
+    q = adapter.create(capacity=len(items))
     n = len(items)
     half = max(1, n // 2)
     got: list[bytes] = []

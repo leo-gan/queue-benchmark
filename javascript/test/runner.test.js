@@ -8,4 +8,5 @@ test("runner source exists", () => {
   assert.ok(fs.existsSync(p));
   const src = fs.readFileSync(p, "utf8");
   assert.match(src, /SerializerName/);
+  assert.match(src, /scheduler/);
 });

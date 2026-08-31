@@ -31,9 +31,9 @@ Compare in-process queue libraries across **Python, Rust, JavaScript, C#, and C*
 
 - [C](https://leo-gan.github.io/queue-benchmark/c/) — mutex queue, SPSC ring
 - [C# (.NET)](https://leo-gan.github.io/queue-benchmark/c-sharp/) — `Queue+lock`, `ConcurrentQueue`, `Channel`
-- [JavaScript](https://leo-gan.github.io/queue-benchmark/javascript/) — `Array`, `fastq`, `p-queue`
-- [Python](https://leo-gan.github.io/queue-benchmark/python/) — `deque-lock`, `queue.Queue`, `asyncio.Queue`
-- [Rust](https://leo-gan.github.io/queue-benchmark/rust/) — `std::sync::mpsc`, `crossbeam-channel`, `tokio::sync::mpsc`
+- [JavaScript](https://leo-gan.github.io/queue-benchmark/javascript/) — `Array`, `fastq`, `p-queue` (scheduler)
+- [Python](https://leo-gan.github.io/queue-benchmark/python/) — `deque-lock`, `queue.Queue`, `asyncio.Queue`, `spsc-ring`
+- [Rust](https://leo-gan.github.io/queue-benchmark/rust/) — `std-mpsc`, `crossbeam-channel`, `tokio-mpsc`, `crossbeam-queue`
 
 [Adding a language](https://leo-gan.github.io/queue-benchmark/analysis/ADDING_A_LANGUAGE/) · [Adding a queue](https://leo-gan.github.io/queue-benchmark/analysis/ADDING_A_QUEUE/).
 

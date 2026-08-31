@@ -44,9 +44,9 @@ This document is the source of truth for the stacked PRs. Domain words change
    | Type | Meaning | Implementations |
    |------|---------|-----------------|
    | locked | Mutex + stdlib queue (baseline) | Python `deque-lock`, C# `Queue+lock`, JS `Array`, C `mutex-queue` |
-   | concurrent | Thread-safe MPMC / MPSC | Python `queue.Queue`, C# `ConcurrentQueue`, Rust `std::sync::mpsc` + `crossbeam-channel`, JS `fastq` |
+   | concurrent | Thread-safe MPMC / MPSC | Python `queue.Queue`, C# `ConcurrentQueue`, Rust `std-mpsc` + `crossbeam-channel` + `crossbeam-queue`, JS `fastq` |
    | async | Event-loop / async channel (category A) | Python `asyncio.Queue`, C# `Channel`, Rust `tokio::sync::mpsc` |
-   | spsc-ring | Single-producer ring | C `spsc-ring` |
+   | spsc-ring | Single-producer ring | C `spsc-ring`, Python `spsc-ring` |
    | scheduler | Not a handoff queue | JS `p-queue` (concurrency limiter) |
 
    Category plan: [CATEGORY_BENCHMARK_PLAN.md](CATEGORY_BENCHMARK_PLAN.md).

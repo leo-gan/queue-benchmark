@@ -122,7 +122,7 @@ async function main() {
   const queues = [
     { name: "Array", kind: "locked" },
     { name: "fastq", kind: "concurrent" },
-    { name: "p-queue", kind: "async" },
+    { name: "p-queue", kind: "scheduler" },
   ];
   const pkg = require("../package.json");
   for (const cell of cells) {
@@ -132,7 +132,7 @@ async function main() {
     const size = cell.payload_bytes * cell.n;
     for (const q of queues) {
       if (qf && !q.name.toLowerCase().includes(qf.toLowerCase())) continue;
-      if (cell.io_mode === "stream" && q.name === "Array") continue;
+      if (cell.io_mode === "stream" && (q.name === "Array" || q.name === "p-queue")) continue;
       for (let i = 0; i < reps; i++) {
         let enq, deq;
         if (q.name === "Array") [enq, deq] = benchArray(items);

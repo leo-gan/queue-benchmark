@@ -8,6 +8,18 @@ def test_csv_header_abi():
     assert "TimeSer" in CSV_HEADER
 
 
+def test_spsc_ring_roundtrip():
+    from benchmark.queues.spsc_ring import SpscRingQueue
+
+    q = SpscRingQueue()
+    assert q.supports_mpmc is False
+    ring = q.create(capacity=4)
+    q.enqueue(ring, b"a")
+    q.enqueue(ring, b"b")
+    assert q.dequeue(ring) == b"a"
+    assert q.dequeue(ring) == b"b"
+
+
 def test_smoke_writes_rows(tmp_path, monkeypatch):
     repo = tmp_path
     # runner finds repo via config/benchmark_config.yaml; use env instead

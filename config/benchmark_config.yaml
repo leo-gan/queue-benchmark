@@ -276,6 +276,11 @@ languages:
         communication: async
         package: stdlib
         rationale: "Event-loop queue"
+      - name: spsc-ring
+        category: spsc
+        communication: thread
+        package: harness
+        rationale: "Single-producer ring; MPMC skipped"
 
   rust:
     display_name: Rust
@@ -302,6 +307,11 @@ languages:
         communication: async
         crate: tokio
         rationale: "Tokio unbounded MPSC"
+      - name: crossbeam-queue
+        category: concurrent
+        communication: thread
+        crate: crossbeam-queue
+        rationale: "Lock-free unbounded MPMC (SegQueue)"
 
   c:
     display_name: C
@@ -346,7 +356,7 @@ languages:
         package: fastq
         rationale: "Fast in-process job queue"
       - name: p-queue
-        category: async
-        communication: async
+        category: scheduler
+        communication: scheduler
         package: p-queue
         rationale: "Promise concurrency limiter — not a handoff queue"

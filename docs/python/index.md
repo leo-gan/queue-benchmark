@@ -12,6 +12,7 @@
 | `deque-lock` | locked | T (thread) | stdlib | `collections.deque` + `threading.Lock` |
 | `queue.Queue` | concurrent | T (thread) | stdlib | Threading MPMC blocking queue |
 | `asyncio.Queue` | async | A (async) | stdlib | Event-loop queue |
+| `spsc-ring` | spsc | T (thread) | harness | Single-producer ring; MPMC skipped |
 
 SPSC is one producer / one consumer. MPMC is two producers / two consumers
 (CSV still logs `bytes` / `stream`). Compare T libraries separately from A.
