@@ -98,11 +98,11 @@ dashboard filter. No shared violin with T.
 
 - [x] **PR 1** — Plan + T/A as published categories + SPSC/MPMC labels +
   benchmark design docs. No `docs/theory/`, no `experiments/`.
-- [ ] **PR 2** — Second SPSC ring (Python), lock-free MPMC (`crossbeam-queue`
+- [x] **PR 2** — Second SPSC ring (Python), lock-free MPMC (`crossbeam-queue`
   in Rust), reclassify `p-queue` as `scheduler`.
 - [x] **PR 3** — P/S/D scaffolding in analysis docs + dashboard category filter
   (T/A now; P/S/D when data exists). No runners, no experiments.
-- [ ] **PR 4** — Comparison never-rules as a first-class analysis page.
+- [x] **PR 4** — Comparison never-rules as a first-class analysis page.
 
 ## PR Plan
 

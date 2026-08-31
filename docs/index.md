@@ -14,6 +14,7 @@ Cross-language times are directional only.
 | Go here | Why |
 |---------|-----|
 | [Benchmark design](analysis/BENCHMARK_DESIGN.md) | Categories, tests, how to read a result |
+| [Comparison rules](analysis/COMPARISON_RULES.md) | What we never rank together |
 | [Queue categories](analysis/queue_categories.md) | T (thread) and A (async) |
 | [Architecture](analysis/architecture.md) | How the suite is built |
 | [Modes](analysis/modes.md) | smoke / all-single / full / research |
