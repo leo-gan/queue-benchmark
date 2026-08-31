@@ -1,5 +1,13 @@
 # C
 
-Language runner lives in `c/` (added in the harness PR).
+| | |
+|--|--|
+| Runner | `c/` |
+| Script | `./c/scripts/run-benchmarks.sh smoke` |
+| Logs | `logs/c/` |
+| Runtime | C11 + pthread, CMake |
 
-Planned libraries: `mutex-queue`, `spsc-ring`.
+| Log name | Category | Library | Notes |
+|----------|----------|---------|-------|
+| `mutex-queue` | locked | harness | pthread mutex + ring |
+| `spsc-ring` | spsc | harness | Single-producer ring; MPMC skipped |
