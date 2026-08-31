@@ -101,6 +101,10 @@ against a T library.
 Documented in [queue categories](queue_categories.md). No runner yet — no
 numbers, no dashboard series, no experiment folder.
 
+The dashboard **Category** filter is Thread / Async / Other. P, S, and D
+will join that control when a runner exists. Until then Other is only
+schedulers (JavaScript `p-queue`).
+
 ## What a single computer can measure
 
 Reliable: throughput, latency tails, thread/task scaling up to core count,
@@ -112,7 +116,7 @@ is multi-socket and the run says so.
 ## How to read a result
 
 1. Pick a **language**.
-2. Pick a **category** (T or A).
+2. Pick a **category** (T or A) in the dashboard Category control.
 3. Pick a **pattern** (SPSC or MPMC) and a **payload**.
 4. Compare families inside that slice.
 
