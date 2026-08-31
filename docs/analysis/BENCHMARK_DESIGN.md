@@ -121,3 +121,5 @@ is multi-socket and the run says so.
 4. Compare families inside that slice.
 
 There is no overall score. A queue that wins T1 can lose T2 or T4.
+
+See [Comparison rules](COMPARISON_RULES.md) for the hard “never” list.

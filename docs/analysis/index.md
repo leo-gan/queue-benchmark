@@ -5,6 +5,7 @@ How this suite measures in-process queues.
 | Page | Contents |
 |------|----------|
 | [Benchmark design](BENCHMARK_DESIGN.md) | Categories, tests, metrics, how to read a result |
+| [Comparison rules](COMPARISON_RULES.md) | What we never rank together |
 | [Architecture](architecture.md) | Folders, measurement model, who it is for |
 | [Timing honesty](TIMING_HONESTY.md) | Setup is not timed; warmup stays in the CSV |
 | [Modes](modes.md) | smoke, all-single, full, research |

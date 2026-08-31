@@ -21,6 +21,11 @@ Then commit `dashboard/public/data/` and deploy docs.
 
 ## What we do not claim
 
+See [Comparison rules](COMPARISON_RULES.md).
+
 - “The fastest queue.”
+- Rankings across languages.
+- Rankings that mix thread queues with async queues.
+- Broker (Redis/Kafka/ZeroMQ) performance on the same chart as an
+  in-process queue.
 - Production tail latency under load.
-- Broker (Redis/Kafka) performance.
