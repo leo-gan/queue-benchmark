@@ -1,0 +1,12 @@
+# Adding a queue
+
+1. Implement the language adapter (see the language README).
+2. Register the name **exactly** as it will appear in `SerializerName`.
+3. Report the installed package/crate version in `SerializerVersion`.
+4. Implement **SPSC**. Implement **MPMC** only if the library is actually MPMC;
+   otherwise skip `stream` cells.
+5. Add the inventory row under `languages.<id>.queues` in
+   `config/benchmark_config.yaml`.
+6. Add a dependency pin (uv / cargo / npm / csproj / cmake).
+7. Document it on `docs/<lang>/index.md`.
+8. Smoke, then `all-single`, then `analyze-benchmarks -l <lang>`.

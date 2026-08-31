@@ -1,0 +1,31 @@
+# Run config: default (publication matrix)
+id: default
+description: "Five payload types × [100, 1000] items; SPSC + MPMC patterns"
+data_model_version: 2
+
+types:
+  - type_id: message
+    type_config: {}
+  - type_id: document
+    type_config: {}
+  - type_id: telemetry
+    type_config: {}
+  - type_id: strings
+    type_config: {}
+  - type_id: event
+    type_config: {}
+
+data_type_instance_count: [100, 1000]
+
+compression:
+  mode: none
+
+execution:
+  mode: full
+  # bytes = SPSC; stream = MPMC (skipped by libraries that cannot do MPMC)
+  io_modes: [bytes, stream]
+
+budget:
+  soft_seconds_per_10_serializers: 60
+  hard_cap_seconds: 600
+  reps_fallback: 50
