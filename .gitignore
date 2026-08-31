@@ -7,11 +7,13 @@
 # -----------------------------------------------------------------------------
 logs/*
 !logs/.gitkeep
+experiments/**/logs/
 *.log
 reports/*
 !reports/.gitkeep
 baseline.json
 reports/baseline.json
+analysis/uv.lock
 
 # -----------------------------------------------------------------------------
 # Editor / IDE / OS
