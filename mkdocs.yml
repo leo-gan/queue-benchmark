@@ -54,7 +54,12 @@ extra_javascript:
 
 nav:
   - Learn:
-      - Overview: theory/101/index.md
+      - 101:
+          - Overview: theory/101/index.md
+      - 201:
+          - Overview: theory/201/index.md
+      - 301:
+          - Overview: theory/301/index.md
   - Languages:
       - C:
           - Overview: c/index.md
@@ -77,5 +82,6 @@ nav:
       - Test Data: analysis/test_data_configuration.md
       - Adding a Queue: analysis/ADDING_A_QUEUE.md
       - Adding a Language: analysis/ADDING_A_LANGUAGE.md
+      - Claims and replication: analysis/CLAIMS_AND_REPLICATION.md
   - Dashboard: dashboard/
   - Experiments: experiments/index.md
