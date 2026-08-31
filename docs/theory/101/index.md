@@ -16,4 +16,7 @@ A **queue** is a buffer that hands work from a producer to a consumer.
 This suite measures **in-process** queues. A broker on the network is a
 different experiment.
 
-See [queue categories](../../analysis/queue_categories.md) for what we ship.
+This suite’s comparison boundary is **communication category** (thread vs
+async vs process vs shared memory vs durable), not “every library on one
+chart.” See [queue categories](../../analysis/queue_categories.md) and
+[comparison rules](../../analysis/COMPARISON_RULES.md).

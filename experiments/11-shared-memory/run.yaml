@@ -1,0 +1,12 @@
+id: 11-shared-memory
+description: "Does a shared-memory ring beat pickle IPC on a small payload?"
+data_model_version: 2
+types:
+  - type_id: message
+    type_config: {}
+data_type_instance_count: [100]
+compression:
+  mode: none
+execution:
+  mode: all-single
+  io_modes: [bytes]

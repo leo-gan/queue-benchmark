@@ -9,7 +9,10 @@ How to pick an in-process queue.
 | Many producers | MPMC (`queue.Queue`, `ConcurrentQueue`, `crossbeam-channel`). |
 | Event loop | The runtime’s own queue (`asyncio.Queue`, `Channel`, `tokio::mpsc`). |
 | Need backpressure | Bounded + blocking/async wait. |
-| Need a broker | Leave this lab. Redis / Kafka / ZeroMQ are a different experiment. |
+| Need a broker | Leave this lab. Redis / Kafka / ZeroMQ are category N (system bench). |
+| Need processes | Category P (`multiprocessing.Queue`), not a thread queue. |
+| Need mapped bytes | Category S (`shared-ring`). |
+| Need crash-safe local storage | Category D (`sqlite-queue`). |
 
 **Rules of use**
 

@@ -8,6 +8,16 @@ def test_csv_header_abi():
     assert "TimeSer" in CSV_HEADER
 
 
+def test_parse_pattern():
+    from benchmark.patterns import parse_pattern
+
+    assert parse_pattern("bytes") == (1, 1)
+    assert parse_pattern("stream") == (2, 2)
+    assert parse_pattern("1p4c") == (1, 4)
+    assert parse_pattern("4p1c") == (4, 1)
+    assert parse_pattern("4p4c") == (4, 4)
+
+
 def test_spsc_ring_roundtrip():
     from benchmark.queues.spsc_ring import SpscRingQueue
 

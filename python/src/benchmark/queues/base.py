@@ -10,7 +10,10 @@ class QueueAdapter(ABC):
     name: str
     category: str
     supports_mpmc: bool = True
+    supports_spsc_only: bool = False
     is_async: bool = False
+    communication: str = "thread"
+    opt_in: bool = False
 
     @abstractmethod
     def version(self) -> str: ...

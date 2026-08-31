@@ -1,0 +1,59 @@
+{
+  "status": "ok",
+  "rows": [
+    {
+      "library": "crossbeam-channel",
+      "pattern": "1p4c",
+      "n": 9,
+      "median_handoff_ns": 85288.0,
+      "p50_ns": 85288.0,
+      "mean_ns": 93831.66666666667,
+      "rel_to_fastest": 1.0
+    },
+    {
+      "library": "crossbeam-queue",
+      "pattern": "1p4c",
+      "n": 9,
+      "median_handoff_ns": 86020.0,
+      "p50_ns": 86020.0,
+      "mean_ns": 99963.11111111111,
+      "rel_to_fastest": 1.0085826845511678
+    },
+    {
+      "library": "crossbeam-queue",
+      "pattern": "4p1c",
+      "n": 9,
+      "median_handoff_ns": 86879.0,
+      "p50_ns": 86879.0,
+      "mean_ns": 109461.55555555556,
+      "rel_to_fastest": 1.0186544414220053
+    },
+    {
+      "library": "crossbeam-channel",
+      "pattern": "4p1c",
+      "n": 9,
+      "median_handoff_ns": 111984.0,
+      "p50_ns": 111984.0,
+      "mean_ns": 135053.11111111112,
+      "rel_to_fastest": 1.3130100365819342
+    },
+    {
+      "library": "crossbeam-queue",
+      "pattern": "4p4c",
+      "n": 9,
+      "median_handoff_ns": 147823.0,
+      "p50_ns": 147823.0,
+      "mean_ns": 160144.88888888888,
+      "rel_to_fastest": 1.7332215552012007
+    },
+    {
+      "library": "crossbeam-channel",
+      "pattern": "4p4c",
+      "n": 9,
+      "median_handoff_ns": 172917.0,
+      "p50_ns": 172917.0,
+      "mean_ns": 208638.33333333334,
+      "rel_to_fastest": 2.027448175593284
+    }
+  ]
+}

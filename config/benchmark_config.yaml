@@ -87,7 +87,19 @@ io_modes:
     description: "SPSC: single producer, single consumer"
   - name: stream
     aliases: [stream, mpmc]
-    description: "MPMC: multi producer, multi consumer (when the library supports it)"
+    description: "MPMC: 2 producers, 2 consumers (when the library supports it)"
+  - name: 1p4c
+    aliases: [1p4c]
+    description: "1 producer, 4 consumers"
+  - name: 4p1c
+    aliases: [4p1c]
+    description: "4 producers, 1 consumer"
+  - name: 4p4c
+    aliases: [4p4c]
+    description: "4 producers, 4 consumers"
+  - name: 1p32c
+    aliases: [1p32c]
+    description: "1 producer, 32 consumers (async waiter load)"
 
 # CSV ABI is shared with serializer-benchmark so analysis/dashboard reuse.
 # Domain mapping is documented in README and docs/analysis/METRICS.md.
@@ -281,6 +293,21 @@ languages:
         communication: thread
         package: harness
         rationale: "Single-producer ring; MPMC skipped"
+      - name: multiprocessing.Queue
+        category: concurrent
+        communication: process
+        package: stdlib
+        rationale: "Cross-process IPC queue (opt-in; category P)"
+      - name: shared-ring
+        category: spsc
+        communication: shared
+        package: harness
+        rationale: "Shared-memory SPSC ring (opt-in; category S)"
+      - name: sqlite-queue
+        category: durable
+        communication: durable
+        package: stdlib
+        rationale: "SQLite-backed local queue (opt-in; category D)"
 
   rust:
     display_name: Rust

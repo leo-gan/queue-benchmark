@@ -12,6 +12,8 @@ class SpscRingQueue(QueueAdapter):
     name = "spsc-ring"
     category = "spsc"
     supports_mpmc = False
+    supports_spsc_only = True
+    communication = "thread"
 
     def version(self) -> str:
         return platform.python_version()

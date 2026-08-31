@@ -1,0 +1,23 @@
+{
+  "status": "ok",
+  "rows": [
+    {
+      "library": "ConcurrentQueue",
+      "pattern": "1p32c",
+      "n": 9,
+      "median_handoff_ns": 14200.0,
+      "p50_ns": 14200.0,
+      "mean_ns": 22133.333333333332,
+      "rel_to_fastest": 1.0
+    },
+    {
+      "library": "Channel",
+      "pattern": "1p32c",
+      "n": 9,
+      "median_handoff_ns": 30300.0,
+      "p50_ns": 30300.0,
+      "mean_ns": 82011.11111111111,
+      "rel_to_fastest": 2.1338028169014085
+    }
+  ]
+}

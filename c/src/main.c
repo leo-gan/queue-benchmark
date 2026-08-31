@@ -82,6 +82,42 @@ static void *spsc_pop(Spsc *q) {
     return item;
 }
 
+static void parse_pattern(const char *mode, int *p, int *c) {
+    *p = 1;
+    *c = 1;
+    if (strcmp(mode, "stream") == 0 || strcmp(mode, "mpmc") == 0) {
+        *p = 2;
+        *c = 2;
+        return;
+    }
+    if (strcmp(mode, "bytes") == 0 || strcmp(mode, "spsc") == 0)
+        return;
+    int pr = 0, co = 0;
+    if (sscanf(mode, "%dp%dc", &pr, &co) == 2 && pr > 0 && co > 0) {
+        *p = pr;
+        *c = co;
+    }
+}
+
+typedef struct {
+    MutexQ *q;
+    void **items;
+    int start, end;
+    int take;
+} MqJob;
+
+static void *mq_prod(void *arg) {
+    MqJob *j = arg;
+    for (int i = j->start; i < j->end; i++) mq_push(j->q, j->items[i]);
+    return NULL;
+}
+
+static void *mq_cons(void *arg) {
+    MqJob *j = arg;
+    for (int i = 0; i < j->take; i++) (void)mq_pop(j->q);
+    return NULL;
+}
+
 static double ops(uint64_t ns) {
     return ns ? 1000000000.0 / (double)ns : 0.0;
 }
@@ -149,19 +185,43 @@ int main(int argc, char **argv) {
         for (int qi = 0; qi < 2; qi++) {
             if (qf[0] && !strstr(names[qi], qf))
                 continue;
-            if (strcmp(mode, "stream") == 0 && strcmp(names[qi], "spsc-ring") == 0)
+            int producers = 1, consumers = 1;
+            parse_pattern(mode, &producers, &consumers);
+            if (strcmp(names[qi], "spsc-ring") == 0 && (producers != 1 || consumers != 1))
                 continue;
             for (int i = 0; i < reps; i++) {
                 uint64_t enq = 0, deq = 0;
                 if (strcmp(names[qi], "mutex-queue") == 0) {
                     MutexQ q;
                     mq_init(&q, (size_t)n + 1);
-                    uint64_t t0 = now_ns();
-                    for (int k = 0; k < n; k++) mq_push(&q, items[k]);
-                    enq = now_ns() - t0;
-                    t0 = now_ns();
-                    for (int k = 0; k < n; k++) (void)mq_pop(&q);
-                    deq = now_ns() - t0;
+                    if (producers == 1 && consumers == 1) {
+                        uint64_t t0 = now_ns();
+                        for (int k = 0; k < n; k++) mq_push(&q, items[k]);
+                        enq = now_ns() - t0;
+                        t0 = now_ns();
+                        for (int k = 0; k < n; k++) (void)mq_pop(&q);
+                        deq = now_ns() - t0;
+                    } else {
+                        pthread_t th[16];
+                        MqJob jobs[16];
+                        int nt = 0;
+                        uint64_t t0 = now_ns();
+                        for (int p = 0; p < producers && nt < 16; p++) {
+                            jobs[nt] = (MqJob){&q, items, n * p / producers, n * (p + 1) / producers, 0};
+                            pthread_create(&th[nt], NULL, mq_prod, &jobs[nt]);
+                            nt++;
+                        }
+                        int per = n / consumers, extra = n % consumers;
+                        for (int c = 0; c < consumers && nt < 16; c++) {
+                            jobs[nt] = (MqJob){&q, items, 0, 0, per + (c == 0 ? extra : 0)};
+                            pthread_create(&th[nt], NULL, mq_cons, &jobs[nt]);
+                            nt++;
+                        }
+                        for (int t = 0; t < nt; t++) pthread_join(th[t], NULL);
+                        uint64_t wall = now_ns() - t0;
+                        enq = wall / 2;
+                        deq = wall - enq;
+                    }
                     mq_free(&q);
                 } else {
                     Spsc q;

@@ -1,0 +1,12 @@
+id: 05-wakeup
+description: "How long does an empty-queue consumer take to wake?"
+data_model_version: 2
+types:
+  - type_id: message
+    type_config: {}
+data_type_instance_count: [100]
+compression:
+  mode: none
+execution:
+  mode: all-single
+  io_modes: [bytes]

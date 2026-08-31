@@ -6,8 +6,7 @@ matrix. Source notes: `docs/temp/methodology.review.md`,
 
 **Do not compare libraries across communication categories.**
 **Do not crown a global “fastest queue.”**
-**Do not update `docs/theory/` or `experiments/` in the first implementation
-pass** (experiments 3–4 stay planned only).
+Experiments 3–12 and Python P/S/D runners are in this pass.
 
 ## Rule
 
@@ -66,19 +65,19 @@ fidelity (no loss, no dup; FIFO only if the API promises it).
 |----|----------|--------|
 | T1 | 1P1C, 64–256 B | Experiment 1 |
 | T2 | Same, 256 B vs 4 KiB | Experiment 2 |
-| T3 | 1P4C, 4P1C, 4P4C | Planned (do not add the folder yet) |
-| T4 | Bounded + slow consumer | Planned (do not add the folder yet) |
-| T5 | Empty-queue wakeup | Later |
-| T6 | Burst then idle | Later |
+| T3 | 1P4C, 4P1C, 4P4C | Experiment 3 |
+| T4 | Bounded + slow consumer | Experiment 4 |
+| T5 | Empty-queue wakeup | Experiment 5 |
+| T6 | Burst then idle | Experiment 6 |
 
 ### A — async
 
 | ID | Question | Status |
 |----|----------|--------|
 | A1 | 1 task / 1 task, small payload | Covered by the default SPSC cell |
-| A2 | Many waiting consumers | Later |
-| A3 | Bounded async backpressure | Later |
-| A4 | Timeout / cancel | Later |
+| A2 | Many waiting consumers | Experiment 7 |
+| A3 | Bounded async backpressure | Experiment 8 |
+| A4 | Timeout / cancel | Experiment 9 |
 
 JS `p-queue` is a **concurrency limiter**, not a handoff queue. Reclassify
 it (do not rank it against `asyncio.Queue`).

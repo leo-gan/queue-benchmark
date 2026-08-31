@@ -12,6 +12,7 @@ class DequeLockQueue(QueueAdapter):
     name = "deque-lock"
     category = "locked"
     supports_mpmc = True
+    communication = "thread"
 
     def version(self) -> str:
         return platform.python_version()

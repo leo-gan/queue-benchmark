@@ -109,6 +109,11 @@ async function benchPQueue(items) {
 }
 
 async function main() {
+  const special = process.env.BENCHMARK_SPECIAL || "";
+  if (special === "wakeup" || special === "cancel" || special === "burst") {
+    console.log("skip javascript: BENCHMARK_SPECIAL=" + special + " is Python-only");
+    return;
+  }
   const reps = Number(process.argv[2] || 10);
   const qf = process.argv[3] || "";
   const df = process.argv[4] || "";
@@ -132,7 +137,8 @@ async function main() {
     const size = cell.payload_bytes * cell.n;
     for (const q of queues) {
       if (qf && !q.name.toLowerCase().includes(qf.toLowerCase())) continue;
-      if (cell.io_mode === "stream" && (q.name === "Array" || q.name === "p-queue")) continue;
+      const multi = cell.io_mode !== "bytes" && cell.io_mode !== "spsc";
+      if (multi && (q.name === "Array" || q.name === "p-queue")) continue;
       for (let i = 0; i < reps; i++) {
         let enq, deq;
         if (q.name === "Array") [enq, deq] = benchArray(items);

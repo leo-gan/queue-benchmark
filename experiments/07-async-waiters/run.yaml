@@ -1,0 +1,12 @@
+id: 07-async-waiters
+description: "How does an async queue behave with many waiting consumers?"
+data_model_version: 2
+types:
+  - type_id: message
+    type_config: {}
+data_type_instance_count: [100]
+compression:
+  mode: none
+execution:
+  mode: all-single
+  io_modes: [1p32c]

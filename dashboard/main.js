@@ -2426,8 +2426,9 @@ function normalizeMode(mode) {
 }
 
 function modeDisplayLabel(norm) {
-  if (norm === 'bytes') return 'SPSC';
-  if (norm === 'stream') return 'MPMC';
+  if (norm === 'bytes' || norm === 'spsc') return 'SPSC';
+  if (norm === 'stream' || norm === 'mpmc') return 'MPMC (2P2C)';
+  if (/^\d+p\d+c$/.test(String(norm || ''))) return String(norm).toUpperCase();
   return norm || '—';
 }
 
