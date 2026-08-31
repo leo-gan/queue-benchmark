@@ -46,7 +46,7 @@ priority, blocking vs spin vs yield, SPSC / MPSC / SPMC / MPMC.
 |--------|------|----------|
 | locked | Mutex baseline | `deque-lock`, `Queue+lock`, `Array`, `mutex-queue` |
 | concurrent | Thread-safe MPSC/MPMC | `queue.Queue`, `ConcurrentQueue`, `crossbeam-channel`, `fastq` |
-| spsc-ring | No mutex on the happy path | C `spsc-ring` |
+| spsc-ring | No mutex on the happy path | C `spsc-ring`, Python `spsc-ring` |
 | work-stealing | Steal from the other end | none yet |
 
 Async channels (`asyncio.Queue`, `Channel`, `tokio::mpsc`) live in **A**.
