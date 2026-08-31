@@ -28,6 +28,7 @@ import {
   chooseOpsUnit,
   serializerLabelFromGroup,
 } from './format.js';
+import { communicationBucket } from './queue-catalog.js';
 
 const SETTINGS_KEY = 'serializer-dashboard-settings-v2';
 /** localStorage: hide first-visit orientation banner when set to "1". */
@@ -177,6 +178,7 @@ let state = {
   currentLanguage: 'csharp',
   currentTestData: '',
   currentMode: '',
+  currentCategory: 'all',
   displayMetric: 'ops', // charts / ranking toolbar
   /** Detailed Analytics only: 'ops' | 'time' (independent of displayMetric). */
   rosterMetric: 'ops',
@@ -271,6 +273,10 @@ function syncFixtureModeSelects() {
     if (el && [...el.options].some((o) => o.value === state.currentMode)) {
       el.value = state.currentMode;
     }
+    const cat = document.getElementById('category-select');
+    if (cat && [...cat.options].some((o) => o.value === state.currentCategory)) {
+      cat.value = state.currentCategory;
+    }
   });
 }
 
@@ -335,6 +341,7 @@ function saveSettings() {
     currentLanguage: state.currentLanguage,
     currentTestData: state.currentTestData,
     currentMode: state.currentMode,
+    currentCategory: state.currentCategory,
     displayMetric: state.displayMetric,
     rosterMetric: state.rosterMetric,
     rankSort: state.rankSort,
@@ -369,6 +376,9 @@ function applySavedSettings(saved) {
   if (typeof saved.currentTestData === 'string') state.currentTestData = saved.currentTestData;
   if (typeof saved.currentMode === 'string') {
     state.currentMode = normalizeMode(saved.currentMode) || saved.currentMode;
+  }
+  if (typeof saved.currentCategory === 'string') {
+    state.currentCategory = saved.currentCategory;
   }
   if (saved.displayMetric === 'ops' || saved.displayMetric === 'time') {
     state.displayMetric = saved.displayMetric;
@@ -426,6 +436,7 @@ function applyUrlParams() {
   if (p.has('lang')) state.currentLanguage = p.get('lang');
   if (p.has('data')) state.currentTestData = p.get('data');
   if (p.has('mode')) state.currentMode = normalizeMode(p.get('mode')) || p.get('mode');
+  if (p.has('category')) state.currentCategory = p.get('category');
   if (p.get('metric') === 'ops' || p.get('metric') === 'time') state.displayMetric = p.get('metric');
   if (p.get('scope') === 'cross' || p.get('scope') === 'same') state.compareScope = p.get('scope');
   if (p.has('baseline')) state.compareBaseline = p.get('baseline');
@@ -447,6 +458,9 @@ function syncUrlFromState() {
     if (state.currentTestData) p.set('data', state.currentTestData);
     const mode = normalizeMode(state.currentMode) || state.currentMode;
     if (mode) p.set('mode', mode);
+    if (state.currentCategory && state.currentCategory !== 'all') {
+      p.set('category', state.currentCategory);
+    }
     p.set('metric', state.displayMetric);
     if (state.compareScope === 'cross') p.set('scope', 'cross');
     if (state.compareBaseline) p.set('baseline', state.compareBaseline);
@@ -624,6 +638,12 @@ function setupEventListeners() {
   };
   document.getElementById('mode-select')?.addEventListener('change', onModeChange);
   document.getElementById('same-mode-select')?.addEventListener('change', onModeChange);
+
+  document.getElementById('category-select')?.addEventListener('change', (e) => {
+    state.currentCategory = e.target.value;
+    saveSettings();
+    filterAndRefresh();
+  });
 
   document.getElementById('btn-ops-sec')?.addEventListener('click', () => setViewMetric('ops'));
   document.getElementById('btn-time-ns')?.addEventListener('click', () => setViewMetric('time'));
@@ -2163,7 +2183,12 @@ function resolveFixtureGroups() {
 }
 
 function filterAndRefresh() {
-  state.filteredGroups = resolveFixtureGroups();
+  const resolved = resolveFixtureGroups();
+  const cat = state.currentCategory || 'all';
+  state.filteredGroups =
+    cat === 'all'
+      ? resolved
+      : resolved.filter((g) => communicationBucket(g.serializer) === cat);
 
   state.serializerNames = [
     ...new Set(state.filteredGroups.map((g) => g.serializer)),

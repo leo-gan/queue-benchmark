@@ -83,6 +83,16 @@
           </select>
         </div>
 
+        <span class="filter-label filter-label-primary" title="Communication category. Compare inside Thread or Async; Other is not a handoff queue.">Category:</span>
+        <div class="select-wrapper">
+          <select id="category-select" aria-label="Select communication category">
+            <option value="all">All</option>
+            <option value="thread">Thread (T)</option>
+            <option value="async">Async (A)</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
         <span class="filter-label filter-label-primary" title="Payload shape (suite data type), e.g. message@n=1">Data type:</span>
         <div class="select-wrapper">
           <select id="data-select" aria-label="Select data type">
@@ -139,7 +149,7 @@
       <div class="orientation-body">
         <p class="orientation-lead">
           <strong>Start here:</strong> pick a <strong>language</strong> and <strong>data type</strong>, then read the scatter (speed vs size) and ranking.
-          Compare libraries <strong>within one language</strong> — cross-language times are directional only.
+          Compare libraries <strong>within one language and one category</strong> (Thread vs Async) — cross-language times are directional only.
         </p>
         <p class="orientation-gloss section-help">
           <strong>Pareto</strong> = best speed/size trade-offs ·
