@@ -34,10 +34,9 @@ for ranking.
 
 ## Not published yet
 
-These are real categories. They get numbers only when a runner exists.
-They never share a violin or rank table with T. The dashboard Category
-filter already has Thread / Async / Other; P, S, and D will appear there
-when a runner writes rows.
+Python opt-in runners exist. They never share a violin or rank table with T.
+The dashboard Category filter includes Thread / Async / Process / Shared /
+Durable / Other.
 
 | ID | Category | Why it is different | First tests when a runner exists |
 |----|----------|---------------------|----------------------------------|

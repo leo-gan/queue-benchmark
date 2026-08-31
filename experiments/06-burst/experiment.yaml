@@ -1,0 +1,44 @@
+schema: gld.experiment.config/1
+id: 06-burst
+title: How fast can a queue absorb a burst and then drain?
+question: >
+  The producer dumps 1000 small messages as fast as it can, then the consumer drains. What is fill time and drain time?
+story:
+  why: Traffic is often a spike, not a steady trickle.
+  example: A fan-in of events after a deploy.
+  tradeoff: A huge burst needs either a large bound or fast drain.
+
+sample:
+  kind: message
+  records_per_write: 1000
+  seed: 42
+  settings: {}
+  saved_as: sample.bin
+
+run:
+  mode: all-single
+  io_modes: [bytes]
+  compression: none
+  soft_seconds_per_10_serializers: 60
+  hard_cap_seconds: 180
+  reps_fallback: 10
+
+analysis:
+  drop_first_trial: true
+  filter_id: iqr_1.5
+  main_io: bytes
+  top_group:
+    method: cliffs_delta_vs_fastest
+    similar_max: 0.147
+    close_max: 0.33
+
+paths:
+  results: results.json
+  summary: results.md
+
+languages:
+  - id: python
+    enabled: true
+    libraries:
+      - {name: deque-lock, role: locked baseline}
+      - {name: queue.Queue, role: threading queue}

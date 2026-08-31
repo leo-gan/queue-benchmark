@@ -1,0 +1,23 @@
+{
+  "status": "ok",
+  "rows": [
+    {
+      "library": "spsc-ring",
+      "pattern": "bytes",
+      "n": 9,
+      "median_handoff_ns": 766.0,
+      "p50_ns": 766.0,
+      "mean_ns": 766.6666666666666,
+      "rel_to_fastest": 1.0
+    },
+    {
+      "library": "mutex-queue",
+      "pattern": "bytes",
+      "n": 9,
+      "median_handoff_ns": 1022.0,
+      "p50_ns": 1022.0,
+      "mean_ns": 1051.888888888889,
+      "rel_to_fastest": 1.3342036553524803
+    }
+  ]
+}

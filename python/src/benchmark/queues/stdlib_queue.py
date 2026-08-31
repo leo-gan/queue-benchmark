@@ -16,7 +16,7 @@ class StdlibQueue(QueueAdapter):
         return platform.python_version()
 
     def create(self, capacity: int | None = None) -> Any:
-        return queue.Queue()
+        return queue.Queue(maxsize=int(capacity) if capacity else 0)
 
     def enqueue(self, q: Any, item: bytes) -> None:
         q.put(item)

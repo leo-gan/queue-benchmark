@@ -1,0 +1,12 @@
+id: 04-backpressure
+description: "What happens when the queue is bounded and the consumer is slower?"
+data_model_version: 2
+types:
+  - type_id: message
+    type_config: {}
+data_type_instance_count: [100]
+compression:
+  mode: none
+execution:
+  mode: all-single
+  io_modes: [bytes]

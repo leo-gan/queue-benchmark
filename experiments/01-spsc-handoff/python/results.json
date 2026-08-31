@@ -1,0 +1,41 @@
+{
+  "status": "ok",
+  "rows": [
+    {
+      "library": "spsc-ring",
+      "pattern": "bytes",
+      "n": 9,
+      "median_handoff_ns": 16892.0,
+      "p50_ns": 16892.0,
+      "mean_ns": 16884.666666666668,
+      "rel_to_fastest": 1.0
+    },
+    {
+      "library": "deque-lock",
+      "pattern": "bytes",
+      "n": 9,
+      "median_handoff_ns": 21121.0,
+      "p50_ns": 21121.0,
+      "mean_ns": 21273.666666666668,
+      "rel_to_fastest": 1.2503551977267346
+    },
+    {
+      "library": "asyncio.Queue",
+      "pattern": "bytes",
+      "n": 9,
+      "median_handoff_ns": 54015.0,
+      "p50_ns": 54015.0,
+      "mean_ns": 53752.0,
+      "rel_to_fastest": 3.1976675349277763
+    },
+    {
+      "library": "queue.Queue",
+      "pattern": "bytes",
+      "n": 9,
+      "median_handoff_ns": 68638.0,
+      "p50_ns": 68638.0,
+      "mean_ns": 69086.88888888889,
+      "rel_to_fastest": 4.063343594600995
+    }
+  ]
+}

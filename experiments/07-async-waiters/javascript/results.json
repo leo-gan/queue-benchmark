@@ -1,0 +1,14 @@
+{
+  "status": "ok",
+  "rows": [
+    {
+      "library": "fastq",
+      "pattern": "1p32c",
+      "n": 9,
+      "median_handoff_ns": 7767.0,
+      "p50_ns": 7767.0,
+      "mean_ns": 7999.555555555556,
+      "rel_to_fastest": 1.0
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "status": "ok",
+  "rows": [
+    {
+      "library": "mutex-queue",
+      "pattern": "1p4c",
+      "n": 9,
+      "median_handoff_ns": 51326.0,
+      "p50_ns": 51326.0,
+      "mean_ns": 60681.22222222222,
+      "rel_to_fastest": 1.0
+    },
+    {
+      "library": "mutex-queue",
+      "pattern": "4p1c",
+      "n": 9,
+      "median_handoff_ns": 54677.0,
+      "p50_ns": 54677.0,
+      "mean_ns": 55779.11111111111,
+      "rel_to_fastest": 1.0652885477146086
+    },
+    {
+      "library": "mutex-queue",
+      "pattern": "4p4c",
+      "n": 9,
+      "median_handoff_ns": 96592.0,
+      "p50_ns": 96592.0,
+      "mean_ns": 96353.77777777778,
+      "rel_to_fastest": 1.8819311849744769
+    }
+  ]
+}

@@ -50,13 +50,14 @@ languages:
     libraries:
       - {name: std-mpsc, role: standard MPSC}
       - {name: crossbeam-channel, role: MPMC channel}
+      - {name: crossbeam-queue, role: lock-free MPMC}
       - {name: tokio-mpsc, role: async MPSC}
   - id: javascript
     enabled: true
     libraries:
       - {name: Array, role: push/shift baseline}
       - {name: fastq, role: job queue}
-      - {name: p-queue, role: promise queue}
+      - {name: p-queue, role: scheduler (not ranked as a queue)}
   - id: csharp
     enabled: true
     libraries:

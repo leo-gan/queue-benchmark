@@ -1,0 +1,12 @@
+id: 12-durable-local
+description: "What does local durability cost versus an in-memory queue?"
+data_model_version: 2
+types:
+  - type_id: message
+    type_config: {}
+data_type_instance_count: [100]
+compression:
+  mode: none
+execution:
+  mode: all-single
+  io_modes: [bytes]

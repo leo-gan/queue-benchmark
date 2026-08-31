@@ -7,6 +7,13 @@ var reps = args.Length > 0 && int.TryParse(args[0], out var r) ? r : 10;
 var qf = args.Length > 1 ? args[1] : "";
 var df = args.Length > 2 ? args[2] : "";
 
+var special = Environment.GetEnvironmentVariable("BENCHMARK_SPECIAL") ?? "";
+if (special is "wakeup" or "cancel" or "burst")
+{
+    Console.WriteLine("skip csharp: BENCHMARK_SPECIAL=" + special + " is Python-only");
+    return;
+}
+
 var cellsPath = Environment.GetEnvironmentVariable("BENCHMARK_CELLS_TSV") ?? "cells.tsv";
 var cells = File.ReadAllLines(cellsPath).Skip(1)
     .Select(ln => ln.Split('\t'))
@@ -26,6 +33,16 @@ sb.AppendLine("Language,StringOrStream,TestDataName,Repetitions,RepetitionIndex,
 string Ver = Environment.Version.ToString();
 double Ops(long ns) => ns > 0 ? 1_000_000_000.0 / ns : 0;
 int order = 0;
+static (int p, int c) ParsePattern(string mode)
+{
+    mode = mode.ToLowerInvariant();
+    if (mode is "bytes" or "spsc" or "string") return (1, 1);
+    if (mode is "stream" or "mpmc") return (2, 2);
+    var m = System.Text.RegularExpressions.Regex.Match(mode, @"^(\d+)p(\d+)c$");
+    if (m.Success) return (int.Parse(m.Groups[1].Value), int.Parse(m.Groups[2].Value));
+    return (1, 1);
+}
+
 string[] queues = ["Queue+lock", "ConcurrentQueue", "Channel"];
 
 foreach (var cell in cells)
@@ -40,13 +57,16 @@ foreach (var cell in cells)
     {
         if (qf.Length > 0 && !name.Contains(qf, StringComparison.OrdinalIgnoreCase))
             continue;
+        var (producers, consumers) = ParsePattern(cell.Mode);
+        if (name == "Queue+lock" && (producers > 1 || consumers > 1))
+            continue;
         for (int i = 0; i < reps; i++)
         {
             var (enq, deq) = name switch
             {
                 "Queue+lock" => BenchLocked(items),
-                "ConcurrentQueue" => BenchConcurrent(items, cell.Mode == "stream"),
-                "Channel" => BenchChannel(items).GetAwaiter().GetResult(),
+                "ConcurrentQueue" => BenchConcurrent(items, producers, consumers),
+                "Channel" => BenchChannel(items, producers, consumers).GetAwaiter().GetResult(),
                 _ => (0L, 0L)
             };
             var tot = enq + deq;
@@ -83,10 +103,10 @@ static (long enq, long deq) BenchLocked(byte[][] items)
     return (enq, (long)sw.Elapsed.TotalNanoseconds);
 }
 
-static (long enq, long deq) BenchConcurrent(byte[][] items, bool mpmc)
+static (long enq, long deq) BenchConcurrent(byte[][] items, int producers, int consumers)
 {
     var q = new ConcurrentQueue<byte[]>();
-    if (!mpmc)
+    if (producers == 1 && consumers == 1)
     {
         var sw = Stopwatch.StartNew();
         foreach (var it in items) q.Enqueue(it);
@@ -98,38 +118,62 @@ static (long enq, long deq) BenchConcurrent(byte[][] items, bool mpmc)
         }
         return (enq, (long)sw.Elapsed.TotalNanoseconds);
     }
-    var half = items.Length / 2;
+    var n = items.Length;
+    var tasks = new List<Task>();
     var sw2 = Stopwatch.StartNew();
-    var p1 = Task.Run(() => { for (int i = 0; i < half; i++) q.Enqueue(items[i]); });
-    var p2 = Task.Run(() => { for (int i = half; i < items.Length; i++) q.Enqueue(items[i]); });
+    for (int p = 0; p < producers; p++)
+    {
+        var a = n * p / producers;
+        var b = n * (p + 1) / producers;
+        tasks.Add(Task.Run(() => { for (int i = a; i < b; i++) q.Enqueue(items[i]); }));
+    }
     var got = 0;
-    var c1 = Task.Run(() =>
+    for (int c = 0; c < consumers; c++)
     {
-        while (Volatile.Read(ref got) < items.Length)
+        tasks.Add(Task.Run(() =>
         {
-            if (q.TryDequeue(out _)) Interlocked.Increment(ref got);
-        }
-    });
-    var c2 = Task.Run(() =>
-    {
-        while (Volatile.Read(ref got) < items.Length)
-        {
-            if (q.TryDequeue(out _)) Interlocked.Increment(ref got);
-        }
-    });
-    Task.WaitAll(p1, p2, c1, c2);
+            while (Volatile.Read(ref got) < n)
+            {
+                if (q.TryDequeue(out _)) Interlocked.Increment(ref got);
+            }
+        }));
+    }
+    Task.WaitAll(tasks.ToArray());
     var wall = (long)sw2.Elapsed.TotalNanoseconds;
     return (wall / 2, wall - wall / 2);
 }
 
-static async Task<(long enq, long deq)> BenchChannel(byte[][] items)
+static async Task<(long enq, long deq)> BenchChannel(byte[][] items, int producers, int consumers)
 {
     var ch = Channel.CreateUnbounded<byte[]>();
-    var sw = Stopwatch.StartNew();
-    foreach (var it in items) await ch.Writer.WriteAsync(it);
-    ch.Writer.Complete();
-    var enq = (long)sw.Elapsed.TotalNanoseconds;
-    sw.Restart();
-    await foreach (var _ in ch.Reader.ReadAllAsync()) { }
-    return (enq, (long)sw.Elapsed.TotalNanoseconds);
+    if (producers == 1 && consumers == 1)
+    {
+        var sw = Stopwatch.StartNew();
+        foreach (var it in items) await ch.Writer.WriteAsync(it);
+        ch.Writer.Complete();
+        var enq = (long)sw.Elapsed.TotalNanoseconds;
+        sw.Restart();
+        await foreach (var _ in ch.Reader.ReadAllAsync()) { }
+        return (enq, (long)sw.Elapsed.TotalNanoseconds);
+    }
+    var n = items.Length;
+    var sw2 = Stopwatch.StartNew();
+    var writers = Enumerable.Range(0, producers).Select(p => Task.Run(async () =>
+    {
+        var a = n * p / producers;
+        var b = n * (p + 1) / producers;
+        for (int i = a; i < b; i++) await ch.Writer.WriteAsync(items[i]);
+    }));
+    var got = 0;
+    var readers = Enumerable.Range(0, consumers).Select(_ => Task.Run(async () =>
+    {
+        while (Volatile.Read(ref got) < n)
+        {
+            if (ch.Reader.TryRead(out byte[] _)) Interlocked.Increment(ref got);
+            else await Task.Yield();
+        }
+    }));
+    await Task.WhenAll(writers.Concat(readers));
+    var wall = (long)sw2.Elapsed.TotalNanoseconds;
+    return (wall / 2, wall - wall / 2);
 }

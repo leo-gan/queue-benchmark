@@ -19,9 +19,20 @@ export const QUEUE_CATALOG = {
   Array: { communication: 'thread', family: 'locked' },
   fastq: { communication: 'thread', family: 'concurrent' },
   'p-queue': { communication: 'scheduler', family: 'scheduler' },
+  'multiprocessing.Queue': { communication: 'process', family: 'concurrent' },
+  'shared-ring': { communication: 'shared', family: 'spsc' },
+  'sqlite-queue': { communication: 'durable', family: 'durable' },
 };
 
-export const COMMUNICATION_ORDER = ['all', 'thread', 'async', 'other'];
+export const COMMUNICATION_ORDER = [
+  'all',
+  'thread',
+  'async',
+  'process',
+  'shared',
+  'durable',
+  'other',
+];
 
 export function communicationOf(name) {
   return QUEUE_CATALOG[name]?.communication || 'unknown';
@@ -29,7 +40,9 @@ export function communicationOf(name) {
 
 export function communicationBucket(name) {
   const c = communicationOf(name);
-  if (c === 'thread' || c === 'async') return c;
+  if (c === 'thread' || c === 'async' || c === 'process' || c === 'shared' || c === 'durable') {
+    return c;
+  }
   return 'other';
 }
 
@@ -37,6 +50,9 @@ export function communicationLabel(id) {
   if (id === 'all') return 'All';
   if (id === 'thread') return 'Thread (T)';
   if (id === 'async') return 'Async (A)';
+  if (id === 'process') return 'Process (P)';
+  if (id === 'shared') return 'Shared (S)';
+  if (id === 'durable') return 'Durable (D)';
   if (id === 'other') return 'Other';
   return id;
 }

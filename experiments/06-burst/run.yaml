@@ -1,0 +1,12 @@
+id: 06-burst
+description: "How fast can a queue absorb a burst and then drain?"
+data_model_version: 2
+types:
+  - type_id: message
+    type_config: {}
+data_type_instance_count: [1000]
+compression:
+  mode: none
+execution:
+  mode: all-single
+  io_modes: [bytes]

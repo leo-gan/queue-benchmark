@@ -85,21 +85,26 @@ Same run modes as [Modes](modes.md): smoke / all-single / full / research.
 |----|----------|----------|
 | T1 | 1P1C, small payload — baseline overhead | Experiment 1 |
 | T2 | Does ranking flip at 4 KiB? | Experiment 2 |
-| T3 | 1P4C / 4P1C / 4P4C contention | No |
-| T4 | Bounded queue, slow consumer (backpressure) | No |
-| T5 | Empty-queue wakeup latency | No |
-| T6 | Burst, then drain | No |
+| T3 | 1P4C / 4P1C / 4P4C contention | Experiment 3 |
+| T4 | Bounded queue, slow consumer (backpressure) | Experiment 4 |
+| T5 | Empty-queue wakeup latency | Experiment 5 |
+| T6 | Burst, then drain | Experiment 6 |
 
 ### Category A
 
-Same SPSC/MPMC cells as T, but the workers are async tasks. Extra tests
-(many waiters, cancel, loop lag) are not shipped. Do not rank an A library
-against a T library.
+Same SPSC/MPMC cells as T, but the workers are async tasks. Extra tests:
+experiment 7 (many waiters), 8 (bounded async), 9 (cancel). Do not rank an
+A library against a T library.
 
 ### Categories P, S, D
 
-Documented in [queue categories](queue_categories.md). No runner yet — no
-numbers, no dashboard series, no experiment folder.
+Python runners exist (opt-in, not in the default matrix):
+
+- P: `multiprocessing.Queue` — experiment 10
+- S: `shared-ring` — experiment 11
+- D: `sqlite-queue` — experiment 12
+
+They never share a violin with T.
 
 The dashboard **Category** filter is Thread / Async / Other. P, S, and D
 will join that control when a runner exists. Until then Other is only

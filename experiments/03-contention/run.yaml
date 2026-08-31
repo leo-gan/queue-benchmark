@@ -1,0 +1,12 @@
+id: 03-contention
+description: "Does ranking change under 1P4C, 4P1C, and 4P4C?"
+data_model_version: 2
+types:
+  - type_id: message
+    type_config: {}
+data_type_instance_count: [100]
+compression:
+  mode: none
+execution:
+  mode: all-single
+  io_modes: [1p4c, 4p1c, 4p4c]

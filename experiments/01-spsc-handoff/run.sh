@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Run this experiment for one language (or all enabled).
-set -euo pipefail
+set -uo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO="$(cd "$HERE/../.." && pwd)"
 # shellcheck source=../../scripts/lib/config.sh
@@ -27,4 +27,5 @@ while IFS='|' read -r id runner_dir runner_script; do
   bash "$REPO/$runner_dir/$runner_script" all-single
 done < <(bench_read_config --lang-runners)
 
+python3 "$REPO/experiments/lib/summarize_handoff.py" "$HERE"
 echo "[DONE] 01-spsc-handoff"

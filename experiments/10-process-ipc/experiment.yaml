@@ -1,0 +1,44 @@
+schema: gld.experiment.config/1
+id: 10-process-ipc
+title: What does a cross-process queue cost versus in-process?
+question: >
+  Python multiprocessing.Queue moves the same 256-byte message. How does handoff compare to queue.Queue?
+story:
+  why: The GIL pushes some work into processes. Serialization is part of that number.
+  example: A parent process hands jobs to worker processes.
+  tradeoff: IPC is a different category. Do not plot it next to deque-lock.
+
+sample:
+  kind: message
+  records_per_write: 100
+  seed: 42
+  settings: {}
+  saved_as: sample.bin
+
+run:
+  mode: all-single
+  io_modes: [bytes]
+  compression: none
+  soft_seconds_per_10_serializers: 60
+  hard_cap_seconds: 180
+  reps_fallback: 10
+
+analysis:
+  drop_first_trial: true
+  filter_id: iqr_1.5
+  main_io: bytes
+  top_group:
+    method: cliffs_delta_vs_fastest
+    similar_max: 0.147
+    close_max: 0.33
+
+paths:
+  results: results.json
+  summary: results.md
+
+languages:
+  - id: python
+    enabled: true
+    libraries:
+      - {name: multiprocessing.Queue, role: IPC queue}
+      - {name: queue.Queue, role: in-process control}

@@ -45,6 +45,43 @@ fn load_cells() -> Vec<Cell> {
     out
 }
 
+fn parse_pattern(mode: &str) -> (usize, usize) {
+    match mode {
+        "bytes" | "spsc" | "string" => (1, 1),
+        "stream" | "mpmc" => (2, 2),
+        other => {
+            let b = other.as_bytes();
+            let mut p = 0usize;
+            let mut c = 0usize;
+            let mut i = 0;
+            while i < b.len() && b[i].is_ascii_digit() {
+                p = p * 10 + (b[i] - b'0') as usize;
+                i += 1;
+            }
+            if i < b.len() && b[i] == b'p' {
+                i += 1;
+            }
+            while i < b.len() && b[i].is_ascii_digit() {
+                c = c * 10 + (b[i] - b'0') as usize;
+                i += 1;
+            }
+            (p.max(1), c.max(1))
+        }
+    }
+}
+
+fn split_items(items: &[Vec<u8>], parts: usize) -> Vec<Vec<Vec<u8>>> {
+    let n = items.len();
+    let parts = parts.max(1);
+    (0..parts)
+        .map(|i| {
+            let a = n * i / parts;
+            let b = n * (i + 1) / parts;
+            items[a..b].to_vec()
+        })
+        .collect()
+}
+
 fn payload(n: usize) -> Vec<u8> {
     (0..n).map(|i| (i % 251) as u8).collect()
 }
@@ -121,9 +158,9 @@ fn bench_std_mpsc(items: &[Vec<u8>]) -> (u128, u128) {
     (enq, t1.elapsed().as_nanos())
 }
 
-fn bench_crossbeam(items: &[Vec<u8>], mpmc: bool) -> (u128, u128) {
+fn bench_crossbeam(items: &[Vec<u8>], producers: usize, consumers: usize) -> (u128, u128) {
     let (tx, rx) = crossbeam_channel::unbounded();
-    if !mpmc {
+    if producers == 1 && consumers == 1 {
         let t0 = Instant::now();
         for it in items {
             tx.send(it.clone()).unwrap();
@@ -135,45 +172,39 @@ fn bench_crossbeam(items: &[Vec<u8>], mpmc: bool) -> (u128, u128) {
         }
         return (enq, t1.elapsed().as_nanos());
     }
-    let half = items.len() / 2;
-    let a = items[..half].to_vec();
-    let b = items[half..].to_vec();
-    let tx2 = tx.clone();
-    let t0 = Instant::now();
-    let p1 = thread::spawn(move || {
-        for it in a {
-            tx.send(it).unwrap();
-        }
-    });
-    let p2 = thread::spawn(move || {
-        for it in b {
-            tx2.send(it).unwrap();
-        }
-    });
+    let batches = split_items(items, producers);
     let n = items.len();
-    let c1n = n / 2;
-    let rx2 = rx.clone();
-    let c1 = thread::spawn(move || {
-        for _ in 0..c1n {
-            let _ = rx.recv().unwrap();
-        }
-    });
-    let c2 = thread::spawn(move || {
-        for _ in 0..(n - c1n) {
-            let _ = rx2.recv().unwrap();
-        }
-    });
-    p1.join().unwrap();
-    p2.join().unwrap();
-    c1.join().unwrap();
-    c2.join().unwrap();
+    let t0 = Instant::now();
+    let mut handles = Vec::new();
+    for batch in batches {
+        let tx = tx.clone();
+        handles.push(thread::spawn(move || {
+            for it in batch {
+                tx.send(it).unwrap();
+            }
+        }));
+    }
+    let per = n / consumers.max(1);
+    let extra = n % consumers.max(1);
+    for i in 0..consumers {
+        let rx = rx.clone();
+        let take = per + if i == 0 { extra } else { 0 };
+        handles.push(thread::spawn(move || {
+            for _ in 0..take {
+                let _ = rx.recv().unwrap();
+            }
+        }));
+    }
+    for h in handles {
+        h.join().unwrap();
+    }
     let wall = t0.elapsed().as_nanos();
     (wall / 2, wall - wall / 2)
 }
 
-fn bench_crossbeam_queue(items: &[Vec<u8>], mpmc: bool) -> (u128, u128) {
+fn bench_crossbeam_queue(items: &[Vec<u8>], producers: usize, consumers: usize) -> (u128, u128) {
     let q = Arc::new(SegQueue::new());
-    if !mpmc {
+    if producers == 1 && consumers == 1 {
         let t0 = Instant::now();
         for it in items {
             q.push(it.clone());
@@ -185,46 +216,35 @@ fn bench_crossbeam_queue(items: &[Vec<u8>], mpmc: bool) -> (u128, u128) {
         }
         return (enq, t1.elapsed().as_nanos());
     }
-    let half = items.len() / 2;
-    let a = items[..half].to_vec();
-    let b = items[half..].to_vec();
-    let q1 = Arc::clone(&q);
-    let q2 = Arc::clone(&q);
-    let q3 = Arc::clone(&q);
-    let q4 = Arc::clone(&q);
-    let t0 = Instant::now();
-    let p1 = thread::spawn(move || {
-        for it in a {
-            q1.push(it);
-        }
-    });
-    let p2 = thread::spawn(move || {
-        for it in b {
-            q2.push(it);
-        }
-    });
+    let batches = split_items(items, producers);
     let n = items.len();
-    let c1n = n / 2;
-    let c1 = thread::spawn(move || {
-        let mut left = c1n;
-        while left > 0 {
-            if q3.pop().is_some() {
-                left -= 1;
+    let t0 = Instant::now();
+    let mut handles = Vec::new();
+    for batch in batches {
+        let q = Arc::clone(&q);
+        handles.push(thread::spawn(move || {
+            for it in batch {
+                q.push(it);
             }
-        }
-    });
-    let c2 = thread::spawn(move || {
-        let mut left = n - c1n;
-        while left > 0 {
-            if q4.pop().is_some() {
-                left -= 1;
+        }));
+    }
+    let per = n / consumers.max(1);
+    let extra = n % consumers.max(1);
+    for i in 0..consumers {
+        let q = Arc::clone(&q);
+        let take = per + if i == 0 { extra } else { 0 };
+        handles.push(thread::spawn(move || {
+            let mut left = take;
+            while left > 0 {
+                if q.pop().is_some() {
+                    left -= 1;
+                }
             }
-        }
-    });
-    p1.join().unwrap();
-    p2.join().unwrap();
-    c1.join().unwrap();
-    c2.join().unwrap();
+        }));
+    }
+    for h in handles {
+        h.join().unwrap();
+    }
     let wall = t0.elapsed().as_nanos();
     (wall / 2, wall - wall / 2)
 }
@@ -249,6 +269,11 @@ async fn main() {
     let reps: usize = args.get(1).and_then(|s| s.parse().ok()).unwrap_or(10);
     let qf = args.get(2).cloned().unwrap_or_default();
     let df = args.get(3).cloned().unwrap_or_default();
+    let special = env::var("BENCHMARK_SPECIAL").unwrap_or_default();
+    if special == "wakeup" || special == "cancel" || special == "burst" {
+        eprintln!("skip rust: BENCHMARK_SPECIAL={special} is Python-only");
+        return;
+    }
     let cells = load_cells();
     let dir = log_dir();
     fs::create_dir_all(&dir).unwrap();
@@ -264,20 +289,21 @@ async fn main() {
         let item = payload(cell.payload_bytes);
         let items: Vec<Vec<u8>> = (0..cell.n).map(|_| item.clone()).collect();
         let size = cell.payload_bytes * cell.n;
-        let mpmc = cell.io_mode == "stream";
+        let (producers, consumers) = parse_pattern(&cell.io_mode);
         for name in queues {
             if !qf.is_empty() && !name.contains(&qf) {
                 continue;
             }
-            if name == "std-mpsc" && mpmc {
+            if (name == "std-mpsc" || name == "tokio-mpsc") && (producers > 1 || consumers > 1)
+            {
                 continue;
             }
             for i in 0..reps {
                 let (enq, deq) = match name {
                     "std-mpsc" => bench_std_mpsc(&items),
-                    "crossbeam-channel" => bench_crossbeam(&items, mpmc),
+                    "crossbeam-channel" => bench_crossbeam(&items, producers, consumers),
                     "tokio-mpsc" => bench_tokio(&items).await,
-                    "crossbeam-queue" => bench_crossbeam_queue(&items, mpmc),
+                    "crossbeam-queue" => bench_crossbeam_queue(&items, producers, consumers),
                     _ => (0, 0),
                 };
                 let ver = match name {
