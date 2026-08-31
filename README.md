@@ -113,6 +113,8 @@ Catalog and defaults: `schemas/data_catalog_v2.yaml`. Run matrices: `config/libr
 
 Compare queues **within one language and one category**. Cross-language
 absolute times are directional only — runtimes and GCs differ.
+[Comparison rules](https://leo-gan.github.io/queue-benchmark/analysis/COMPARISON_RULES/):
+no global winner, no broker next to `deque-lock`.
 
 ---
 
