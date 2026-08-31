@@ -4,7 +4,7 @@ Named **run configs** select the measurement matrix:
 
 - `types` (axis W): `type_id` + `type_config` (payload shape)
 - `data_type_instance_count` (axis C): items moved per repetition
-- `execution.io_modes`: `bytes` = SPSC, `stream` = MPMC
+- `execution.io_modes`: `bytes` = **SPSC**, `stream` = **MPMC** (legacy name; not I/O)
 
 Type ids: `message` · `document` · `telemetry` · `strings` · `event`  
 (catalog: `schemas/data_catalog_v2.yaml`).

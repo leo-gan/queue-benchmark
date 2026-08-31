@@ -92,14 +92,14 @@
       </div>
 
       <div class="filter-group filter-group-secondary" aria-label="Secondary filters">
-        <span class="filter-label" title="API path timed: in-memory bytes (or string) vs stream-style APIs — not payload size">Mode:</span>
+        <span class="filter-label" title="Concurrency pattern: SPSC (1 producer / 1 consumer) vs MPMC (2 / 2). CSV still logs bytes/stream.">Pattern:</span>
         <div class="select-wrapper">
-          <select id="mode-select" aria-label="Select mode (bytes or stream)">
+          <select id="mode-select" aria-label="Select pattern (SPSC or MPMC)">
             <!-- Dynamically populated -->
           </select>
         </div>
         <a id="stream-honesty-chip" class="honesty-chip" hidden
-           href="../analysis/modes/#three-levels-of-stream-honesty"></a>
+           href="../analysis/BENCHMARK_DESIGN/#patterns"></a>
 
         <span class="filter-label" title="Which trials feed tables, charts, and Pareto after warmup (default drops statistical outliers)">Samples:</span>
         <div class="select-wrapper">
@@ -143,7 +143,7 @@
         </p>
         <p class="orientation-gloss section-help">
           <strong>Pareto</strong> = best speed/size trade-offs ·
-          <strong>Mode</strong> = bytes vs stream API ·
+          <strong>Pattern</strong> = SPSC vs MPMC ·
           <strong>Samples</strong> = which trials after warmup (default drops outliers) ·
           <a href="../analysis/" id="orientation-method-link">Benchmarks</a> ·
           <a href="../theory/101/" id="orientation-learn-link">Learn 101</a>
@@ -288,7 +288,7 @@
             <div class="select-wrapper">
               <select id="same-data-select" aria-label="Same-language data type"></select>
             </div>
-            <span class="filter-label" title="Bytes vs stream API path">Mode</span>
+            <span class="filter-label" title="SPSC vs MPMC pattern">Pattern</span>
             <div class="select-wrapper">
               <select id="same-mode-select" aria-label="Same-language mode"></select>
             </div>
@@ -303,7 +303,7 @@
             <div class="select-wrapper">
               <select id="xl-data-select" aria-label="Cross-language data type"></select>
             </div>
-            <span class="filter-label" title="Bytes vs stream API path">Mode</span>
+            <span class="filter-label" title="SPSC vs MPMC pattern">Pattern</span>
             <div class="select-wrapper">
               <select id="xl-mode-select" aria-label="Cross-language mode"></select>
             </div>

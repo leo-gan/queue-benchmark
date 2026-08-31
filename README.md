@@ -12,7 +12,7 @@ Compare in-process queue libraries across **Python, Rust, JavaScript, C#, and C*
 | **Home** | [Documentation](https://leo-gan.github.io/queue-benchmark/) |
 | **Numbers** | [Live dashboard](https://leo-gan.github.io/queue-benchmark/dashboard/) |
 | **Experiments** | [One-question tests](https://leo-gan.github.io/queue-benchmark/experiments/) |
-| **Benchmarks** | [How we measure](https://leo-gan.github.io/queue-benchmark/analysis/ANALYSIS_METHODOLOGY/) · [Metrics](https://leo-gan.github.io/queue-benchmark/analysis/METRICS/) |
+| **Benchmarks** | [Design](https://leo-gan.github.io/queue-benchmark/analysis/BENCHMARK_DESIGN/) · [Methodology](https://leo-gan.github.io/queue-benchmark/analysis/ANALYSIS_METHODOLOGY/) · [Metrics](https://leo-gan.github.io/queue-benchmark/analysis/METRICS/) |
 
 ---
 
@@ -37,8 +37,9 @@ Compare in-process queue libraries across **Python, Rust, JavaScript, C#, and C*
 
 [Adding a language](https://leo-gan.github.io/queue-benchmark/analysis/ADDING_A_LANGUAGE/) · [Adding a queue](https://leo-gan.github.io/queue-benchmark/analysis/ADDING_A_QUEUE/).
 
-This suite measures **in-process** queues only. Brokers (Redis, Kafka, ZeroMQ)
-need a different lab.
+This suite measures **in-process** queues only. Compare inside one language
+and one category (thread vs async). Brokers (Redis, Kafka, ZeroMQ) need a
+different lab — never on the same chart as `deque-lock`.
 
 ---
 
@@ -106,11 +107,12 @@ Catalog and defaults: `schemas/data_catalog_v2.yaml`. Run matrices: `config/libr
 
 ## Statistics
 
+- [Benchmark design](https://leo-gan.github.io/queue-benchmark/analysis/BENCHMARK_DESIGN/)
 - [Analysis methodology](https://leo-gan.github.io/queue-benchmark/analysis/ANALYSIS_METHODOLOGY/)
 - [Metrics catalog](https://leo-gan.github.io/queue-benchmark/analysis/METRICS/)
 
-Compare queues **within one language**. Cross-language absolute times are
-directional only — runtimes and GCs differ.
+Compare queues **within one language and one category**. Cross-language
+absolute times are directional only — runtimes and GCs differ.
 
 ---
 
@@ -124,7 +126,7 @@ Every language writes the same columns (nanoseconds). Domain mapping:
 | `TimeSer` | Enqueue ns |
 | `TimeDeser` | Dequeue ns |
 | `TimeSerAndDeser` | Handoff ns |
-| `StringOrStream` | `bytes` = SPSC, `stream` = MPMC |
+| `StringOrStream` | `bytes` = **SPSC**, `stream` = **MPMC** (not I/O) |
 | `Size` | Payload bytes |
 
 See [architecture](https://leo-gan.github.io/queue-benchmark/analysis/architecture/).

@@ -79,14 +79,15 @@ test_data:
       description: "Event envelope payload (~512 B)"
       supports_circular: false
 
-# Pattern axis (CSV StringOrStream): bytes = SPSC, stream = MPMC.
+# Pattern axis (CSV StringOrStream). Logged names are serializer ABI leftovers:
+# bytes = SPSC, stream = MPMC. Docs and dashboard say SPSC / MPMC, never "stream API".
 io_modes:
   - name: bytes
     aliases: [string, buffer, spsc]
-    description: "Single producer, single consumer"
+    description: "SPSC: single producer, single consumer"
   - name: stream
     aliases: [stream, mpmc]
-    description: "Multi producer, multi consumer (when the library supports it)"
+    description: "MPMC: multi producer, multi consumer (when the library supports it)"
 
 # CSV ABI is shared with serializer-benchmark so analysis/dashboard reuse.
 # Domain mapping is documented in README and docs/analysis/METRICS.md.
@@ -237,14 +238,17 @@ languages:
     queues:
       - name: Queue+lock
         category: locked
+        communication: thread
         package: stdlib
         rationale: "Locked System.Collections.Generic.Queue baseline"
       - name: ConcurrentQueue
         category: concurrent
+        communication: thread
         package: stdlib
         rationale: "Lock-free-ish MPMC concurrent queue"
       - name: Channel
         category: async
+        communication: async
         package: stdlib
         rationale: "System.Threading.Channels unbounded channel"
 
@@ -259,14 +263,17 @@ languages:
     queues:
       - name: deque-lock
         category: locked
+        communication: thread
         package: stdlib
         rationale: "collections.deque + threading.Lock baseline"
       - name: queue.Queue
         category: concurrent
+        communication: thread
         package: stdlib
         rationale: "Threading MPMC blocking queue"
       - name: asyncio.Queue
         category: async
+        communication: async
         package: stdlib
         rationale: "Event-loop queue"
 
@@ -282,14 +289,17 @@ languages:
     queues:
       - name: std-mpsc
         category: concurrent
+        communication: thread
         crate: std
         rationale: "Standard library MPSC channel"
       - name: crossbeam-channel
         category: concurrent
+        communication: thread
         crate: crossbeam-channel
         rationale: "MPMC channel used in production Rust"
       - name: tokio-mpsc
         category: async
+        communication: async
         crate: tokio
         rationale: "Tokio unbounded MPSC"
 
@@ -305,10 +315,12 @@ languages:
     queues:
       - name: mutex-queue
         category: locked
+        communication: thread
         library: harness
         rationale: "pthread mutex + ring as locked baseline"
       - name: spsc-ring
         category: spsc
+        communication: thread
         library: harness
         rationale: "Single-producer single-consumer ring buffer"
 
@@ -325,13 +337,16 @@ languages:
     queues:
       - name: Array
         category: locked
+        communication: thread
         package: builtin
         rationale: "Array push/shift SPSC baseline"
       - name: fastq
         category: concurrent
+        communication: thread
         package: fastq
         rationale: "Fast in-process job queue"
       - name: p-queue
         category: async
+        communication: async
         package: p-queue
-        rationale: "Promise concurrency queue"
+        rationale: "Promise concurrency limiter — not a handoff queue"

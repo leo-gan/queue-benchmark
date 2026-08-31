@@ -7,7 +7,8 @@ measurements are for, what is timed, and where configuration lives.
 |--------------|---------|
 | Statistics (warmup, outliers, confidence intervals) | [Analysis methodology](ANALYSIS_METHODOLOGY.md) |
 | Payload shapes and size knobs | [Test data](test_data_configuration.md) |
-| locked vs concurrent vs async | [Queue categories](queue_categories.md) |
+| Thread vs async vs families | [Queue categories](queue_categories.md) |
+| Tests and how to read a result | [Benchmark design](BENCHMARK_DESIGN.md) |
 | How to add another language | [Adding a language](ADDING_A_LANGUAGE.md) |
 | How to add one library | [Adding a queue](ADDING_A_QUEUE.md) |
 
@@ -70,11 +71,14 @@ code can be reused. Mapping:
 | `TimeSer` | Enqueue ns |
 | `TimeDeser` | Dequeue ns |
 | `TimeSerAndDeser` | Handoff ns |
-| `StringOrStream` | `bytes` = SPSC, `stream` = MPMC |
+| `StringOrStream` | `bytes` = **SPSC**, `stream` = **MPMC** (not I/O) |
 | `Size` | Payload bytes |
 
 ## Patterns
 
-- **SPSC** (`bytes`): one producer, one consumer. Every library must implement this.
-- **MPMC** (`stream`): two producers, two consumers. Libraries that cannot do MPMC
+- **SPSC** (CSV `bytes`): one producer, one consumer. Every library must implement this.
+- **MPMC** (CSV `stream`): two producers, two consumers. Libraries that cannot do MPMC
   skip the cell rather than fake it.
+
+The word *stream* is a leftover ABI name. The dashboard and docs say SPSC / MPMC.
+See [Benchmark design](BENCHMARK_DESIGN.md).

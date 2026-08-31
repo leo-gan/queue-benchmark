@@ -6,5 +6,6 @@
 2. Do not enqueue items during prepare “to warm the queue.”
 3. Write every repetition, including index `0`. Analysis drops warmup.
 4. A failed fidelity check is an error row, not a fast time.
-5. Label must match work: if the CSV says `stream` (MPMC), two producers and
-   two consumers actually ran. Otherwise skip the cell.
+5. Label must match work: if the cell is **MPMC** (CSV `stream`), two producers
+   and two consumers actually ran. Otherwise skip the cell. Do not call this
+   a stream API.
