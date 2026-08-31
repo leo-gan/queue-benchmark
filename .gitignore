@@ -113,6 +113,7 @@ plans/
 # -----------------------------------------------------------------------------
 dashboard/node_modules/
 dashboard/dist/
+dashboard/public/logs
 docs/dashboard/
 
 !dashboard/public/data/
