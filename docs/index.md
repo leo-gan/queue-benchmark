@@ -1,11 +1,35 @@
-# Queue Benchmark
+---
+hide:
+  - title
+---
 
-Welcome to the Cross-Language Queue Benchmark project!
+# Multi-Language Queue Benchmark
 
-This benchmark suite evaluates the performance of various queue packages across C#, Python, JavaScript, Rust, and C.
+Fair, reproducible measurements of **in-process queue libraries** across five languages.
 
-## Getting Started
+This is a **measurement lab**, not a leaderboard of “the fastest queue in the world.”
+Compare queues **inside one language**. Cross-language times are directional only.
 
-1. Run `./install.sh` to install all dependencies.
-2. Run data generator: `python3 datasets/generate_test_data.py`.
-3. Run the benchmarks in the respective language folders.
+| Go here | Why |
+|---------|-----|
+| [Architecture](analysis/architecture.md) | How the suite is built |
+| [Modes](analysis/modes.md) | smoke / all-single / full / research |
+| [Metrics](analysis/METRICS.md) | What the columns mean (enqueue / dequeue / handoff) |
+| [Adding a queue](analysis/ADDING_A_QUEUE.md) | Drop in one library |
+| [Adding a language](analysis/ADDING_A_LANGUAGE.md) | New runner contract |
+| [Queues 101](theory/101/index.md) | Types, backpressure, lock vs lock-free |
+
+## Languages
+
+- [C](c/index.md)
+- [C#](c-sharp/index.md)
+- [JavaScript](javascript/index.md)
+- [Python](python/index.md)
+- [Rust](rust/index.md)
+
+## Quick start
+
+```bash
+./scripts/check-host-requirements.sh python
+./python/scripts/run-benchmarks.sh smoke
+```

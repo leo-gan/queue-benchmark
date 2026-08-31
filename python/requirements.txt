@@ -1,7 +1,0 @@
-janus
-redis
-rq
-celery
-pyzmq
-aioqueue
-aiorwlock

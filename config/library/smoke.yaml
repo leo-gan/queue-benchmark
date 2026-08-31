@@ -1,0 +1,17 @@
+# Run config: smoke (CI / fast path)
+id: smoke
+description: "Minimal matrix — message payload, single instance, SPSC only"
+data_model_version: 2
+
+types:
+  - type_id: message
+    type_config: {}
+
+data_type_instance_count: [1]
+
+compression:
+  mode: none
+
+execution:
+  mode: smoke
+  io_modes: [bytes]

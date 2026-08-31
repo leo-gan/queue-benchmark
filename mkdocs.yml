@@ -1,8 +1,80 @@
-site_name: Queue Benchmark
+site_name: Multi-Language Queue Benchmark
+site_description: Fair multi-language queue benchmarks — live dashboard, course, and open methodology.
+site_url: https://leo-gan.github.io/queue-benchmark/
+repo_url: https://github.com/leo-gan/queue-benchmark
+repo_name: leo-gan/queue-benchmark
+
+exclude_docs: |
+  dashboard/logs/**
+
 theme:
   name: material
+  custom_dir: docs_theme
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.tracking
+    - navigation.instant
+    - navigation.top
+    - toc.follow
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: deep purple
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: deep purple
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+plugins:
+  - search
+
+markdown_extensions:
+  - attr_list
+  - admonition
+  - pymdownx.details
+  - pymdownx.highlight:
+      use_pygments: false
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+
+extra_css:
+  - stylesheets/languages-nav.css
+  - stylesheets/site-home.css
+extra_javascript:
+  - javascripts/languages-nav.js
+
 nav:
-  - Home: index.md
-  - Methodology: methodology.md
-  - Languages: languages.md
-  - Custom Data: custom_data.md
+  - Learn:
+      - Overview: theory/101/index.md
+  - Languages:
+      - C:
+          - Overview: c/index.md
+      - C#:
+          - Overview: c-sharp/index.md
+      - JavaScript:
+          - Overview: javascript/index.md
+      - Python:
+          - Overview: python/index.md
+      - Rust:
+          - Overview: rust/index.md
+  - Benchmarks:
+      - Overview: analysis/index.md
+      - Architecture: analysis/architecture.md
+      - Timing honesty: analysis/TIMING_HONESTY.md
+      - Modes: analysis/modes.md
+      - Categories: analysis/queue_categories.md
+      - Methodology: analysis/ANALYSIS_METHODOLOGY.md
+      - Metrics: analysis/METRICS.md
+      - Test Data: analysis/test_data_configuration.md
+      - Adding a Queue: analysis/ADDING_A_QUEUE.md
+      - Adding a Language: analysis/ADDING_A_LANGUAGE.md
+  - Experiments: experiments/index.md

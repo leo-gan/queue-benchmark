@@ -1,0 +1,337 @@
+# =============================================================================
+# Multi-Language Queue Benchmark — Master Configuration
+# =============================================================================
+# Single source of truth for runners, analysis, and documentation.
+# Language-specific overrides live under `languages.<lang>`.
+# Add a new language by copying an existing block and implementing the runner.
+# =============================================================================
+
+version: "2.0.0"
+
+project:
+  name: "Multi-Language Queue Benchmark"
+  description: >
+    Scientific, multi-language benchmark suite for evaluating in-process queue
+    libraries. Supports researchers (reproducible statistics), library authors
+    (version A vs B), system integrators (custom payloads), and maintainers
+    (add languages without rewriting analysis).
+  license: MIT
+  output_schema_version: "1.1"
+
+reproducibility:
+  random_seed: 42
+  single_threaded: true
+  # How many leading repetitions are treated as warmup *by analysis only*.
+  # Runners MUST still write those rows (RepetitionIndex 0..n-1).
+  warmup_repetitions: 1
+  capture_environment: true
+  schedule:
+    strategy: block_shuffle
+    record_run_order: true
+
+modes:
+  smoke:
+    repetitions: 2
+    description: "Minimal sanity run (CI fast path)"
+  all-single:
+    repetitions: 10
+    description: "Quick full-matrix pass"
+  full:
+    repetitions: 100
+    description: "Publication-quality run"
+  research:
+    repetitions: 500
+    description: "High-power statistical study"
+
+data_model_v2:
+  enabled: true
+  default: current
+  catalog_file: "schemas/data_catalog_v2.yaml"
+  library_root: "config/library"
+  default_run_config: "config/library/default.yaml"
+  smoke_run_config: "config/library/smoke.yaml"
+  schemas_root: "schemas/v2"
+  generate_script: "scripts/schemas/generate-all.sh"
+
+# Payload shapes. Catalog is normative; names are type_id values.
+# For queues these are payload sizes / shapes, not object graphs.
+test_data:
+  catalog_file: "schemas/data_catalog_v2.yaml"
+  types:
+    - name: message
+      category: flat_mixed
+      description: "Small message payload (~256 B)"
+      supports_circular: false
+    - name: document
+      category: nested
+      description: "Larger document payload (~4 KiB)"
+      supports_circular: false
+    - name: telemetry
+      category: numeric_bulk
+      description: "Numeric bulk payload (~1 KiB)"
+      supports_circular: false
+    - name: strings
+      category: text_bulk
+      description: "Text bulk payload (~2 KiB)"
+      supports_circular: false
+    - name: event
+      category: envelope
+      description: "Event envelope payload (~512 B)"
+      supports_circular: false
+
+# Pattern axis (CSV StringOrStream): bytes = SPSC, stream = MPMC.
+io_modes:
+  - name: bytes
+    aliases: [string, buffer, spsc]
+    description: "Single producer, single consumer"
+  - name: stream
+    aliases: [stream, mpmc]
+    description: "Multi producer, multi consumer (when the library supports it)"
+
+# CSV ABI is shared with serializer-benchmark so analysis/dashboard reuse.
+# Domain mapping is documented in README and docs/analysis/METRICS.md.
+csv_schema:
+  required_columns:
+    - Language
+    - StringOrStream
+    - TestDataName
+    - Repetitions
+    - RepetitionIndex
+    - SerializerName
+    - SerializerVersion
+    - TimeSer
+    - TimeDeser
+    - Size
+    - TimeSerAndDeser
+    - OpPerSecSer
+    - OpPerSecDeser
+    - OpPerSecSerAndDeser
+  optional_columns:
+    - MemoryPeakBytes
+    - FidelityScore
+    - ErrorFlag
+    - NativeKind
+    - StreamMode
+    - RunOrder
+    - SchedulePosition
+  time_unit: nanoseconds
+
+statistics:
+  exclude_warmup: true
+  outlier_method: iqr
+  iqr_k: 1.5
+  min_samples_for_outlier_filter: 10
+  min_samples_for_inference: 5
+  report_mean: true
+  report_median: true
+  report_std: true
+  report_mad: true
+  report_cv: true
+  report_percentiles: [5, 25, 50, 75, 95, 99]
+  report_min_max: true
+  bootstrap:
+    enabled: true
+    iterations: 2000
+    confidence_level: 0.95
+    seed: 42
+    method: percentile
+  effect_sizes:
+    enabled: true
+    methods: [cliffs_delta, hedges_g]
+    cliffs_delta_thresholds:
+      negligible: 0.147
+      small: 0.33
+      medium: 0.474
+  hypothesis_tests:
+    enabled: true
+    method: mann_whitney_u
+    alpha: 0.05
+    multiple_comparison_correction: holm
+  throughput_from: mean_time_ns
+
+paths:
+  logs_root: logs
+  reports_root: reports
+  schemas_root: schemas
+  config_root: config
+  language_log_dirs:
+    csharp: logs/csharp
+    python: logs/python
+    rust: logs/rust
+    c: logs/c
+    javascript: logs/javascript
+  log_filename: "YYYY-MM-DD-HHMMSS.csv"
+  configs_filename: "YYYY-MM-DD-HHMMSS.configs.json"
+  errors_filename: "YYYY-MM-DD-HHMMSS.errors.csv"
+  baseline_filename: reports/baseline.json
+
+run_sidecar:
+  filename_suffix: "configs.json"
+  include_environment: true
+  include_dataset: true
+  include_serializers: true
+
+metrics:
+  catalog_version: "1"
+  multi_way:
+    include_importance: [high]
+    rank_by: total_median_ns
+    secondary_rank_by: median_size_bytes
+  pairwise:
+    include_importance: [high, medium, low]
+  importance:
+    total_median_ns: high
+    ser_median_ns: high
+    deser_median_ns: high
+    avg_time_total_ns: medium
+    avg_time_ser_ns: medium
+    avg_time_deser_ns: medium
+    total_mean_ns: medium
+    ser_mean_ns: medium
+    deser_mean_ns: medium
+    avg_ops_per_sec: high
+    median_size_bytes: high
+    mean_fidelity: high
+    serializer_version: high
+    runs: high
+    runs_raw: medium
+    warmup_skipped: medium
+    outliers_removed: medium
+    total_ci_low_ns: medium
+    total_ci_high_ns: medium
+    total_p95_ns: medium
+    total_p99_ns: medium
+    total_cv: medium
+    total_mad_ns: medium
+    total_std_ns: medium
+    mean_memory_peak_bytes: medium
+    effect_vs_fastest_cliffs_delta: medium
+    effect_vs_fastest_cliffs_label: medium
+    effect_vs_fastest_hedges_g: low
+    mann_whitney_u: medium
+    p_value: medium
+    p_value_holm: medium
+
+regression:
+  enabled: true
+  threshold_percent: 10.0
+  metric: total_median_ns
+  combine: and
+  direction: higher_is_worse
+  cliffs_delta:
+    enabled: true
+    min_delta: 0.147
+    require_for_fail: false
+  store_samples: true
+  max_samples_stored: 500
+
+languages:
+  csharp:
+    display_name: "C# (.NET)"
+    enabled: true
+    runner_dir: c-sharp
+    runner_script: scripts/run-benchmarks.sh
+    log_dir: logs/csharp
+    time_unit: nanoseconds
+    docs_dir: docs/c-sharp
+    queues:
+      - name: Queue+lock
+        category: locked
+        package: stdlib
+        rationale: "Locked System.Collections.Generic.Queue baseline"
+      - name: ConcurrentQueue
+        category: concurrent
+        package: stdlib
+        rationale: "Lock-free-ish MPMC concurrent queue"
+      - name: Channel
+        category: async
+        package: stdlib
+        rationale: "System.Threading.Channels unbounded channel"
+
+  python:
+    display_name: Python
+    enabled: true
+    runner_dir: python
+    runner_script: scripts/run-benchmarks.sh
+    log_dir: logs/python
+    time_unit: nanoseconds
+    docs_dir: docs/python
+    queues:
+      - name: deque-lock
+        category: locked
+        package: stdlib
+        rationale: "collections.deque + threading.Lock baseline"
+      - name: queue.Queue
+        category: concurrent
+        package: stdlib
+        rationale: "Threading MPMC blocking queue"
+      - name: asyncio.Queue
+        category: async
+        package: stdlib
+        rationale: "Event-loop queue"
+
+  rust:
+    display_name: Rust
+    enabled: true
+    runner_dir: rust
+    runner_script: scripts/run-benchmarks.sh
+    log_dir: logs/rust
+    time_unit: nanoseconds
+    docs_dir: docs/rust
+    cargo_package: queue-benchmark-rust
+    queues:
+      - name: std-mpsc
+        category: concurrent
+        crate: std
+        rationale: "Standard library MPSC channel"
+      - name: crossbeam-channel
+        category: concurrent
+        crate: crossbeam-channel
+        rationale: "MPMC channel used in production Rust"
+      - name: tokio-mpsc
+        category: async
+        crate: tokio
+        rationale: "Tokio unbounded MPSC"
+
+  c:
+    display_name: C
+    enabled: true
+    runner_dir: c
+    runner_script: scripts/run-benchmarks.sh
+    log_dir: logs/c
+    time_unit: nanoseconds
+    docs_dir: docs/c
+    build_system: cmake
+    queues:
+      - name: mutex-queue
+        category: locked
+        library: harness
+        rationale: "pthread mutex + ring as locked baseline"
+      - name: spsc-ring
+        category: spsc
+        library: harness
+        rationale: "Single-producer single-consumer ring buffer"
+
+  javascript:
+    display_name: "JavaScript (Node.js)"
+    enabled: true
+    runner_dir: javascript
+    runner_script: scripts/run-benchmarks.sh
+    log_dir: logs/javascript
+    time_unit: nanoseconds
+    docs_dir: docs/javascript
+    runtime: node
+    min_node_version: "18"
+    queues:
+      - name: Array
+        category: locked
+        package: builtin
+        rationale: "Array push/shift SPSC baseline"
+      - name: fastq
+        category: concurrent
+        package: fastq
+        rationale: "Fast in-process job queue"
+      - name: p-queue
+        category: async
+        package: p-queue
+        rationale: "Promise concurrency queue"
