@@ -49,7 +49,7 @@ cd analysis && uv run analyze-benchmarks
 
 ## Run config / environment capture
 
-Sidecar `*.configs.json` beside each result CSV (hardware, OS, runtimes, optional dataset/serializer blocks). Older `*.environment.json` files are still loaded.
+Sidecar `*.configs.json` beside each result CSV (hardware, OS, runtimes, optional dataset/queue blocks). Older `*.environment.json` files are still loaded.
 
 ```python
 from benchmark_analysis import capture_environment, load_environment

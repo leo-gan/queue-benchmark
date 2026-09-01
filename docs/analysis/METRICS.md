@@ -23,8 +23,8 @@ Derived first-class stats (not CSV columns):
 | `total_p999_ns` | 99.9th percentile of handoff ns | high |
 | `msgs_per_cpu_sec` | `DataTypeInstanceCount / mean(CpuTimeNs)/1e9` | high |
 
-`msgs_per_cpu_sec` is null when `CpuTimeNs` is missing (Rust in this
-pass). Do not invent a CPU-second number from wall time.
+`msgs_per_cpu_sec` is null when `CpuTimeNs` is missing. Do not invent a
+CPU-second number from wall time.
 
 Column names are the shared ABI with serializer-benchmark. Docs always use
 the queue words; the CSV keeps the original names so analysis and dashboard
