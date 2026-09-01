@@ -46,6 +46,7 @@ languages:
     enabled: true
     libraries:
       - {name: tokio-mpsc, role: async MPSC}
+      - {name: async-channel, role: async MPMC}
   - id: csharp
     enabled: true
     libraries:

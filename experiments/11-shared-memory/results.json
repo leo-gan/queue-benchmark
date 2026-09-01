@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-01T20:02:14Z",
+  "generated_at": "2026-09-01T20:08:44Z",
   "languages": {
     "python": {
       "status": "ok",
@@ -8,9 +8,9 @@
           "library": "shared-ring",
           "pattern": "bytes",
           "n": 9,
-          "median_handoff_ns": 46068594.0,
-          "p50_ns": 46068594.0,
-          "mean_ns": 46413013.44444445,
+          "median_handoff_ns": 45315384.0,
+          "p50_ns": 45315384.0,
+          "mean_ns": 45477308.88888889,
           "rel_to_fastest": 1.0
         }
       ]
@@ -22,9 +22,9 @@
           "library": "shared-ring",
           "pattern": "bytes",
           "n": 9,
-          "median_handoff_ns": 578126.0,
-          "p50_ns": 578126.0,
-          "mean_ns": 582163.8888888889,
+          "median_handoff_ns": 566847.0,
+          "p50_ns": 566847.0,
+          "mean_ns": 571534.5555555555,
           "rel_to_fastest": 1.0
         }
       ]
@@ -36,9 +36,9 @@
           "library": "shared-ring",
           "pattern": "bytes",
           "n": 9,
-          "median_handoff_ns": 19750945.0,
-          "p50_ns": 19750945.0,
-          "mean_ns": 19854474.111111112,
+          "median_handoff_ns": 19743922.0,
+          "p50_ns": 19743922.0,
+          "mean_ns": 19780607.555555556,
           "rel_to_fastest": 1.0
         }
       ]
@@ -50,9 +50,9 @@
           "library": "shared-ring",
           "pattern": "bytes",
           "n": 9,
-          "median_handoff_ns": 40054600.0,
-          "p50_ns": 40054600.0,
-          "mean_ns": 39377200.0,
+          "median_handoff_ns": 39483800.0,
+          "p50_ns": 39483800.0,
+          "mean_ns": 40375922.222222224,
           "rel_to_fastest": 1.0
         }
       ]
@@ -64,9 +64,9 @@
           "library": "shared-ring",
           "pattern": "bytes",
           "n": 9,
-          "median_handoff_ns": 54060.0,
-          "p50_ns": 54060.0,
-          "mean_ns": 74303.11111111111,
+          "median_handoff_ns": 57036.0,
+          "p50_ns": 57036.0,
+          "mean_ns": 105170.77777777778,
           "rel_to_fastest": 1.0
         }
       ]

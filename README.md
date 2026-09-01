@@ -33,7 +33,7 @@ Compare in-process queue libraries across **Python, Rust, JavaScript, C#, and C*
 - [C# (.NET)](https://leo-gan.github.io/queue-benchmark/c-sharp/) — `Queue+lock`, `ConcurrentQueue`, `Channel`
 - [JavaScript](https://leo-gan.github.io/queue-benchmark/javascript/) — `Array`, `denque`, `yocto-queue`, `fastq`, `p-queue` (scheduler)
 - [Python](https://leo-gan.github.io/queue-benchmark/python/) — `deque-lock`, `queue.Queue`, `queue.SimpleQueue`, `asyncio.Queue`, `janus`, `spsc-ring`
-- [Rust](https://leo-gan.github.io/queue-benchmark/rust/) — `std-mpsc`, `crossbeam-channel`, `tokio-mpsc`, `crossbeam-queue`
+- [Rust](https://leo-gan.github.io/queue-benchmark/rust/) — `std-mpsc`, `crossbeam-channel`, `flume`, `tokio-mpsc`, `async-channel`, `crossbeam-queue`
 
 [Adding a language](https://leo-gan.github.io/queue-benchmark/analysis/ADDING_A_LANGUAGE/) · [Adding a queue](https://leo-gan.github.io/queue-benchmark/analysis/ADDING_A_QUEUE/).
 

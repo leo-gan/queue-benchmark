@@ -2,21 +2,21 @@
 
 | Library | Pattern | Median handoff (ns) | vs fastest | n |
 |---------|---------|--------------------:|-----------:|--:|
-| asyncio.Queue | 1p4c | 96997 | 1.00× | 9 |
-| asyncio.Queue | 4p4c | 103790 | 1.07× | 9 |
-| asyncio.Queue | 4p1c | 108625 | 1.12× | 9 |
-| janus | 1p4c | 165471 | 1.71× | 9 |
-| janus | 4p4c | 174757 | 1.80× | 9 |
-| janus | 4p1c | 176988 | 1.82× | 9 |
-| queue.SimpleQueue | 1p4c | 204771 | 2.11× | 9 |
-| queue.SimpleQueue | 4p1c | 221464 | 2.28× | 9 |
-| deque-lock | 4p1c | 230685 | 2.38× | 9 |
-| steal-deque | 1p4c | 233503 | 2.41× | 9 |
-| steal-deque | 4p1c | 235249 | 2.43× | 9 |
-| deque-lock | 1p4c | 259173 | 2.67× | 9 |
-| queue.Queue | 1p4c | 284069 | 2.93× | 9 |
-| queue.Queue | 4p1c | 305555 | 3.15× | 9 |
-| queue.SimpleQueue | 4p4c | 317868 | 3.28× | 9 |
-| deque-lock | 4p4c | 351906 | 3.63× | 9 |
-| steal-deque | 4p4c | 374146 | 3.86× | 9 |
-| queue.Queue | 4p4c | 418776 | 4.32× | 9 |
+| asyncio.Queue | 4p1c | 104582 | 1.00× | 9 |
+| asyncio.Queue | 1p4c | 112222 | 1.07× | 9 |
+| asyncio.Queue | 4p4c | 117047 | 1.12× | 9 |
+| janus | 4p1c | 180490 | 1.73× | 9 |
+| janus | 4p4c | 203029 | 1.94× | 9 |
+| janus | 1p4c | 203374 | 1.94× | 9 |
+| queue.SimpleQueue | 4p1c | 213536 | 2.04× | 9 |
+| deque-lock | 4p1c | 261771 | 2.50× | 9 |
+| steal-deque | 4p1c | 267087 | 2.55× | 9 |
+| steal-deque | 1p4c | 275255 | 2.63× | 9 |
+| deque-lock | 1p4c | 275855 | 2.64× | 9 |
+| queue.SimpleQueue | 1p4c | 279675 | 2.67× | 9 |
+| queue.Queue | 1p4c | 295562 | 2.83× | 9 |
+| queue.Queue | 4p1c | 325960 | 3.12× | 9 |
+| queue.SimpleQueue | 4p4c | 352658 | 3.37× | 9 |
+| steal-deque | 4p4c | 358334 | 3.43× | 9 |
+| deque-lock | 4p4c | 395492 | 3.78× | 9 |
+| queue.Queue | 4p4c | 411082 | 3.93× | 9 |

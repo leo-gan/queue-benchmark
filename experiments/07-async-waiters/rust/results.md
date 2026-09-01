@@ -2,6 +2,8 @@
 
 | Library | Pattern | Median handoff (ns) | vs fastest | n |
 |---------|---------|--------------------:|-----------:|--:|
-| steal-deque | 1p32c | 626710 | 1.00× | 9 |
-| crossbeam-channel | 1p32c | 735159 | 1.17× | 9 |
-| crossbeam-queue | 1p32c | 756458 | 1.21× | 9 |
+| async-channel | 1p32c | 48327 | 1.00× | 9 |
+| steal-deque | 1p32c | 576311 | 11.93× | 9 |
+| crossbeam-queue | 1p32c | 591312 | 12.24× | 9 |
+| flume | 1p32c | 592306 | 12.26× | 9 |
+| crossbeam-channel | 1p32c | 694136 | 14.36× | 9 |

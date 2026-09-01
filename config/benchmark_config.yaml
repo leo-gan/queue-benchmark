@@ -372,11 +372,21 @@ languages:
         communication: thread
         crate: crossbeam-channel
         rationale: "MPMC channel used in production Rust"
+      - name: flume
+        category: concurrent
+        communication: thread
+        crate: flume
+        rationale: "Third-party MPMC; sync face only"
       - name: tokio-mpsc
         category: async
         communication: async
         crate: tokio
         rationale: "Tokio unbounded MPSC"
+      - name: async-channel
+        category: async
+        communication: async
+        crate: async-channel
+        rationale: "Runtime-agnostic async MPMC"
       - name: crossbeam-queue
         category: concurrent
         communication: thread

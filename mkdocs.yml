@@ -73,6 +73,7 @@ nav:
           - Library selection: python/library-selection.md
       - Rust:
           - Overview: rust/index.md
+          - Library selection: rust/library-selection.md
   - Benchmarks:
       - Overview: analysis/index.md
       - Design: analysis/BENCHMARK_DESIGN.md

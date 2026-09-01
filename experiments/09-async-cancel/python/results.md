@@ -2,5 +2,5 @@
 
 | Library | Pattern | Median handoff (ns) | vs fastest | n |
 |---------|---------|--------------------:|-----------:|--:|
-| asyncio.Queue | bytes | 200636 | 1.00× | 9 |
-| janus | bytes | 357239 | 1.78× | 9 |
+| asyncio.Queue | bytes | 203419 | 1.00× | 9 |
+| janus | bytes | 352508 | 1.73× | 9 |
