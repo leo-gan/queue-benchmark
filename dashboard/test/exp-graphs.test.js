@@ -7,6 +7,7 @@ import {
   flattenLanguageRows,
   isAllLang,
   mixedLanguages,
+  normalizeExperimentRow,
   peerRows,
   rowsToDelimited,
   skipReason,
@@ -14,6 +15,35 @@ import {
   totalStdUs,
 } from '../exp-export.js';
 import { figureTypesFor, sizeTreatment, usesExperimentGraphs, wrapYTick } from '../exp-charts.js';
+
+test('normalizeExperimentRow maps handoff rows onto dashboard fields', () => {
+  const row = normalizeExperimentRow({
+    library: 'queue.SimpleQueue',
+    pattern: 'bytes',
+    n: 9,
+    median_handoff_ns: 6973,
+    p50_ns: 6973,
+  });
+  assert.equal(row.total_median_ns, 6973);
+  assert.equal(row.io, 'bytes');
+  assert.equal(row.runs, 9);
+  assert.equal(row.library, 'queue.SimpleQueue');
+});
+
+test('flattenLanguageRows normalizes queue experiment payloads', () => {
+  const rows = flattenLanguageRows(
+    {
+      python: {
+        status: 'ok',
+        rows: [{ library: 'janus', pattern: 'bytes', n: 9, median_handoff_ns: 111546 }],
+      },
+    },
+    ['python']
+  );
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].total_median_ns, 111546);
+  assert.equal(rows[0].language, 'python');
+});
 
 test('totalStdUs reconstructs from mean CI', () => {
   const std = totalStdUs({

@@ -20,6 +20,7 @@ import {
   isAllLang,
   isShapeSkip,
   mixedLanguages,
+  normalizeExperimentRow,
   peerRows,
   rowsToDelimited,
   totalStdUs,
@@ -678,7 +679,10 @@ async function renderDetail(root, id) {
           label: `${langLabel(r.language)} · ${r.library}`,
         })),
       }
-    : data.languages?.[ui.lang] || {};
+    : {
+        ...(data.languages?.[ui.lang] || {}),
+        rows: (data.languages?.[ui.lang]?.rows || []).map(normalizeExperimentRow),
+      };
   const allRows = langBlock.rows || [];
   const kinds = unique(allRows, 'kind').map(String);
   const ns = unique(allRows, 'n').map(String);
