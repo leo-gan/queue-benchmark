@@ -1687,7 +1687,11 @@ function applyFilterPolicyToAllGroups({ refreshSelectors = false } = {}) {
     if (modeOptions.includes(wantMode)) {
       state.currentMode = wantMode;
     } else {
-      state.currentMode = modeOptions[0] || '';
+      // Prefer SPSC (bytes) when nothing is selected yet. Insertion order in
+      // the stats file often starts at 1p4c, which hid the usual first view.
+      const prefer = ['bytes', 'stream', '1p4c', '4p1c', '4p4c'];
+      state.currentMode =
+        prefer.find((m) => modeOptions.includes(m)) || modeOptions[0] || '';
     }
   }
 }
@@ -3411,7 +3415,7 @@ function renderTable() {
   const help = document.getElementById('detailed-analytics-help');
   if (help) {
     const scope = parseDataTypeSelection(state.currentTestData);
-    let scopeNote = ' Full roster for the current language, data type, and mode.';
+    let scopeNote = ' Full roster for the current language, payload size, and pattern.';
     if (scope.kind === 'batch_compound') {
       scopeNote =
         ` <strong>Compounded batch</strong>: mean of <code>${escapeHtml(scope.base)}@n=${scope.nA}</code> and <code>${escapeHtml(scope.base)}@n=${scope.nB}</code>.`;
@@ -3421,10 +3425,10 @@ function renderTable() {
       scopeNote = ` <strong>Compounded all</strong> (<code>all@all</code>).`;
     }
     const speedNote = isOps
-      ? ' View: <strong>Ops/s</strong> — Median, Std, P95, P99 + size.'
-      : ' View: <strong>Latency</strong> — Median, Std, P95, P99 + size.';
+      ? ' View: <strong>Ops/s</strong> — Median, Std, P95, P99, and messages per CPU-second.'
+      : ' View: <strong>Latency</strong> — Median, Std, P95, P99, and messages per CPU-second.';
     const ratioNote =
-      ' Median &amp; size: <code>×base</code> vs baseline (green better / red worse).' +
+      ' Median: <code>×base</code> vs baseline (green better / red worse).' +
       ' Std/P95/P99: <code>×med</code> vs that row’s median.';
     const paretoNote = ' <span style="color:var(--color-blue)">Blue rows</span> = Pareto-optimal.';
     if (baselineGroup) {
@@ -3439,7 +3443,7 @@ function renderTable() {
     }
   }
 
-  const colCount = 1 + (showHonesty ? 1 : 0) + metricKeys.length;
+  const colCount = 1 + metricKeys.length;
   if (rows.length === 0) {
     const tr = document.createElement('tr');
     tr.innerHTML = `<td colspan="${colCount}" style="text-align:center;color:var(--text-muted);">No queues match search query</td>`;
