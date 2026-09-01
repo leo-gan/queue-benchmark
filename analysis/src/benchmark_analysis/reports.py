@@ -120,7 +120,7 @@ def _records_to_melted_df(
     ser = df[
         ["SerializerName", "TestDataName", "StringOrStream", "TimeSer", "Language", "RepetitionIndex"]
     ].copy()
-    ser["Operation"] = "Serialize"
+    ser["Operation"] = "Enqueue"
     ser = ser.rename(columns={"TimeSer": "Time_ns"})
     if "OpPerSecSer" in df.columns:
         ser["OpPerSec"] = df["OpPerSecSer"].values
@@ -130,7 +130,7 @@ def _records_to_melted_df(
     deser = df[
         ["SerializerName", "TestDataName", "StringOrStream", "TimeDeser", "Language", "RepetitionIndex"]
     ].copy()
-    deser["Operation"] = "Deserialize"
+    deser["Operation"] = "Dequeue"
     deser = deser.rename(columns={"TimeDeser": "Time_ns"})
     if "OpPerSecDeser" in df.columns:
         deser["OpPerSec"] = df["OpPerSecDeser"].values
@@ -202,9 +202,9 @@ def _generate_violin_plot(
             .mean()
             .rename(columns={"Time_us": "Mean_us"})
         )
-        hue_order = ["Serialize", "Deserialize"]
+        hue_order = ["Enqueue", "Dequeue"]
         # Stable palette matching historical violin hues (blue / orange).
-        palette = {"Serialize": "#4c72b0", "Deserialize": "#dd8452"}
+        palette = {"Enqueue": "#4c72b0", "Dequeue": "#dd8452"}
 
         n_ser = max(len(order), 1)
         fig_h = max(5.5, 0.55 * n_ser + 2.2)
@@ -232,7 +232,7 @@ def _generate_violin_plot(
             linewidth=0.4,
         )
         ax_bar.set_xlabel("Mean time (µs)")
-        ax_bar.set_ylabel("Serializer")
+        ax_bar.set_ylabel("Queue")
         ax_bar.set_title("Mean (rank)", fontsize=11)
         bar_hi = float(means["Mean_us"].max()) if len(means) else 0.0
         ax_bar.set_xlim(0, bar_hi * 1.12 if bar_hi > 0 else None)
@@ -907,7 +907,7 @@ def _config_section_md(lang_id: str, csv_path: Optional[str]) -> str:
         ser = doc.get("serializers") if isinstance(doc.get("serializers"), dict) else {}
         items = ser.get("items") if isinstance(ser.get("items"), list) else []
         if items:
-            body.append("- **Serializers (from CSV):**")
+            body.append("- **Queues (from CSV):**")
             for it in items[:40]:
                 if not isinstance(it, dict):
                     continue
@@ -1471,7 +1471,7 @@ def generate_language_results_pages(
                 "(thickness shows where trials cluster)."
             )
             lines.append(
-                "- **Top 5 only:** charts show the five fastest serializers by mean total time "
+                "- **Top 5 only:** charts show the five fastest queues by mean total time "
                 "for that data type so the picture stays readable. Tables above still list everyone."
             )
             lines.append(
