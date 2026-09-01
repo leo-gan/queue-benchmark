@@ -52,8 +52,10 @@ languages:
     libraries:
       - {name: std-mpsc, role: standard MPSC}
       - {name: crossbeam-channel, role: MPMC channel}
+      - {name: flume, role: third-party MPMC}
       - {name: crossbeam-queue, role: lock-free MPMC}
       - {name: tokio-mpsc, role: async MPSC}
+      - {name: async-channel, role: async MPMC}
   - id: javascript
     enabled: true
     libraries:

@@ -283,6 +283,94 @@ fn bench_crossbeam_queue(items: &[Vec<u8>], producers: usize, consumers: usize) 
     (wall / 2, wall - wall / 2)
 }
 
+fn bench_flume(items: &[Vec<u8>], producers: usize, consumers: usize) -> (u128, u128) {
+    let (tx, rx) = flume::unbounded();
+    if producers == 1 && consumers == 1 {
+        let t0 = Instant::now();
+        for it in items {
+            tx.send(it.clone()).unwrap();
+        }
+        let enq = t0.elapsed().as_nanos();
+        let t1 = Instant::now();
+        for _ in items {
+            let _ = rx.recv().unwrap();
+        }
+        return (enq, t1.elapsed().as_nanos());
+    }
+    let batches = split_items(items, producers);
+    let n = items.len();
+    let t0 = Instant::now();
+    let mut handles = Vec::new();
+    for batch in batches {
+        let tx = tx.clone();
+        handles.push(thread::spawn(move || {
+            for it in batch {
+                tx.send(it).unwrap();
+            }
+        }));
+    }
+    let per = n / consumers.max(1);
+    let extra = n % consumers.max(1);
+    for i in 0..consumers {
+        let rx = rx.clone();
+        let take = per + if i == 0 { extra } else { 0 };
+        handles.push(thread::spawn(move || {
+            for _ in 0..take {
+                let _ = rx.recv().unwrap();
+            }
+        }));
+    }
+    for h in handles {
+        h.join().unwrap();
+    }
+    let wall = t0.elapsed().as_nanos();
+    (wall / 2, wall - wall / 2)
+}
+
+async fn bench_async_channel(items: &[Vec<u8>], producers: usize, consumers: usize) -> (u128, u128) {
+    let (tx, rx) = async_channel::unbounded();
+    if producers == 1 && consumers == 1 {
+        let t0 = Instant::now();
+        for it in items {
+            tx.send(it.clone()).await.unwrap();
+        }
+        let enq = t0.elapsed().as_nanos();
+        let t1 = Instant::now();
+        for _ in items {
+            let _ = rx.recv().await.unwrap();
+        }
+        return (enq, t1.elapsed().as_nanos());
+    }
+    let batches = split_items(items, producers);
+    let n = items.len();
+    let t0 = Instant::now();
+    let mut handles = Vec::new();
+    for batch in batches {
+        let tx = tx.clone();
+        handles.push(tokio::spawn(async move {
+            for it in batch {
+                tx.send(it).await.unwrap();
+            }
+        }));
+    }
+    let per = n / consumers.max(1);
+    let extra = n % consumers.max(1);
+    for i in 0..consumers {
+        let rx = rx.clone();
+        let take = per + if i == 0 { extra } else { 0 };
+        handles.push(tokio::spawn(async move {
+            for _ in 0..take {
+                let _ = rx.recv().await.unwrap();
+            }
+        }));
+    }
+    for h in handles {
+        h.await.unwrap();
+    }
+    let wall = t0.elapsed().as_nanos();
+    (wall / 2, wall - wall / 2)
+}
+
 async fn bench_tokio(items: &[Vec<u8>]) -> (u128, u128) {
     let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel();
     let t0 = Instant::now();
@@ -561,6 +649,26 @@ async fn bench_tokio_cancel(waiters: usize) -> (u128, u128) {
     (t0.elapsed().as_nanos(), 0)
 }
 
+async fn bench_async_channel_cancel(waiters: usize) -> (u128, u128) {
+    let (_tx, rx) = async_channel::unbounded::<Vec<u8>>();
+    let mut handles = Vec::new();
+    for _ in 0..waiters.max(8) {
+        let rx = rx.clone();
+        handles.push(tokio::spawn(async move {
+            let _ = rx.recv().await;
+        }));
+    }
+    tokio::time::sleep(std::time::Duration::from_millis(1)).await;
+    let t0 = Instant::now();
+    for h in &handles {
+        h.abort();
+    }
+    for h in handles {
+        let _ = h.await;
+    }
+    (t0.elapsed().as_nanos(), 0)
+}
+
 fn maybe_child() -> bool {
     match env::var("BENCHMARK_CHILD").unwrap_or_default().as_str() {
         "pipe" => {
@@ -577,7 +685,7 @@ fn maybe_child() -> bool {
 
 fn kind_of(name: &str) -> &'static str {
     match name {
-        "tokio-mpsc" => "async",
+        "tokio-mpsc" | "async-channel" => "async",
         "steal-deque" => "work-stealing",
         "shared-ring" => "spsc",
         "sqlite-queue" => "durable",
@@ -635,7 +743,9 @@ async fn tokio_main() {
     let queues = [
         "std-mpsc",
         "crossbeam-channel",
+        "flume",
         "tokio-mpsc",
+        "async-channel",
         "crossbeam-queue",
         "steal-deque",
         "pipe-ipc",
@@ -659,7 +769,7 @@ async fn tokio_main() {
                 continue;
             }
             let special = env::var("BENCHMARK_SPECIAL").unwrap_or_default();
-            if special == "cancel" && name != "tokio-mpsc" {
+            if special == "cancel" && name != "tokio-mpsc" && name != "async-channel" {
                 continue;
             }
             if !special.is_empty() && opt_in(name) {
@@ -673,17 +783,25 @@ async fn tokio_main() {
                     match name {
                         "std-mpsc" => bench_std_mpsc(&items),
                         "tokio-mpsc" => bench_tokio(&items).await,
+                        "async-channel" => bench_async_channel(&items, 1, 1).await,
+                        "flume" => bench_flume(&items, 1, 1),
                         "crossbeam-queue" => bench_crossbeam_queue(&items, 1, 1),
                         "steal-deque" => bench_steal(&items, 1, 1),
                         _ => bench_crossbeam(&items, 1, 1),
                     }
                 } else if special == "cancel" {
-                    bench_tokio_cancel(items.len()).await
+                    if name == "async-channel" {
+                        bench_async_channel_cancel(items.len()).await
+                    } else {
+                        bench_tokio_cancel(items.len()).await
+                    }
                 } else {
                     match name {
                         "std-mpsc" => bench_std_mpsc(&items),
                         "crossbeam-channel" => bench_crossbeam(&items, producers, consumers),
+                        "flume" => bench_flume(&items, producers, consumers),
                         "tokio-mpsc" => bench_tokio(&items).await,
+                        "async-channel" => bench_async_channel(&items, producers, consumers).await,
                         "crossbeam-queue" => bench_crossbeam_queue(&items, producers, consumers),
                         "steal-deque" => bench_steal(&items, producers, consumers),
                         "pipe-ipc" => bench_pipe(&items),

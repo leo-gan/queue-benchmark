@@ -1,6 +1,7 @@
 # Rust Queue Benchmark
 
-`std::sync::mpsc` (MPSC), `crossbeam-channel` (MPMC), `tokio::sync::mpsc` (async).
+`std::sync::mpsc` (MPSC), `crossbeam-channel` / `flume` (MPMC),
+`tokio::sync::mpsc` and `async-channel` (async).
 
 ```bash
 cd rust

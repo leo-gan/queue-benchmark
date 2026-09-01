@@ -52,9 +52,10 @@ This document is the source of truth for the stacked PRs. Domain words change
    | scheduler | Not a handoff queue | JS `p-queue` (concurrency limiter) |
 
    Category plan: [CATEGORY_BENCHMARK_PLAN.md](CATEGORY_BENCHMARK_PLAN.md).
-   Out of scope for T/A charts: Redis, ZeroMQ, Celery, BullMQ, flume,
-   kanal, BufferBlock, rxjs. `janus` is in as category A (async face
-   only); the hybrid thread↔async path is not a category.
+   Out of scope for T/A charts: Redis, ZeroMQ, Celery, BullMQ, kanal,
+   BufferBlock, rxjs. `janus` is in as category A (async face only);
+   `flume` is in as category T (sync face only). Hybrid thread↔async
+   paths are not a category.
 
 4. **Same modes.** smoke=2, all-single=10, full=100, research=500.
 

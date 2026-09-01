@@ -10,7 +10,7 @@ See `python/results.md`.
 
 ## rust
 
-Similar set (within 15% of fastest on this sample): steal-deque
+Similar set (within 15% of fastest on this sample): async-channel
 
 See `rust/results.md`.
 
@@ -22,7 +22,7 @@ See `javascript/results.md`.
 
 ## csharp
 
-Similar set (within 15% of fastest on this sample): steal-deque, ConcurrentQueue
+Similar set (within 15% of fastest on this sample): ConcurrentQueue, Channel
 
 See `csharp/results.md`.
 

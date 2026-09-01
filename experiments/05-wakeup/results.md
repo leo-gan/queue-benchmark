@@ -10,19 +10,19 @@ See `python/results.md`.
 
 ## rust
 
-Similar set (within 15% of fastest on this sample): tokio-mpsc, std-mpsc, crossbeam-queue, crossbeam-channel, steal-deque
+Similar set (within 15% of fastest on this sample): flume, crossbeam-channel, std-mpsc, crossbeam-queue, tokio-mpsc, async-channel, steal-deque
 
 See `rust/results.md`.
 
 ## javascript
 
-Similar set (within 15% of fastest on this sample): fastq, yocto-queue, denque, Array, p-queue, steal-deque
+Similar set (within 15% of fastest on this sample): steal-deque, fastq, yocto-queue, denque, p-queue, Array
 
 See `javascript/results.md`.
 
 ## csharp
 
-Similar set (within 15% of fastest on this sample): ConcurrentQueue, Queue+lock, Channel
+Similar set (within 15% of fastest on this sample): Queue+lock, Channel, ConcurrentQueue
 
 See `csharp/results.md`.
 

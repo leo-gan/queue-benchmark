@@ -53,6 +53,7 @@ languages:
     enabled: true
     libraries:
       - {name: crossbeam-channel, role: concurrent}
+      - {name: flume, role: third-party MPMC}
       - {name: steal-deque, role: work-stealing}
   - id: c
     enabled: true
