@@ -223,7 +223,7 @@ function updateScatterChart(groups, paretoNames, metric) {
         y: {
           title: {
             display: true,
-            text: 'Serialized size (bytes)',
+            text: 'Payload size (bytes)',
             color: tickColor,
             font: { ...fontStyle, weight: 'bold' },
           },

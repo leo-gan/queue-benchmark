@@ -3071,9 +3071,11 @@ function metricHigherIsBetter(key) {
 
 function metricGroupName(key) {
   if (key.includes('ops')) return 'Throughput';
-  if (key.startsWith('ser_') || key.includes('time_ser')) return 'Serialize';
-  if (key.startsWith('deser_') || key.includes('time_deser')) return 'Deserialize';
-  if (key.startsWith('total_') || key.includes('time_total')) return 'Total time';
+  if (key.includes('and_deser') || key.startsWith('total_') || key.includes('time_total')) {
+    return 'Handoff';
+  }
+  if (key.startsWith('deser_') || key.includes('time_deser')) return 'Dequeue';
+  if (key.startsWith('ser_') || key.includes('time_ser')) return 'Enqueue';
   if (key.includes('size') || key.includes('bytes') || key.includes('memory')) return 'Size & memory';
   if (key.includes('fidelity') || key.includes('effect')) return 'Quality';
   if (key.includes('run') || key.includes('warmup') || key.includes('outlier')) return 'Samples';
@@ -3092,10 +3094,19 @@ function groupMetrics(keys) {
 
 function metricLabel(key) {
   return key
+    .replace(/time_deser/g, 'dequeue')
+    .replace(/time_ser_and_deser/g, 'handoff')
+    .replace(/time_ser/g, 'enqueue')
+    .replace(/time_total/g, 'handoff')
+    .replace(/^deser_/, 'dequeue_')
+    .replace(/^ser_/, 'enqueue_')
+    .replace(/^total_/, 'handoff_')
     .replace(/_ns$/g, '')
     .replace(/_bytes$/g, '')
     .replace(/_per_sec$/g, '')
-    .replace(/_/g, ' ');
+    .replace(/_/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function openMetricsPanel(open) {

@@ -788,11 +788,11 @@ def main():
         comps = compare_versions(sa, sb, config=stats_cfg)
         out_path = str(reports_root / "VERSION_COMPARE.md")
         with open(out_path, "w", encoding="utf-8") as f:
-            f.write("# Serializer Version Comparison (A vs B)\n\n")
+            f.write("# Queue Version Comparison (A vs B)\n\n")
             f.write(f"**A:** `{ca}`\n\n")
             f.write(f"**B:** `{cb}`\n\n")
             f.write(
-                "| Serializer | Data | Mode | Mean A (ns) | Mean B (ns) | Δ% | "
+                "| Queue | Data | Mode | Mean A (ns) | Mean B (ns) | Δ% | "
                 "Cliff's δ | Hedges' g | p (Holm) | Sig |\n"
             )
             f.write("|---|---|---|---:|---:|---:|---:|---:|---:|:---:|\n")
