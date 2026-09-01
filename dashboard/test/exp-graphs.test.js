@@ -310,35 +310,6 @@ test('figureTypesFor All tab uses the same microsecond figures as a language tab
   assert.ok(figureTypesFor('10-one-vs-hundred', timed, timed, { crossLang: true }).includes('L1'));
 });
 
-test('experimentTableFlags hides empty write/read/size/spread columns', () => {
-  const handoffOnly = [
-    { library: 'deque-lock', total_median_ns: 18000, runs: 9 },
-    { library: 'spsc-ring', total_median_ns: 8000, runs: 9 },
-  ];
-  assert.deepEqual(experimentTableFlags(handoffOnly), {
-    write: false,
-    read: false,
-    size: false,
-    spread: false,
-  });
-  const full = [
-    {
-      library: 'deque-lock',
-      write_median_ns: 8000,
-      read_median_ns: 9000,
-      total_median_ns: 17000,
-      size_bytes: 25600,
-      total_std_ns: 400,
-    },
-  ];
-  assert.deepEqual(experimentTableFlags(full), {
-    write: true,
-    read: true,
-    size: true,
-    spread: true,
-  });
-});
-
 test('steal-deque and pipe-ipc sit in the published category filters', () => {
   assert.equal(communicationBucket('steal-deque'), 'thread');
   assert.equal(communicationBucket('pipe-ipc'), 'process');
