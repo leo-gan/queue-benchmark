@@ -105,7 +105,7 @@ fn stamp() -> String {
 fn write_header(w: &mut impl Write) {
     writeln!(
         w,
-        "Language,Pattern,TestDataName,Repetitions,RepetitionIndex,LibraryName,LibraryVersion,TimeEnq,TimeDeq,Size,TimeHandoff,OpPerSecEnq,OpPerSecDeq,OpPerSecHandoff,MemoryPeakBytes,FidelityScore,DataTypeInstanceCount,TypeConfigHash,SizeGzip,SizeZstd,NativeKind,StreamMode,RunOrder,SchedulePosition,CpuTimeNs"
+        "Language,Pattern,TestDataName,Repetitions,RepetitionIndex,LibraryName,LibraryVersion,TimeEnq,TimeDeq,TimeHandoff,OpPerSecEnq,OpPerSecDeq,OpPerSecHandoff,MemoryPeakBytes,FidelityScore,DataTypeInstanceCount,TypeConfigHash,NativeKind,StreamMode,RunOrder,SchedulePosition,CpuTimeNs"
     )
     .unwrap();
 }
@@ -158,7 +158,6 @@ fn row(
     ver: &str,
     enq: u128,
     deq: u128,
-    size: usize,
     n: usize,
     hash: &str,
     kind: &str,
@@ -168,7 +167,7 @@ fn row(
     let tot = enq + deq;
     writeln!(
         w,
-        "rust,{mode},{ty},{reps},{idx},{name},{ver},{enq},{deq},{size},{tot},{:.6},{:.6},{:.6},{},1.0000,{n},{hash},0,0,{kind},{},{order},{order},{cpu}",
+        "rust,{mode},{ty},{reps},{idx},{name},{ver},{enq},{deq},{tot},{:.6},{:.6},{:.6},{},1.0000,{n},{hash},{kind},{},{order},{order},{cpu}",
         ops(enq),
         ops(deq),
         ops(tot),
@@ -759,7 +758,7 @@ async fn tokio_main() {
         }
         let item = payload(cell.payload_bytes);
         let items: Vec<Vec<u8>> = (0..cell.n).map(|_| item.clone()).collect();
-        let size = cell.payload_bytes * cell.n;
+
         let (producers, consumers) = parse_pattern(&cell.io_mode);
         for name in queues {
             if !include_queue(name, &qf) {
@@ -821,7 +820,6 @@ async fn tokio_main() {
                     env!("CARGO_PKG_VERSION"),
                     enq,
                     deq,
-                    size,
                     cell.n,
                     &cell.hash,
                     kind_of(name),

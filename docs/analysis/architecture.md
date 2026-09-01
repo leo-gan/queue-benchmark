@@ -73,7 +73,6 @@ serializer-benchmark columns so historical logs keep loading.
 | `TimeHandoff` | Handoff ns |
 | `Pattern` | `bytes` = **SPSC**, `stream` = **MPMC** (not I/O) |
 | `CpuTimeNs` | Process CPU time (spin vs block) |
-| `Size` | Payload bytes in this cell (fixture; same for every library) |
 
 ## Patterns
 

@@ -114,7 +114,6 @@ csv_schema:
     - SerializerVersion
     - TimeSer
     - TimeDeser
-    - Size
     - TimeSerAndDeser
     - OpPerSecSer
     - OpPerSecDeser
@@ -204,7 +203,6 @@ metrics:
     enq_mean_ns: medium
     deq_mean_ns: medium
     avg_ops_per_sec: high
-    median_size_bytes: low
     mean_fidelity: medium
     library_version: high
     runs: high

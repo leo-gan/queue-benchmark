@@ -56,7 +56,7 @@ def _stat_get(entry: Any, field_id: str) -> Any:
 _FIXTURE_KEY_RE = re.compile(r"^(.*?)(?:@n=(\d+))+$", re.IGNORECASE)
 
 
-def _format_fixture_display(label: str) -> str:
+def _format_data_type_display(label: str) -> str:
     """Decode cryptic ``message@n=100`` keys for titles and table headers.
 
     Examples:
@@ -77,7 +77,7 @@ def _format_fixture_display(label: str) -> str:
     else:
         base, n = s, None
 
-    # Suite type_ids are lowercase words; legacy fixtures are already Title/Pascal.
+    # Suite type_ids are lowercase words; older labels may already be Title/Pascal.
     if base and base == base.lower() and re.fullmatch(r"[a-z][a-z0-9_]*", base):
         pretty = base.replace("_", " ").title()
     else:
@@ -206,13 +206,13 @@ def _generate_violin_plot(
     top_n: Optional[int] = None,
     data_source: str = "",
 ) -> Optional[str]:
-    """Generate combined mean-bar + violin figure for one fixture.
+    """Generate combined mean-bar + violin figure for one data type.
 
     Layout (shared Y = queue rank, both linear µs from 0):
       left  — horizontal bars at **mean** enqueue / dequeue (easy ranking; aligns with ops/s)
       right — split violins of full sample density (spread / shape)
 
-    Embeds mapping metadata (fixture, language id, log path, modes, n) in the
+    Embeds mapping metadata (data type, language id, log path, modes, n) in the
     title/footer so plots can be tied back to CSV results.
     """
     if melted_df.empty or data_type not in melted_df['TestDataName'].values:
@@ -333,8 +333,8 @@ def _generate_violin_plot(
             leg_v.remove()
 
         lang_key = (lang_id or _lang_file_key("", language)).lower().replace("#", "sharp")
-        safe_fixture = data_type.replace(" ", "_")
-        img_name = f"{lang_key}_{safe_fixture}.png"
+        safe_type = data_type.replace(" ", "_")
+        img_name = f"{lang_key}_{safe_type}.png"
         src = data_source or f"logs/{lang_key}/benchmark-log.csv"
         modes = sorted(
             {str(m) for m in subset.get("Pattern", pd.Series(dtype=str)).dropna().unique()}
@@ -344,7 +344,7 @@ def _generate_violin_plot(
         top_note = f" · Top {int(top_n)}" if top_n and int(top_n) > 0 else ""
 
         fig.suptitle(
-            f"{language or lang_key} · {_format_fixture_display(data_type)}{top_note}",
+            f"{language or lang_key} · {_format_data_type_display(data_type)}{top_note}",
             fontsize=12,
             y=1.02,
         )
@@ -400,7 +400,7 @@ def _generate_violin_plot(
         return None
 
 
-# Latency distributions: always show this many fastest serializers per fixture (all languages).
+# Latency distributions: always show this many fastest queues per data type (all languages).
 VIOLIN_TOP_N_SERIALIZERS = 5
 
 # CSV StringOrStream values → human labels (not "number of bytes")
@@ -655,7 +655,7 @@ def _pivot_table_md(
             else:
                 cell[(rv, cv)] = None
 
-    # all@all-style row average: mean of per-fixture cell values (type × n).
+    # all@all-style row average: mean of per-data-type cell values (type × n).
     row_avg: Dict[str, Optional[float]] = {}
     if include_row_average:
         for rv in row_vals:
@@ -875,7 +875,7 @@ def _category_pivot_md(stats: Dict, lang_id: str, title: str) -> str:
         "",
     ]
     for cat in sorted(by_cat.keys()):
-        # average ops per serializer across fixtures; rows sorted by name
+        # average ops per queue across data types; rows sorted by name
         acc: Dict[str, List[float]] = defaultdict(list)
         for ser, ops in by_cat[cat]:
             acc[ser].append(ops)
@@ -952,8 +952,9 @@ def _config_section_md(lang_id: str, csv_path: Optional[str]) -> str:
         )
     if doc:
         ds = doc.get("dataset") if isinstance(doc.get("dataset"), dict) else {}
-        if ds.get("fixtures"):
-            names = [f.get("name") for f in ds["fixtures"] if isinstance(f, dict) and f.get("name")]
+        types = ds.get("data_types") or ds.get("fixtures") or []
+        if types:
+            names = [f.get("name") for f in types if isinstance(f, dict) and f.get("name")]
             if names:
                 body.append(
                     f"- **Data types (config):** {', '.join(str(n) for n in names)}"
@@ -1074,7 +1075,7 @@ def _scientific_summary_md(stats: Dict, profile: str = "multi_way") -> str:
     if not cols:
         return ""
 
-    # One row per queue: prefer bytes mode, average medians across fixtures if needed
+    # One row per queue: prefer bytes mode, average medians across data types if needed
     by_ser: Dict[str, List[Dict]] = {}
     for e in stats.values():
         if not isinstance(e, dict):
@@ -1393,7 +1394,7 @@ def generate_language_results_pages(
             "| Term | Meaning |",
             "|------|---------|",
             "| **data type** | Sample shape: `message`, `document`, `telemetry`, `strings`, or `event` "
-            "(CSV `TestDataName`; older text may say “fixture”) |",
+            "(CSV `TestDataName`) |",
             "| **bytes mode** | In-memory buffer API (encode to bytes / decode from a buffer). "
             "On C# this is often the **string** path — see [Modes](../analysis/modes.md). |",
             "| **stream mode** | Stream-style API (write/read through a stream). "
@@ -1453,11 +1454,11 @@ def generate_language_results_pages(
                 base = str(e2.get("test_data") or "")
                 if n not in (None, ""):
                     try:
-                        e2["test_data"] = _format_fixture_display(f"{base}@n={int(n)}")
+                        e2["test_data"] = _format_data_type_display(f"{base}@n={int(n)}")
                     except (TypeError, ValueError):
-                        e2["test_data"] = _format_fixture_display(base)
+                        e2["test_data"] = _format_data_type_display(base)
                 else:
-                    e2["test_data"] = _format_fixture_display(base)
+                    e2["test_data"] = _format_data_type_display(base)
                 display_stats[k] = e2
 
             lines.append("## Summary tables")
@@ -1539,7 +1540,7 @@ def generate_language_results_pages(
             )
             lines.append("")
             for dtype, fname in items:
-                pretty = _format_fixture_display(dtype)
+                pretty = _format_data_type_display(dtype)
                 lines.append(f"### {pretty}")
                 lines.append("")
                 lines.append(f"![{pretty}]({plot_rel_from_lang}/{fname}){{ width=\"80%\" }}")
@@ -1624,7 +1625,7 @@ def generate_violin_plots(
     )
 
     violin_images: Dict[str, str] = {}
-    # lang_id -> {fixture -> plot filename} plus source path for results.md
+    # lang_id -> {data type -> plot filename} plus source path for results.md
     plot_meta: Dict[str, Dict] = {}
 
     for lang_id in lang_ids:

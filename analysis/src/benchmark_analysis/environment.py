@@ -3,7 +3,7 @@
 Writes a ``*.configs.json`` sidecar beside the result CSV:
 
 - ``environment`` — hardware, OS, runtimes, git (preferred)
-- ``dataset`` — optional: seed, fixtures, repetitions (best-effort)
+- ``dataset`` — optional: seed, data_types, repetitions (best-effort)
 - ``queues`` — optional: names from the run (best-effort)
 - ``run`` — optional: mode, metrics profile, timestamp
 
@@ -187,7 +187,7 @@ def _dataset_block() -> Dict[str, Any]:
 
         cfg = load_master_config()
         block["config_path"] = "config/benchmark_config.yaml"
-        # Catalog is normative for suite fixtures.
+        # Catalog is normative for suite data types.
         block["catalog_file"] = dig(
             cfg, "test_data.catalog_file",
             dig(cfg, "data_model_v2.catalog_file", "schemas/data_catalog_v2.yaml"),
@@ -196,7 +196,7 @@ def _dataset_block() -> Dict[str, Any]:
         block["test_data_config"] = block["catalog_file"]
         types = dig(cfg, "test_data.types") or []
         if isinstance(types, list) and types:
-            block["fixtures"] = [
+            block["data_types"] = [
                 {
                     "name": t.get("name"),
                     "category": t.get("category"),

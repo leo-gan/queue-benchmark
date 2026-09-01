@@ -1,8 +1,8 @@
 # Metrics
 
 This lab ranks **in-process queues**, not encodings. Times are nanoseconds.
-Throughput is derived: `1e9 / time_ns`. Payload shape is a **fixture**, not a
-score.
+Throughput is derived: `1e9 / time_ns`. Payload shape is a **data type**
+(`message`, `document`, …), not a library score. Never call it a fixture.
 
 ## What we rank
 
@@ -21,9 +21,7 @@ Do **not** invent `msgs_per_cpu_sec` from wall time.
 
 | Field | Why it exists | What to do with it |
 |-------|---------------|--------------------|
-| `Size` | Leftover from serializer-benchmark. Every library in a cell moves the **same** already-built payload (`TestDataName` × `DataTypeInstanceCount`). | Fixture annotation only. Never a KPI, never a Pareto axis. |
-| `SizeGzip` / `SizeZstd` | Serializer compression. Always 0 here. | ABI slots. Do not display. |
-| `median_size_bytes` | Analysis roll-up of `Size`. Constant inside a slice. | Do not rank. Experiment 2 changes the **fixture**, not this score. |
+| `Size` / `SizeGzip` / `SizeZstd` / `median_size_bytes` | Serializer leftovers. Payload bytes are the **data type**, not a result. | **Removed.** New CSVs and stats do not write these. Old logs may still contain `Size`; analysis ignores it. |
 | `mean_fidelity` | `FidelityScore` = fraction of items that arrived in order. | **Gate**, not a score. If `< 1`, the row is invalid for ranking. Typical value is `1.0`. |
 | `mean_memory_peak_bytes` | Process RSS (`getrusage` / `PeakWorkingSet64` / `process.memoryUsage().rss`). | Provenance. Usually the process, not the queue. Do not run a “most compact” contest on it. |
 | `StreamMode` / honesty | Serializer “native vs adapted stream I/O”. There is no stream I/O in this suite. `Pattern=stream` means **MPMC**. | Do not show an honesty column. |
@@ -69,5 +67,4 @@ Meaning of the timed columns:
 | `TimeHandoff` | Handoff ns |
 | `CpuTimeNs` | Optional process CPU time for that repetition |
 | `FidelityScore` | 1.0 = every item arrived in order |
-| `Size` | Payload bytes in this cell (fixture, same for every library) |
 | `MemoryPeakBytes` | Peak RSS when the runner can measure it |

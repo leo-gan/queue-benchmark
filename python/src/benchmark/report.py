@@ -17,8 +17,6 @@ class BenchmarkLog:
     library_version: str = ""
     time_enq_ns: int = 0
     time_deq_ns: int = 0
-    # Fixture payload bytes for this cell (same for every library). Not a score.
-    size_bytes: int = 0
     memory_peak_bytes: int = 0
     fidelity_score: float = 1.0
     data_type_instance_count: int = 0
@@ -57,7 +55,6 @@ CSV_HEADER = [
     "LibraryVersion",
     "TimeEnq",
     "TimeDeq",
-    "Size",
     "TimeHandoff",
     "OpPerSecEnq",
     "OpPerSecDeq",
@@ -66,8 +63,6 @@ CSV_HEADER = [
     "FidelityScore",
     "DataTypeInstanceCount",
     "TypeConfigHash",
-    "SizeGzip",
-    "SizeZstd",
     "NativeKind",
     "StreamMode",
     "RunOrder",
@@ -97,7 +92,6 @@ class LogStorage:
                 log.library_version or "",
                 log.time_enq_ns,
                 log.time_deq_ns,
-                log.size_bytes,
                 log.time_handoff_ns,
                 f"{log.op_per_sec_enq:.6f}",
                 f"{log.op_per_sec_deq:.6f}",
@@ -106,8 +100,6 @@ class LogStorage:
                 f"{log.fidelity_score:.4f}",
                 log.data_type_instance_count,
                 log.type_config_hash,
-                0,
-                0,
                 log.native_kind,
                 log.stream_mode,
                 log.run_order,

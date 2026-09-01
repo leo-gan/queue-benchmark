@@ -333,13 +333,13 @@ static double ops(uint64_t ns) {
 
 static void write_row(FILE *f, const char *mode, const char *ty, int reps, int idx,
                       const char *name, const char *ver, uint64_t enq, uint64_t deq,
-                      size_t size, int n, const char *hash, const char *kind, int order,
+                      int n, const char *hash, const char *kind, int order,
                       uint64_t cpu, uint64_t rss) {
     uint64_t tot = enq + deq;
     fprintf(f,
-            "c,%s,%s,%d,%d,%s,%s,%llu,%llu,%zu,%llu,%.6f,%.6f,%.6f,%llu,1.0000,%d,%s,0,0,%s,%s,%d,%d,%llu\n",
+            "c,%s,%s,%d,%d,%s,%s,%llu,%llu,%llu,%.6f,%.6f,%.6f,%llu,1.0000,%d,%s,%s,%s,%d,%d,%llu\n",
             mode, ty, reps, idx, name, ver,
-            (unsigned long long)enq, (unsigned long long)deq, size, (unsigned long long)tot,
+            (unsigned long long)enq, (unsigned long long)deq, (unsigned long long)tot,
             ops(enq), ops(deq), ops(tot), (unsigned long long)rss, n, hash, kind,
             strcmp(mode, "stream") == 0 ? "native" : "", order, order,
             (unsigned long long)cpu);
@@ -380,7 +380,7 @@ int main(int argc, char **argv) {
     int include_psd = env_on("BENCHMARK_INCLUDE_PSD");
     const char *psd_names = getenv("BENCHMARK_PSD_NAMES");
     if (!psd_names) psd_names = "";
-    fprintf(out, "Language,Pattern,TestDataName,Repetitions,RepetitionIndex,LibraryName,LibraryVersion,TimeEnq,TimeDeq,Size,TimeHandoff,OpPerSecEnq,OpPerSecDeq,OpPerSecHandoff,MemoryPeakBytes,FidelityScore,DataTypeInstanceCount,TypeConfigHash,SizeGzip,SizeZstd,NativeKind,StreamMode,RunOrder,SchedulePosition,CpuTimeNs\n");
+    fprintf(out, "Language,Pattern,TestDataName,Repetitions,RepetitionIndex,LibraryName,LibraryVersion,TimeEnq,TimeDeq,TimeHandoff,OpPerSecEnq,OpPerSecDeq,OpPerSecHandoff,MemoryPeakBytes,FidelityScore,DataTypeInstanceCount,TypeConfigHash,NativeKind,StreamMode,RunOrder,SchedulePosition,CpuTimeNs\n");
 
     FILE *cf = fopen(cells, "r");
     if (!cf) {
@@ -401,7 +401,7 @@ int main(int argc, char **argv) {
         memset(item, 'a', (size_t)payload);
         void **items = calloc((size_t)n, sizeof(void *));
         for (int i = 0; i < n; i++) items[i] = item;
-        size_t size = (size_t)payload * (size_t)n;
+
         const char *names[] = {"mutex-queue", "lfqueue", "spsc-ring", "steal-deque", "pipe-ipc", "shared-ring", "sqlite-queue"};
         const char *kinds[] = {"locked", "concurrent", "spsc", "work-stealing", "concurrent", "spsc", "durable"};
         const int opt_in[] = {0, 0, 0, 0, 1, 1, 1};
@@ -563,7 +563,7 @@ int main(int argc, char **argv) {
                     free(q.buf);
                 }
                 write_row(out, mode, type_id, reps, i, names[qi], "0.1.0",
-                          enq, deq, size, n, hash, kinds[qi], order,
+                          enq, deq, n, hash, kinds[qi], order,
                           cpu_ns() - cpu0, rss_bytes());
                 order++;
             }

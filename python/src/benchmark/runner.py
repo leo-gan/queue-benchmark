@@ -354,7 +354,6 @@ def run(reps: int, queue_filter: str = "", data_filter: str = "") -> Path:
         payload = make_payload(cell["type_id"], cell["type_config"], seed)
         n = int(cell["data_type_instance_count"])
         items = [payload] * n
-        size = len(payload) * n
         tc_hash = type_config_hash(cell["type_config"])
         io_mode = cell["io_mode"]
         producers, consumers = parse_pattern(io_mode)
@@ -379,7 +378,6 @@ def run(reps: int, queue_filter: str = "", data_filter: str = "") -> Path:
                         library_version=adapter.version(),
                         time_enq_ns=enq,
                         time_deq_ns=deq,
-                        size_bytes=size,
                         fidelity_score=fid,
                         data_type_instance_count=n,
                         type_config_hash=tc_hash,

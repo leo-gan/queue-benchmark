@@ -62,9 +62,10 @@ See [Timing honesty](TIMING_HONESTY.md) and [Architecture](architecture.md).
 | Messages / CPU-second (`msgs_per_cpu_sec`) | Spin can “win” latency and burn cores; needs `CpuTimeNs` |
 | Fidelity | Gate: lost or duplicated items invalidate the row |
 
-Payload **size** is a fixture (`message` vs `document`), not a library score.
-Every queue in a cell moves the same bytes. Peak RSS is process-wide and is
-not a “most compact” contest. See [Metrics](METRICS.md).
+Payload shape is a **data type** (`message` vs `document`), not a library
+score. Every queue in a cell moves the same bytes. We do not record or rank
+payload size. Peak RSS is process-wide and is not a compactness contest.
+See [Metrics](METRICS.md).
 
 ## Published matrix (now)
 

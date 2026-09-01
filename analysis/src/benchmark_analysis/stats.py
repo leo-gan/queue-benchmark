@@ -923,7 +923,6 @@ def compute_statistics(
         "times_enq": [],
         "times_deq": [],
         "times_handoff": [],
-        "sizes": [],
         "fidelity": [],
         "memory_peak": [],
         "cpu_time_ns": [],
@@ -942,7 +941,6 @@ def compute_statistics(
         if handoff in (None, ""):
             handoff = (pick(r, "TimeEnq", 0) or 0) + (pick(r, "TimeDeq", 0) or 0)
         stats[key]["times_handoff"].append(float(handoff))
-        stats[key]["sizes"].append(float(r["Size"]))
         stats[key]["language"] = lang
         qv = pick(r, "LibraryVersion")
         if qv not in (None, ""):
@@ -994,7 +992,6 @@ def compute_statistics(
         min_ops = 1e9 / handoff_stats["handoff_max_ns"] if handoff_stats["handoff_max_ns"] > 0 else 0.0
         max_ops = 1e9 / handoff_stats["handoff_min_ns"] if handoff_stats["handoff_min_ns"] > 0 else 0.0
 
-        sizes = data["sizes"]
         # key: (queue, test_data, type_config_hash, instance_count, mode, language)
         entry = {
             "library": key[0],
@@ -1007,7 +1004,6 @@ def compute_statistics(
             "avg_time_enq_ns": enq_stats["enq_mean_ns"],
             "avg_time_deq_ns": deq_stats["deq_mean_ns"],
             "avg_time_handoff_ns": avg_time_handoff_ns,
-            "median_size_bytes": float(np.median(sizes)) if sizes else 0.0,
             "avg_ops_per_sec": avg_ops_per_sec,
             "min_ops_per_sec": min_ops,
             "max_ops_per_sec": max_ops,
@@ -1203,8 +1199,8 @@ def public_stats_entry(entry: Dict[str, Any]) -> Dict[str, Any]:
 def compute_pareto_front(groups: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """2D Pareto: minimize handoff time, maximize msgs_per_cpu_sec.
 
-    Size is a fixture (same payload for every library in the cell) and is not
-    an axis. When CPU is missing, the front is the fastest handoff only.
+    Payload size is not an axis. When CPU is missing, the front is the
+    fastest handoff only.
     """
     front: List[Dict[str, Any]] = []
     workloads: Dict[Tuple[Any, Any], List[Dict[str, Any]]] = {}

@@ -187,7 +187,7 @@ test('rowsToDelimited includes skipped rows and empty gzip', () => {
   const lines = csv.trim().split('\n');
   assert.equal(
     lines[0],
-    'library,version,io,write_us,read_us,total_us,spread_std_us,size_bytes,size_gzip_bytes,trials,trials_raw,vs_fastest,in_comparison'
+    'library,version,io,write_us,read_us,total_us,spread_std_us,trials,trials_raw,vs_fastest,in_comparison'
   );
   assert.match(lines[1], /^orjson,3\.11\.9,memory,/);
   assert.match(lines[1], /,true$/);
@@ -196,8 +196,7 @@ test('rowsToDelimited includes skipped rows and empty gzip', () => {
   assert.match(skip, /By design — JSON list/);
   assert.match(skip, /,false$/);
   const skipCols = skip.split(',');
-  const gzipIdx = lines[0].split(',').indexOf('size_gzip_bytes');
-  assert.equal(skipCols[gzipIdx], '');
+  assert.ok(skipCols.length >= 8);
 });
 
 test('wrapYTick keeps short names on one line', () => {
@@ -365,15 +364,14 @@ test('figureTypesFor picks a story-specific hero', () => {
   assert.ok(def.includes('S1'));
 });
 
-test('experimentTableFlags hides fixture-constant size and empty write/read', () => {
+test('experimentTableFlags hides empty write/read and never ranks size', () => {
   const handoff = [
-    { library: 'a', total_median_ns: 1000, size_bytes: 25600, runs: 9 },
-    { library: 'b', total_median_ns: 2000, size_bytes: 25600, runs: 9 },
+    { library: 'a', total_median_ns: 1000, runs: 9 },
+    { library: 'b', total_median_ns: 2000, runs: 9 },
   ];
   assert.deepEqual(experimentTableFlags(handoff), {
     write: false,
     read: false,
-    size: false,
     spread: false,
   });
   const split = [
@@ -382,7 +380,6 @@ test('experimentTableFlags hides fixture-constant size and empty write/read', ()
       write_median_ns: 400,
       read_median_ns: 600,
       total_median_ns: 1000,
-      size_bytes: 100,
       total_std_ns: 50,
     },
     {
@@ -390,14 +387,12 @@ test('experimentTableFlags hides fixture-constant size and empty write/read', ()
       write_median_ns: 800,
       read_median_ns: 900,
       total_median_ns: 1700,
-      size_bytes: 200,
       total_std_ns: 80,
     },
   ];
   assert.deepEqual(experimentTableFlags(split), {
     write: true,
     read: true,
-    size: true,
     spread: true,
   });
 });

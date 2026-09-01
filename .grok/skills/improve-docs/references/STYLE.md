@@ -2,6 +2,16 @@
 
 Keep it simple. Prefer delete and clarify over decorate.
 
+## Terminology (binding)
+
+| Say | Never say |
+|-----|-----------|
+| **data type** (`message`, `document`, `telemetry`, `strings`, `event`) | fixture, fixtures, fixtureKey, `dataset.fixtures` |
+
+This is the catalog payload shape. Use **data type** in README, Dashboard copy, skills, comments, function names, and new JSON keys. Do not keep `fixture*` as an internal alias. Old `configs.json` may still contain `fixtures`; read it as a fallback, write `data_types`.
+
+Do not measure or display payload **size** as a library result. Size is the data type, not a score.
+
 ---
 
 ## Scope of “docs” in this skill
@@ -18,8 +28,9 @@ Keep it simple. Prefer delete and clarify over decorate.
 ## Content style
 
 - **One idea per paragraph.** Prefer tables for role/path matrices **on the site / Dashboard**, not by fattening the root README.
-- **User terms:** data type, mode (bytes/stream), ops/s, latency, median size, Pareto, baseline.
-- **Avoid in user copy:** fixture (internal OK), harness (prefer benchmark runner), unexplained IQR/P95.
+- **User terms:** data type, mode (bytes/stream), ops/s, latency, Pareto, baseline.
+- **Never say “fixture”.** The catalog entry is a **data type** (`message`, `document`, …). Say it in docs, Dashboard copy, skills, comments, identifiers, and JSON keys. Do not keep `fixture*` as an internal alias “until later.”
+- **Avoid in user copy:** fixture, median size (we do not measure payload size as a result), harness (prefer benchmark runner), unexplained IQR/P95.
 - **Honesty line** when ranks appear: within one language; cross-lang directional — prefer **one** place (e.g. Statistics / Method), not a second essay block on README.
 - **Links:** prefer site paths that match MkDocs nav labels (Dashboard, Learn, Method). Avoid “storefront” / “CTA” wording in user-facing labels.
 - **No emoji spam** in product UI; README badges OK.

@@ -36,20 +36,12 @@ function hasFiniteMetric(rows, key) {
   return (rows || []).some((r) => Number.isFinite(Number(r?.[key])));
 }
 
-function valuesVary(rows, key) {
-  const nums = (rows || []).map((r) => Number(r?.[key])).filter(Number.isFinite);
-  if (nums.length < 2) return false;
-  const first = nums[0];
-  return nums.some((v) => Math.abs(v - first) > 1e-9);
-}
-
-/** Optional experiment-table columns. Size is a data-type property unless values actually differ. */
+/** Optional experiment-table columns. Payload size is not a result. */
 export function experimentTableFlags(rows) {
   const list = rows || [];
   return {
     write: hasFiniteMetric(list, 'write_median_ns'),
     read: hasFiniteMetric(list, 'read_median_ns'),
-    size: hasFiniteMetric(list, 'size_bytes') && valuesVary(list, 'size_bytes'),
     spread: list.some((r) => totalStdUs(r) != null),
   };
 }
@@ -62,8 +54,6 @@ const CSV_COLUMNS = [
   'read_us',
   'total_us',
   'spread_std_us',
-  'size_bytes',
-  'size_gzip_bytes',
   'trials',
   'trials_raw',
   'vs_fastest',
@@ -244,8 +234,6 @@ function rowFields(row, rows) {
     read_us: nsToUs(row.read_median_ns),
     total_us: nsToUs(row.total_median_ns),
     spread_std_us: std == null ? '' : std,
-    size_bytes: row.size_bytes == null ? '' : row.size_bytes,
-    size_gzip_bytes: row.size_gzip_bytes == null ? '' : row.size_gzip_bytes,
     trials: row.runs == null ? '' : row.runs,
     trials_raw: row.runs_raw == null ? '' : row.runs_raw,
     vs_fastest: compareLabel(row, rows),
