@@ -1201,7 +1201,11 @@ def public_stats_entry(entry: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def compute_pareto_front(groups: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """Classical 2D Pareto: minimize avg_time_handoff_ns and median_size_bytes."""
+    """2D Pareto: minimize handoff time, maximize msgs_per_cpu_sec.
+
+    Size is a fixture (same payload for every library in the cell) and is not
+    an axis. When CPU is missing, the front is the fastest handoff only.
+    """
     front: List[Dict[str, Any]] = []
     workloads: Dict[Tuple[Any, Any], List[Dict[str, Any]]] = {}
     for g in groups:
@@ -1210,18 +1214,26 @@ def compute_pareto_front(groups: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     for items in workloads.values():
         for item in items:
             t = pick_stats(item, "avg_time_handoff_ns")
-            s = item.get("median_size_bytes")
-            if t is None or s is None:
+            cpu = item.get("msgs_per_cpu_sec")
+            if t is None:
                 continue
             dominated = False
             for other in items:
                 if other is item:
                     continue
                 ot = pick_stats(other, "avg_time_handoff_ns")
-                os_ = other.get("median_size_bytes")
-                if ot is None or os_ is None:
+                ocpu = other.get("msgs_per_cpu_sec")
+                if ot is None:
                     continue
-                if (ot <= t and os_ < s) or (ot < t and os_ <= s):
+                if cpu is None or ocpu is None:
+                    if ot < t:
+                        dominated = True
+                        break
+                    continue
+                better_or_eq_time = ot <= t
+                better_or_eq_cpu = ocpu >= cpu
+                strictly = ot < t or ocpu > cpu
+                if better_or_eq_time and better_or_eq_cpu and strictly:
                     dominated = True
                     break
             if not dominated:
@@ -1231,7 +1243,7 @@ def compute_pareto_front(groups: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
                         "test_data": item.get("test_data"),
                         "mode": item.get("mode"),
                         "time": t,
-                        "size": s,
+                        "msgs_per_cpu_sec": cpu,
                         "filter_policy": (item.get("filter") or {}).get("policy"),
                     }
                 )

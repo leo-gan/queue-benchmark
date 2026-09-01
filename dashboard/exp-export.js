@@ -36,13 +36,20 @@ function hasFiniteMetric(rows, key) {
   return (rows || []).some((r) => Number.isFinite(Number(r?.[key])));
 }
 
-/** Which optional experiment-table columns have at least one real value. */
+function valuesVary(rows, key) {
+  const nums = (rows || []).map((r) => Number(r?.[key])).filter(Number.isFinite);
+  if (nums.length < 2) return false;
+  const first = nums[0];
+  return nums.some((v) => Math.abs(v - first) > 1e-9);
+}
+
+/** Optional experiment-table columns. Size is a data-type property unless values actually differ. */
 export function experimentTableFlags(rows) {
   const list = rows || [];
   return {
     write: hasFiniteMetric(list, 'write_median_ns'),
     read: hasFiniteMetric(list, 'read_median_ns'),
-    size: hasFiniteMetric(list, 'size_bytes'),
+    size: hasFiniteMetric(list, 'size_bytes') && valuesVary(list, 'size_bytes'),
     spread: list.some((r) => totalStdUs(r) != null),
   };
 }

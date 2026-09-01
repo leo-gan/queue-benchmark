@@ -72,7 +72,8 @@ serializer-benchmark columns so historical logs keep loading.
 | `TimeDeq` | Dequeue ns |
 | `TimeHandoff` | Handoff ns |
 | `Pattern` | `bytes` = **SPSC**, `stream` = **MPMC** (not I/O) |
-| `Size` | Payload bytes |
+| `CpuTimeNs` | Process CPU time (spin vs block) |
+| `Size` | Payload bytes in this cell (fixture; same for every library) |
 
 ## Patterns
 

@@ -131,9 +131,10 @@ Every language writes the same columns (nanoseconds). Domain mapping:
 | `TimeDeq` | Dequeue ns |
 | `TimeHandoff` | Handoff ns |
 | `Pattern` | `bytes` = **SPSC**, `stream` = **MPMC** (not I/O) |
-| `Size` | Payload bytes |
+| `CpuTimeNs` | Process CPU time (spin vs block) |
+| `Size` | Payload bytes in this cell — **fixture**, not a library score |
 
-See [architecture](https://leo-gan.github.io/queue-benchmark/analysis/architecture/).
+See [Metrics](https://leo-gan.github.io/queue-benchmark/analysis/METRICS/) and [architecture](https://leo-gan.github.io/queue-benchmark/analysis/architecture/).
 
 ---
 

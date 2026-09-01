@@ -46,17 +46,14 @@ def summarize_csv(path: Path) -> list[dict]:
         handoff = _f(r, "TimeHandoff", "TimeSerAndDeser")
         if handoff is None:
             continue
-        bucket = groups.setdefault((name, pattern), {"handoff": [], "enq": [], "deq": [], "size": []})
+        bucket = groups.setdefault((name, pattern), {"handoff": [], "enq": [], "deq": []})
         bucket["handoff"].append(handoff)
         enq = _f(r, "TimeEnq", "TimeSer")
         deq = _f(r, "TimeDeq", "TimeDeser")
-        size = _f(r, "Size")
         if enq is not None:
             bucket["enq"].append(enq)
         if deq is not None:
             bucket["deq"].append(deq)
-        if size is not None:
-            bucket["size"].append(size)
     out = []
     for (name, mode), series in sorted(groups.items()):
         vals = series["handoff"]
@@ -80,8 +77,6 @@ def summarize_csv(path: Path) -> list[dict]:
         if series["deq"]:
             row["deq_median_ns"] = statistics.median(series["deq"])
             row["read_median_ns"] = row["deq_median_ns"]
-        if series["size"]:
-            row["size_bytes"] = statistics.median(series["size"])
         out.append(row)
     out.sort(key=lambda r: r["median_handoff_ns"])
     if out:

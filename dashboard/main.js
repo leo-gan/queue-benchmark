@@ -192,9 +192,9 @@ const CROSS_LANG_METRICS = [
   { key: 'avg_time_deq_ns', label: 'Dequeue latency', higherIsBetter: false },
   { key: 'handoff_median_ns', label: 'Median handoff', higherIsBetter: false },
   { key: 'handoff_p95_ns', label: 'Handoff p95', higherIsBetter: false },
-  { key: 'median_size_bytes', label: 'Median size', higherIsBetter: false },
-  { key: 'mean_fidelity', label: 'Fidelity', higherIsBetter: true },
-  { key: 'mean_memory_peak_bytes', label: 'Peak memory', higherIsBetter: false },
+  { key: 'msgs_per_cpu_sec', label: 'Msgs / CPU-s', higherIsBetter: true },
+  { key: 'handoff_p99_ns', label: 'Handoff p99', higherIsBetter: false },
+  { key: 'mean_memory_peak_bytes', label: 'Peak memory (RSS)', higherIsBetter: false },
   { key: 'runs', label: 'Samples', higherIsBetter: null },
   { key: 'handoff_cv', label: 'Handoff CV', higherIsBetter: false },
 ];
@@ -208,8 +208,8 @@ const DEFAULT_SELECTED_METRICS = [
   'handoff_p95_ns',
   'handoff_ci_low_ns',
   'handoff_ci_high_ns',
-  'median_size_bytes',
-  'mean_fidelity',
+  'msgs_per_cpu_sec',
+  'handoff_p99_ns',
   'mean_memory_peak_bytes',
   'runs',
   'library_version',
@@ -235,7 +235,7 @@ const METRIC_PRESETS = {
     'enq_median_ns',
     'deq_median_ns',
   ],
-  size: ['median_size_bytes', 'mean_memory_peak_bytes', 'mean_fidelity', 'runs'],
+  cpu: ['msgs_per_cpu_sec', 'mean_memory_peak_bytes', 'runs'],
 };
 
 /** Open metric accordion groups (name -> bool). */
@@ -249,7 +249,7 @@ let state = {
   displayMetric: 'ops', // charts / ranking toolbar
   /** Detailed Analytics only: 'ops' | 'time' (independent of displayMetric). */
   rosterMetric: 'ops',
-  rankSort: 'speed', // 'speed' | 'size' for ranking chart
+  rankSort: 'speed', // 'speed' | 'cpu' for ranking chart
   searchQuery: '',
   sortKey: 'library',
   sortDirection: 'asc',
@@ -452,8 +452,8 @@ function applySavedSettings(saved) {
   if (saved.rosterMetric === 'ops' || saved.rosterMetric === 'time') {
     state.rosterMetric = saved.rosterMetric;
   }
-  if (saved.rankSort === 'speed' || saved.rankSort === 'size') {
-    state.rankSort = saved.rankSort;
+  if (saved.rankSort === 'speed' || saved.rankSort === 'cpu' || saved.rankSort === 'size') {
+    state.rankSort = saved.rankSort === 'size' ? 'cpu' : saved.rankSort;
     setRankSort(state.rankSort);
   }
   if (typeof saved.searchQuery === 'string') state.searchQuery = saved.searchQuery;
@@ -513,8 +513,8 @@ function applyUrlParams() {
   if (p.get('scope') === 'cross' || p.get('scope') === 'same') state.compareScope = p.get('scope');
   if (p.has('baseline')) state.compareBaseline = p.get('baseline');
   if (p.has('log')) state.chartLogScale = p.get('log') === '1';
-  if (p.get('rank') === 'size' || p.get('rank') === 'speed') {
-    state.rankSort = p.get('rank');
+  if (p.get('rank') === 'cpu' || p.get('rank') === 'size' || p.get('rank') === 'speed') {
+    state.rankSort = p.get('rank') === 'size' ? 'cpu' : p.get('rank');
     setRankSort(state.rankSort);
   }
   if (p.has('policy')) state.filterPolicy = p.get('policy');
@@ -537,7 +537,7 @@ function syncUrlFromState() {
     if (state.compareScope === 'cross') p.set('scope', 'cross');
     if (state.compareBaseline) p.set('baseline', state.compareBaseline);
     if (state.chartLogScale) p.set('log', '1');
-    if (state.rankSort === 'size') p.set('rank', 'size');
+    if (state.rankSort === 'cpu') p.set('rank', 'cpu');
     if (state.filterPolicy && state.filterPolicy !== DEFAULT_FILTER_POLICY) {
       p.set('policy', state.filterPolicy);
     }
@@ -562,8 +562,8 @@ function applyUiFromState() {
   document.getElementById('btn-roster-ops')?.classList.toggle('active', state.rosterMetric === 'ops');
   document.getElementById('btn-roster-latency')?.classList.toggle('active', state.rosterMetric === 'time');
   document.getElementById('btn-chart-log')?.classList.toggle('active', state.chartLogScale);
-  document.getElementById('btn-rank-sort-speed')?.classList.toggle('active', state.rankSort !== 'size');
-  document.getElementById('btn-rank-sort-size')?.classList.toggle('active', state.rankSort === 'size');
+  document.getElementById('btn-rank-sort-speed')?.classList.toggle('active', state.rankSort !== 'cpu');
+  document.getElementById('btn-rank-sort-cpu')?.classList.toggle('active', state.rankSort === 'cpu');
   setRankSort(state.rankSort);
   updateRankSortPrimaryLabel();
 
@@ -602,7 +602,7 @@ function updateSortIndicators() {
     handoff_std_ns: 'th-lat-std',
     handoff_p95_ns: 'th-lat-p95',
     handoff_p99_ns: 'th-lat-p99',
-    median_size_bytes: 'th-size',
+    msgs_per_cpu_sec: 'th-cpu',
   };
   const sortTh = document.getElementById(sortHeaderMap[state.sortKey]);
   if (sortTh) {
@@ -732,16 +732,16 @@ function setupEventListeners() {
   });
 
   const setRankingSort = (sort) => {
-    state.rankSort = sort === 'size' ? 'size' : 'speed';
+    state.rankSort = sort === 'cpu' || sort === 'size' ? 'cpu' : 'speed';
     setRankSort(state.rankSort);
     document.getElementById('btn-rank-sort-speed')?.classList.toggle('active', state.rankSort === 'speed');
-    document.getElementById('btn-rank-sort-size')?.classList.toggle('active', state.rankSort === 'size');
+    document.getElementById('btn-rank-sort-cpu')?.classList.toggle('active', state.rankSort === 'cpu');
     updateRankSortPrimaryLabel();
     saveSettings();
     updateCharts(state.filteredGroups, state.paretoQueueNames, state.displayMetric);
   };
   document.getElementById('btn-rank-sort-speed')?.addEventListener('click', () => setRankingSort('speed'));
-  document.getElementById('btn-rank-sort-size')?.addEventListener('click', () => setRankingSort('size'));
+  document.getElementById('btn-rank-sort-cpu')?.addEventListener('click', () => setRankingSort('cpu'));
 
   document.getElementById('btn-export-scatter')?.addEventListener('click', () => {
     const url = exportScatterPng();
@@ -768,7 +768,7 @@ function setupEventListeners() {
     { id: 'th-lat-std', key: 'handoff_std_ns' },
     { id: 'th-lat-p95', key: 'handoff_p95_ns' },
     { id: 'th-lat-p99', key: 'handoff_p99_ns' },
-    { id: 'th-size', key: 'median_size_bytes' },
+    { id: 'th-cpu', key: 'msgs_per_cpu_sec' },
   ];
   headers.forEach((h) => {
     const el = document.getElementById(h.id);
@@ -900,8 +900,8 @@ function setupEventListeners() {
   document.getElementById('metrics-preset-latency')?.addEventListener('click', () => {
     applyMetricPreset('latency');
   });
-  document.getElementById('metrics-preset-size')?.addEventListener('click', () => {
-    applyMetricPreset('size');
+  document.getElementById('metrics-preset-cpu')?.addEventListener('click', () => {
+    applyMetricPreset('cpu');
   });
   document.getElementById('metrics-edit-toggle')?.addEventListener('click', () => {
     const body = document.getElementById('metrics-panel-body');
@@ -2392,7 +2392,7 @@ function rosterMetricKeys() {
       { key: 'handoff_std_ns', higherIsBetter: false, label: 'Std' },
       { key: 'handoff_p95_ns', higherIsBetter: false, label: 'P95' },
       { key: 'handoff_p99_ns', higherIsBetter: false, label: 'P99' },
-      { key: 'median_size_bytes', higherIsBetter: false, label: 'Median size' },
+      { key: 'msgs_per_cpu_sec', higherIsBetter: true, label: 'Msgs / CPU-s' },
     ];
   }
   return [
@@ -2400,7 +2400,7 @@ function rosterMetricKeys() {
     { key: 'ops_std', higherIsBetter: false, label: 'Std' },
     { key: 'ops_p95', higherIsBetter: true, label: 'P95' },
     { key: 'ops_p99', higherIsBetter: true, label: 'P99' },
-    { key: 'median_size_bytes', higherIsBetter: false, label: 'Median size' },
+    { key: 'msgs_per_cpu_sec', higherIsBetter: true, label: 'Msgs / CPU-s' },
   ];
 }
 
@@ -2480,17 +2480,18 @@ function formatRosterRelativeCell(row, key, higherIsBetter, scales, baselineGrou
 
 function isParetoDominated(g, groups) {
   const gOps = g.avg_ops_per_sec;
-  const gSize = g.median_size_bytes;
-  if (gOps == null || gSize == null) return true;
+  const gCpu = g.msgs_per_cpu_sec;
+  if (gOps == null) return true;
   return groups.some((other) => {
     if (other === g) return false;
     const oOps = other.avg_ops_per_sec;
-    const oSize = other.median_size_bytes;
-    if (oOps == null || oSize == null) return false;
+    const oCpu = other.msgs_per_cpu_sec;
+    if (oOps == null) return false;
+    if (gCpu == null || oCpu == null) return oOps > gOps;
     const betterOrEqualOps = oOps >= gOps;
-    const betterOrEqualSize = oSize <= gSize;
-    const strictlyBetter = oOps > gOps || oSize < gSize;
-    return betterOrEqualOps && betterOrEqualSize && strictlyBetter;
+    const betterOrEqualCpu = oCpu >= gCpu;
+    const strictlyBetter = oOps > gOps || oCpu > gCpu;
+    return betterOrEqualOps && betterOrEqualCpu && strictlyBetter;
   });
 }
 
@@ -2556,32 +2557,10 @@ function summarizeStreamHonesty(groups) {
 function updateStreamHonestyChip() {
   const chip = document.getElementById('stream-honesty-chip');
   if (!chip) return;
-  const { streamRows, counts } = summarizeStreamHonesty(state.allGroups);
-  if (streamRows <= 0) {
-    chip.hidden = true;
-    chip.textContent = '';
-    chip.removeAttribute('title');
-    return;
-  }
-  const { native, text_on_stream, adapted, unlabeled } = counts;
-  const allAdapted = adapted === streamRows && unlabeled === 0;
-  const allUnlabeled = unlabeled === streamRows;
-  let text;
-  if (allUnlabeled) {
-    text = 'MPMC rows unlabeled';
-  } else if (allAdapted) {
-    text = 'MPMC: adapted (not I/O)';
-  } else {
-    const parts = [];
-    if (native) parts.push(`${native} native`);
-    if (text_on_stream) parts.push(`${text_on_stream} text`);
-    if (adapted) parts.push(`${adapted} adapted`);
-    if (unlabeled) parts.push(`${unlabeled} unlabeled`);
-    text = `MPMC: ${parts.join(' · ')}`;
-  }
-  chip.textContent = text;
-  chip.title = text;
-  chip.hidden = false;
+  // Pattern=stream means MPMC, not stream I/O. Do not show serializer honesty.
+  chip.hidden = true;
+  chip.textContent = '';
+  chip.removeAttribute('title');
 }
 
 /**
@@ -3078,15 +3057,18 @@ function updateKPIs() {
       `${formatTimeCompact(lat)} · ${formatOpsCompact(fastest.avg_ops_per_sec)}${suffix}`;
   }
 
-  const compact = [...state.filteredGroups]
-    .filter((g) => g.median_size_bytes != null)
-    .sort((a, b) => a.median_size_bytes - b.median_size_bytes)[0];
-  if (compact) {
+  const lean = [...state.filteredGroups]
+    .filter((g) => g.msgs_per_cpu_sec != null && Number.isFinite(g.msgs_per_cpu_sec))
+    .sort((a, b) => b.msgs_per_cpu_sec - a.msgs_per_cpu_sec)[0];
+  if (lean) {
     document.getElementById('kpi-compact').textContent =
-      compact.library || compact.queue || compact.serializer || '—';
-    const suffix = compact.compounded ? ` · ${state.currentTestData}` : '';
+      lean.library || lean.queue || lean.serializer || '—';
+    const suffix = lean.compounded ? ` · ${state.currentTestData}` : '';
     document.getElementById('kpi-compact-val').textContent =
-      `${formatIntGrouped(compact.median_size_bytes)} bytes${suffix}`;
+      `${formatSig(lean.msgs_per_cpu_sec)} msgs / CPU-s${suffix}`;
+  } else {
+    document.getElementById('kpi-compact').textContent = '—';
+    document.getElementById('kpi-compact-val').textContent = 'No CPU samples in this run';
   }
 
   document.getElementById('kpi-pareto').textContent =
@@ -3333,11 +3315,10 @@ function renderTable() {
   tbody.innerHTML = '';
 
   const isOps = state.rosterMetric === 'ops';
-  const showHonesty = normalizeMode(state.currentMode) === 'stream';
   if (table) {
     table.classList.toggle('view-ops', isOps);
     table.classList.toggle('view-latency', !isOps);
-    table.classList.toggle('view-stream', showHonesty);
+    table.classList.toggle('view-stream', false);
   }
 
   // Enrich with derived ops stats for sort + cells
@@ -3458,16 +3439,6 @@ function renderTable() {
       ? `${r.library} @ ${r.library_version}`
       : r.library;
     tr.appendChild(tdName);
-
-    const tdHonesty = document.createElement('td');
-    tdHonesty.className = 'str roster-col-honesty';
-    const honestyLabel = honestyDisplayLabel(r.StreamMode);
-    tdHonesty.textContent = honestyLabel;
-    if (honestyLabel === 'adapted') {
-      tdHonesty.title =
-        'Adapted stream: in-memory encode/decode then dump to a stream. Do not treat as incremental I/O.';
-    }
-    tr.appendChild(tdHonesty);
 
     metricKeys.forEach(({ key, higherIsBetter }) => {
       const td = document.createElement('td');
@@ -3709,20 +3680,18 @@ function copyRosterMarkdown() {
     : state.compareBaseline || '—';
   const u = scales.latency.header;
   const oHdr = scales.ops.header;
-  const showHonesty = normalizeMode(state.currentMode) === 'stream';
   const headers = ['Queue'];
-  if (showHonesty) headers.push('Honesty');
   metricSpecs.forEach(({ key, label }) => {
     if (key.startsWith('ops_')) headers.push(`${label} (${oHdr})`);
     else if (key.endsWith('_ns')) headers.push(`${label} (${u})`);
-    else if (key === 'median_size_bytes') headers.push('Size (bytes)');
+    else if (key === 'msgs_per_cpu_sec') headers.push('Msgs / CPU-s');
     else headers.push(label || key);
   });
   headers.push('Pareto');
   const lines = [
     `Baseline: ${baseLabel}`,
-    `View: ${state.rosterMetric === 'ops' ? 'Ops/s stats' : 'Latency stats'} + size`,
-    `Ratios: median/size use ×base; Std/P95/P99 use ×med (own median)`,
+    `View: ${state.rosterMetric === 'ops' ? 'Ops/s stats' : 'Latency stats'} + CPU`,
+    `Ratios: median/CPU use ×base; Std/P95/P99 use ×med (own median)`,
     (() => {
       const s = parseFixtureSelection(state.currentTestData);
       if (s.kind === 'batch_compound') {
@@ -3738,7 +3707,7 @@ function copyRosterMarkdown() {
     })(),
     ``,
     `| ${headers.join(' | ')} |`,
-    `|${headers.map((h, i) => (i === 0 || h === 'Pareto' || h === 'Honesty' ? '---' : '---:')).join('|')}|`,
+    `|${headers.map((h, i) => (i === 0 || h === 'Pareto' ? '---' : '---:')).join('|')}|`,
   ];
   rows.forEach((r) => {
     const opt = state.paretoQueueNames.includes(r.library) ? 'yes' : '';
@@ -3756,8 +3725,7 @@ function copyRosterMarkdown() {
     });
     const name =
       queueLabelFromGroup(r) + (isBaseline ? ' (baseline)' : '');
-    const honestyCell = showHonesty ? ` ${honestyDisplayLabel(r.StreamMode)} |` : '';
-    lines.push(`| ${name} |${honestyCell} ${cells.join(' | ')} | ${opt} |`);
+    lines.push(`| ${name} | ${cells.join(' | ')} | ${opt} |`);
   });
   copyText(lines.join('\n'), 'Roster Markdown copied');
 }

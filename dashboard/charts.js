@@ -17,7 +17,7 @@ const fontStyle = {
 const gridColor = 'rgba(0, 0, 0, 0.06)';
 const tickColor = '#5f6368';
 
-/** @type {{ logScale: boolean, rankSort: 'speed' | 'size' }} */
+/** @type {{ logScale: boolean, rankSort: 'speed' | 'cpu' }} */
 let chartOptions = { logScale: false, rankSort: 'speed' };
 
 export function initCharts() {
@@ -32,9 +32,9 @@ export function getChartLogScale() {
   return chartOptions.logScale;
 }
 
-/** Ranking chart row order: 'speed' (ops/latency) or 'size' (median bytes, compact first). */
+/** Ranking chart row order: 'speed' (ops/latency) or 'cpu' (msgs per CPU-s). */
 export function setRankSort(sort) {
-  chartOptions.rankSort = sort === 'size' ? 'size' : 'speed';
+  chartOptions.rankSort = sort === 'cpu' || sort === 'size' ? 'cpu' : 'speed';
 }
 
 export function getRankSort() {
@@ -47,20 +47,20 @@ export function updateCharts(groups, paretoNames, metric) {
   const title = document.getElementById('bar-chart-title');
   if (title) {
     title.textContent =
-      metric === 'ops' ? 'Throughput & Size Ranking' : 'Latency & Size Ranking';
+      metric === 'ops' ? 'Throughput & CPU ranking' : 'Latency & CPU ranking';
   }
   const help = document.getElementById('ranking-help');
   if (help) {
     const primaryRight = metric === 'ops' ? 'ops/s' : 'latency';
     const sortLabel =
-      chartOptions.rankSort === 'size'
-        ? 'sorted by size (most compact first)'
+      chartOptions.rankSort === 'cpu'
+        ? 'sorted by messages per CPU-second (highest first)'
         : metric === 'ops'
           ? 'sorted by ops/s (highest first)'
           : 'sorted by latency (lowest first)';
     help.innerHTML =
       `Single diverging chart, <strong>${sortLabel}</strong>: ` +
-      `<span class="rank-legend-size">◀ size</span> left · ` +
+      `<span class="rank-legend-size">◀ CPU</span> left · ` +
       `<span class="rank-legend-speed">${primaryRight} ▶</span> right. ` +
       `Each side is normalized to the chart max (100); hover for absolute values.`;
   }
@@ -89,7 +89,7 @@ function updateScatterChart(groups, paretoNames, metric) {
 
   groups.forEach((g) => {
     const xVal = isOps ? g.avg_ops_per_sec : g.avg_time_handoff_ns;
-    const yVal = g.median_size_bytes;
+    const yVal = g.msgs_per_cpu_sec;
     if (xVal == null || yVal == null || !Number.isFinite(xVal) || !Number.isFinite(yVal)) return;
     if (chartOptions.logScale && xVal <= 0) return;
     const point = {
@@ -118,7 +118,7 @@ function updateScatterChart(groups, paretoNames, metric) {
     return formatSig(value / latencyScale.divisor);
   };
 
-  const sortedPareto = [...paretoPoints].sort((a, b) => a.y - b.y);
+  const sortedPareto = [...paretoPoints].sort((a, b) => b.y - a.y);
   const frontierLineData = [];
   for (let i = 0; i < sortedPareto.length; i++) {
     frontierLineData.push({ x: sortedPareto[i].x, y: sortedPareto[i].y });
@@ -197,8 +197,8 @@ function updateScatterChart(groups, paretoNames, metric) {
                 `Queue: ${p.label}`,
                 `Throughput: ${formatOpsCompact(p.ops)}`,
                 `Latency: ${formatTimeCompact(p.time)}`,
-                `Size: ${formatIntGrouped(p.y)} bytes`,
-                p.onFrontier ? 'On Pareto frontier' : 'Dominated on speed/size',
+                `Msgs / CPU-s: ${formatSig(p.y)}`,
+                p.onFrontier ? 'On Pareto frontier' : 'Dominated on speed/CPU',
               ];
             },
           },
@@ -223,7 +223,7 @@ function updateScatterChart(groups, paretoNames, metric) {
         y: {
           title: {
             display: true,
-            text: 'Payload size (bytes)',
+            text: 'Messages per CPU-second',
             color: tickColor,
             font: { ...fontStyle, weight: 'bold' },
           },
@@ -231,7 +231,7 @@ function updateScatterChart(groups, paretoNames, metric) {
           ticks: {
             color: tickColor,
             font: fontStyle,
-            callback: (v) => formatIntGrouped(v),
+            callback: (v) => formatSig(v),
           },
         },
       },
@@ -267,7 +267,7 @@ function updateScatterChart(groups, paretoNames, metric) {
 /**
  * Single diverging (butterfly) horizontal bar chart:
  * - Right (blue): throughput or latency, normalized 0..100 vs chart max
- * - Left (green): median size, normalized 0..-100 vs chart max
+ * - Left (green): messages per CPU-second, normalized 0..-100 vs chart max
  * Absolute values only in tooltips — avoids dual-axis collisions.
  */
 function updateBarChart(groups, paretoNames, metric) {
@@ -276,23 +276,22 @@ function updateBarChart(groups, paretoNames, metric) {
   if (barChartInstance) barChartInstance.destroy();
 
   const isOps = metric === 'ops';
-  const sortBySize = chartOptions.rankSort === 'size';
+  const sortByCpu = chartOptions.rankSort === 'cpu';
 
   const sortedGroups = [...groups]
     .filter((g) => {
       if (!g) return false;
-      if (g.median_size_bytes == null && sortBySize) return false;
+      if (g.msgs_per_cpu_sec == null && sortByCpu) return false;
       return isOps ? g.avg_ops_per_sec != null : g.avg_time_handoff_ns != null;
     })
     .sort((a, b) => {
-      if (sortBySize) {
-        // Compact first (ascending size); tie-break by speed
-        const ds = (a.median_size_bytes ?? 0) - (b.median_size_bytes ?? 0);
-        if (ds !== 0) return ds;
+      if (sortByCpu) {
+        const dc = (b.msgs_per_cpu_sec ?? 0) - (a.msgs_per_cpu_sec ?? 0);
+        if (dc !== 0) return dc;
       }
       return isOps
         ? b.avg_ops_per_sec - a.avg_ops_per_sec
-        : a.avg_time_total_ns - b.avg_time_total_ns;
+        : (a.avg_time_handoff_ns ?? 0) - (b.avg_time_handoff_ns ?? 0);
     })
     .slice(0, 15);
 
@@ -300,17 +299,17 @@ function updateBarChart(groups, paretoNames, metric) {
   const primaryRaw = sortedGroups.map((g) =>
     isOps ? g.avg_ops_per_sec : g.avg_time_handoff_ns
   );
-  const sizeRaw = sortedGroups.map((g) => Number(g.median_size_bytes) || 0);
+  const cpuRaw = sortedGroups.map((g) => Number(g.msgs_per_cpu_sec) || 0);
 
   const maxPrimary = Math.max(...primaryRaw.filter((v) => Number.isFinite(v) && v > 0), 1);
-  const maxSize = Math.max(...sizeRaw.filter((v) => Number.isFinite(v) && v > 0), 1);
+  const maxCpu = Math.max(...cpuRaw.filter((v) => Number.isFinite(v) && v > 0), 1);
 
-  // Normalized: speed → +0..100, size → -0..-100 (diverging from center)
+  // Normalized: speed → +0..100, CPU → -0..-100 (diverging from center)
   const speedNorm = primaryRaw.map((v) =>
     Number.isFinite(v) && maxPrimary > 0 ? (v / maxPrimary) * 100 : 0
   );
-  const sizeNorm = sizeRaw.map((v) =>
-    Number.isFinite(v) && maxSize > 0 ? -(v / maxSize) * 100 : 0
+  const sizeNorm = cpuRaw.map((v) =>
+    Number.isFinite(v) && maxCpu > 0 ? -(v / maxCpu) * 100 : 0
   );
 
   const speedColors = sortedGroups.map((g) =>
@@ -324,10 +323,10 @@ function updateBarChart(groups, paretoNames, metric) {
     type: 'bar',
     data: {
       labels,
-      // Legend order matches plot: size left (←), then speed/latency right (→).
+      // Legend order matches plot: CPU left (←), then speed/latency right (→).
       datasets: [
         {
-          label: 'Size (←)',
+          label: 'CPU (←)',
           data: sizeNorm,
           backgroundColor: sizeColors,
           borderColor: sortedGroups.map((g) =>
@@ -383,9 +382,9 @@ function updateBarChart(groups, paretoNames, metric) {
               const g = sortedGroups[context.dataIndex];
               if (!g) return '';
               const pct = Math.abs(context.raw).toFixed(0);
-              // dataset 0 = size (left), 1 = speed/latency (right)
+              // dataset 0 = CPU (left), 1 = speed/latency (right)
               if (context.datasetIndex === 0) {
-                return `Size: ${formatIntGrouped(g.median_size_bytes)} bytes  (${pct}% of max in chart)`;
+                return `Msgs / CPU-s: ${formatSig(g.msgs_per_cpu_sec)}  (${pct}% of max in chart)`;
               }
               const abs = isOps
                 ? formatOpsCompact(g.avg_ops_per_sec)
@@ -398,7 +397,7 @@ function updateBarChart(groups, paretoNames, metric) {
               const g = sortedGroups[items[0]?.dataIndex];
               if (!g) return [];
               return [
-                paretoNames.includes(g.library) ? 'Pareto optimal' : 'Dominated on speed/size',
+                paretoNames.includes(g.library) ? 'Pareto optimal' : 'Dominated on speed/CPU',
               ];
             },
           },
@@ -417,8 +416,8 @@ function updateBarChart(groups, paretoNames, metric) {
           title: {
             display: true,
             text: isOps
-              ? '◀ larger size          normalized % of chart max          higher ops/s ▶'
-              : '◀ larger size          normalized % of chart max          higher latency ▶',
+              ? '◀ more msgs / CPU-s          normalized % of chart max          higher ops/s ▶'
+              : '◀ more msgs / CPU-s          normalized % of chart max          higher latency ▶',
             color: tickColor,
             font: { ...fontStyle, size: 10 },
           },

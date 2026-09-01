@@ -364,3 +364,40 @@ test('figureTypesFor picks a story-specific hero', () => {
   assert.ok(def.includes('W1'));
   assert.ok(def.includes('S1'));
 });
+
+test('experimentTableFlags hides fixture-constant size and empty write/read', () => {
+  const handoff = [
+    { library: 'a', total_median_ns: 1000, size_bytes: 25600, runs: 9 },
+    { library: 'b', total_median_ns: 2000, size_bytes: 25600, runs: 9 },
+  ];
+  assert.deepEqual(experimentTableFlags(handoff), {
+    write: false,
+    read: false,
+    size: false,
+    spread: false,
+  });
+  const split = [
+    {
+      library: 'a',
+      write_median_ns: 400,
+      read_median_ns: 600,
+      total_median_ns: 1000,
+      size_bytes: 100,
+      total_std_ns: 50,
+    },
+    {
+      library: 'b',
+      write_median_ns: 800,
+      read_median_ns: 900,
+      total_median_ns: 1700,
+      size_bytes: 200,
+      total_std_ns: 80,
+    },
+  ];
+  assert.deepEqual(experimentTableFlags(split), {
+    write: true,
+    read: true,
+    size: true,
+    spread: true,
+  });
+});

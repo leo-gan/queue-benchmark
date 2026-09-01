@@ -17,6 +17,7 @@ class BenchmarkLog:
     library_version: str = ""
     time_enq_ns: int = 0
     time_deq_ns: int = 0
+    # Fixture payload bytes for this cell (same for every library). Not a score.
     size_bytes: int = 0
     memory_peak_bytes: int = 0
     fidelity_score: float = 1.0

@@ -25,7 +25,7 @@ This document is the source of truth for the stacked PRs. Domain words change
    | `TimeSer` | Enqueue (produce) ns |
    | `TimeDeser` | Dequeue (consume) ns |
    | `TimeSerAndDeser` | Handoff / round-trip ns |
-   | `Size` | Payload bytes moved in that repetition |
+   | `Size` | Payload bytes in this cell (fixture; not a library score) |
    | `StringOrStream` | Pattern: **SPSC** (logged as `bytes`) or **MPMC** (logged as `stream`) |
    | `TestDataName` | Payload type id (`message`, `document`, …) |
    | `FidelityScore` | 1.0 if every item arrived in order; else < 1 |

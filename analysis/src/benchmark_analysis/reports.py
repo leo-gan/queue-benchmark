@@ -1133,7 +1133,7 @@ def _scientific_summary_md(stats: Dict, profile: str = "multi_way") -> str:
 
     # Shared K/M scale per column (same rule as ops/s and pivot tables)
     col_units: Dict[str, tuple] = {}
-    for field_id in ("avg_ops_per_sec", "median_size_bytes"):
+    for field_id in ("avg_ops_per_sec", "msgs_per_cpu_sec"):
         vals_in_col = [cell_vals[(ser, field_id)] for ser in serializers if (ser, field_id) in cell_vals]
         if vals_in_col:
             col_units[field_id] = _pick_column_unit(vals_in_col)
@@ -1180,7 +1180,7 @@ def _scientific_summary_md(stats: Dict, profile: str = "multi_way") -> str:
             elif is_time:
                 # ns → µs; fixed-point only (never 1.17e+03)
                 text = _format_sig(num / 1000.0, sig=3)
-            elif field_id in ("avg_ops_per_sec", "median_size_bytes"):
+            elif field_id in ("avg_ops_per_sec", "msgs_per_cpu_sec"):
                 # 3 significant digits + shared column K/M (thousands / millions)
                 div, unit = col_units.get(field_id) or _pick_column_unit([num])
                 text = _format_in_unit(num, div, unit, sig=3)

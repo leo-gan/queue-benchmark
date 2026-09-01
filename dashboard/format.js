@@ -158,6 +158,7 @@ export function metricKind(key) {
   ) {
     return 'ops';
   }
+  if (key === 'msgs_per_cpu_sec') return 'rate';
   if (key.endsWith('_bytes') || key.startsWith('size_') || key === 'median_size_bytes') return 'bytes';
   if (
     key === 'runs' ||
@@ -187,7 +188,7 @@ export function formatMetricCell(key, value, scales = {}) {
   if (kind === 'latency') return formatLatencyCell(value, scales.latency);
   if (kind === 'ops') return formatOpsCell(value, scales.ops);
   if (kind === 'bytes' || kind === 'count') return formatIntGrouped(value);
-  if (kind === 'ratio') return formatSig(value);
+  if (kind === 'ratio' || kind === 'rate') return formatSig(value);
   if (Number.isInteger(value) && Math.abs(value) < 1e9) return formatIntGrouped(value);
   return formatSig(value);
 }

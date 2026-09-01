@@ -17,8 +17,8 @@ _DEFAULT_IMPORTANCE: Dict[str, str] = {
     "avg_time_deq_ns": "medium",
     "handoff_mean_ns": "medium",
     "avg_ops_per_sec": "high",
-    "median_size_bytes": "high",
-    "mean_fidelity": "high",
+    "median_size_bytes": "low",
+    "mean_fidelity": "medium",
     "library_version": "high",
     "runs": "high",
     "handoff_ci_low_ns": "medium",
@@ -110,8 +110,9 @@ MULTI_WAY_SUMMARY_FIELDS: Sequence[tuple] = (
     ("enq_median_ns", "Median enqueue (µs)", True, False),
     ("deq_median_ns", "Median dequeue (µs)", True, False),
     ("avg_ops_per_sec", "Ops/s (from mean)", False, True),
-    ("median_size_bytes", "Median size (B)", False, False),
-    # runs / mean_fidelity intentionally omitted from multi-way Summary.
+    ("handoff_p99_ns", "Handoff p99 (µs)", True, False),
+    ("msgs_per_cpu_sec", "Msgs / CPU-s", False, True),
+    # Size is a fixture (same payload for every library). Fidelity is a gate.
     ("library_version", "Version", False, None),
     ("effect_vs_fastest_cliffs_label", "δ vs fastest", False, None),
 )
