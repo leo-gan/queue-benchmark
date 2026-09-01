@@ -42,3 +42,23 @@ languages:
     libraries:
       - {name: deque-lock, role: locked baseline}
       - {name: queue.Queue, role: threading queue}
+  - id: csharp
+    enabled: true
+    libraries:
+      - {name: Queue+lock, role: locked baseline}
+      - {name: ConcurrentQueue, role: concurrent}
+  - id: rust
+    enabled: true
+    libraries:
+      - {name: crossbeam-channel, role: concurrent}
+      - {name: steal-deque, role: work-stealing}
+  - id: c
+    enabled: true
+    libraries:
+      - {name: mutex-queue, role: locked baseline}
+      - {name: spsc-ring, role: spsc}
+  - id: javascript
+    enabled: true
+    libraries:
+      - {name: Array, role: locked baseline}
+      - {name: steal-deque, role: work-stealing}

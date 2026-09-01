@@ -41,4 +41,19 @@ languages:
     enabled: true
     libraries:
       - {name: multiprocessing.Queue, role: IPC queue}
-      - {name: queue.Queue, role: in-process control}
+  - id: csharp
+    enabled: true
+    libraries:
+      - {name: pipe-ipc, role: IPC pipe}
+  - id: rust
+    enabled: true
+    libraries:
+      - {name: pipe-ipc, role: IPC pipe}
+  - id: c
+    enabled: true
+    libraries:
+      - {name: pipe-ipc, role: IPC pipe}
+  - id: javascript
+    enabled: true
+    libraries:
+      - {name: pipe-ipc, role: IPC pipe}

@@ -36,6 +36,18 @@ def _now_ns() -> int:
     return time.perf_counter_ns()
 
 
+def _rss_bytes() -> int:
+    try:
+        import resource
+
+        ru = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+        if sys.platform == "darwin":
+            return int(ru)
+        return int(ru) * 1024
+    except Exception:
+        return 0
+
+
 def _split(items: list[bytes], parts: int) -> list[list[bytes]]:
     n = len(items)
     parts = max(1, parts)
@@ -350,6 +362,7 @@ def run(reps: int, queue_filter: str = "", data_filter: str = "") -> Path:
                         fidelity_score=fid,
                         data_type_instance_count=n,
                         type_config_hash=tc_hash,
+                        memory_peak_bytes=_rss_bytes(),
                         native_kind=adapter.category,
                         stream_mode="native" if (producers, consumers) != (1, 1) else "",
                         run_order=run_order,

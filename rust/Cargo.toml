@@ -5,5 +5,9 @@ edition = "2021"
 
 [dependencies]
 crossbeam-channel = "0.5"
+crossbeam-deque = "0.8"
 crossbeam-queue = "0.3"
+libc = "0.2"
+memmap2 = "0.9"
+rusqlite = { version = "0.32", features = ["bundled"] }
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time"] }

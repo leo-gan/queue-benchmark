@@ -1,11 +1,18 @@
-#define _POSIX_C_SOURCE 199309L
+#define _GNU_SOURCE
+#define _POSIX_C_SOURCE 200809L
 #include <pthread.h>
+#include <stdatomic.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mman.h>
+#include <sys/resource.h>
+#include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
+#include <arpa/inet.h>
+#include <sqlite3.h>
 
 static uint64_t now_ns(void) {
     struct timespec ts;
@@ -25,6 +32,170 @@ static void sleep_ns(uint64_t ns) {
     ts.tv_sec = (time_t)(ns / 1000000000ull);
     ts.tv_nsec = (long)(ns % 1000000000ull);
     nanosleep(&ts, NULL);
+}
+
+static uint64_t rss_bytes(void) {
+    struct rusage ru;
+    if (getrusage(RUSAGE_SELF, &ru) != 0)
+        return 0;
+    return (uint64_t)ru.ru_maxrss * 1024ull;
+}
+
+static int env_on(const char *name) {
+    const char *v = getenv(name);
+    return v && (!strcmp(v, "1") || !strcmp(v, "true") || !strcmp(v, "on"));
+}
+
+static int name_wanted(const char *name, const char *qf, int opt_in, int include_psd, const char *psd_names) {
+    if (qf[0] && !strstr(name, qf))
+        return 0;
+    if (opt_in) {
+        if (!include_psd && !qf[0])
+            return 0;
+        if (psd_names[0] && !strstr(psd_names, name))
+            return 0;
+    }
+    return 1;
+}
+
+static void write_frame(int fd, const void *item, int payload) {
+    uint32_t n = htonl((uint32_t)payload);
+    if (write(fd, &n, 4) != 4) return;
+    if (payload > 0) (void)write(fd, item, (size_t)payload);
+}
+
+static int read_frame(int fd, int payload) {
+    uint32_t n = 0;
+    if (read(fd, &n, 4) != 4) return -1;
+    n = ntohl(n);
+    char buf[4096];
+    while (n) {
+        size_t chunk = n > sizeof buf ? sizeof buf : n;
+        ssize_t r = read(fd, buf, chunk);
+        if (r <= 0) return -1;
+        n -= (uint32_t)r;
+    }
+    (void)payload;
+    return 0;
+}
+
+static void bench_pipe(void **items, int n, int payload, uint64_t *enq, uint64_t *deq) {
+    int fd[2];
+    if (pipe(fd) != 0) { *enq = *deq = 0; return; }
+    pid_t pid = fork();
+    if (pid == 0) {
+        close(fd[1]);
+        for (int i = 0; i < n; i++) (void)read_frame(fd[0], payload);
+        close(fd[0]);
+        _exit(0);
+    }
+    close(fd[0]);
+    uint64_t t0 = now_ns();
+    for (int i = 0; i < n; i++) write_frame(fd[1], items[i], payload);
+    close(fd[1]);
+    int st = 0;
+    waitpid(pid, &st, 0);
+    uint64_t wall = now_ns() - t0;
+    *enq = wall / 2;
+    *deq = wall - *enq;
+}
+
+typedef struct {
+    atomic_uint *head;
+    atomic_uint *tail;
+    uint32_t slots, slot;
+    uint32_t *lens;
+    uint8_t *data;
+} SharedRing;
+
+static void ring_attach(SharedRing *r, uint8_t *mem, uint32_t slots, uint32_t slot) {
+    r->head = (atomic_uint *)mem;
+    r->tail = (atomic_uint *)(mem + sizeof(atomic_uint));
+    r->slots = slots;
+    r->slot = slot;
+    r->lens = (uint32_t *)(mem + 2 * sizeof(atomic_uint));
+    r->data = mem + 2 * sizeof(atomic_uint) + sizeof(uint32_t) * slots;
+}
+
+static void ring_push(SharedRing *r, const void *item, int n) {
+    for (;;) {
+        uint32_t tail = atomic_load_explicit(r->tail, memory_order_relaxed);
+        uint32_t head = atomic_load_explicit(r->head, memory_order_acquire);
+        uint32_t nxt = (tail + 1) % r->slots;
+        if (nxt == head) continue;
+        uint32_t len = (uint32_t)n;
+        if (len > r->slot) len = r->slot;
+        r->lens[tail] = len;
+        memcpy(r->data + (size_t)tail * r->slot, item, len);
+        atomic_store_explicit(r->tail, nxt, memory_order_release);
+        return;
+    }
+}
+
+static void ring_pop(SharedRing *r) {
+    for (;;) {
+        uint32_t head = atomic_load_explicit(r->head, memory_order_relaxed);
+        uint32_t tail = atomic_load_explicit(r->tail, memory_order_acquire);
+        if (head == tail) continue;
+        atomic_store_explicit(r->head, (head + 1) % r->slots, memory_order_release);
+        return;
+    }
+}
+
+static void bench_shared(void **items, int n, int payload, uint64_t *enq, uint64_t *deq) {
+    uint32_t slots = (uint32_t)n + 2;
+    uint32_t slot = payload > 64 ? (uint32_t)payload : 64;
+    size_t bytes = 2 * sizeof(atomic_uint) + sizeof(uint32_t) * slots + (size_t)slots * slot;
+    uint8_t *mem = mmap(NULL, bytes, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+    if (mem == MAP_FAILED) { *enq = *deq = 0; return; }
+    memset(mem, 0, bytes);
+    SharedRing ring;
+    ring_attach(&ring, mem, slots, slot);
+    atomic_init(ring.head, 0);
+    atomic_init(ring.tail, 0);
+    pid_t pid = fork();
+    if (pid == 0) {
+        SharedRing child;
+        ring_attach(&child, mem, slots, slot);
+        for (int i = 0; i < n; i++) ring_pop(&child);
+        _exit(0);
+    }
+    uint64_t t0 = now_ns();
+    for (int i = 0; i < n; i++) ring_push(&ring, items[i], payload);
+    int st = 0;
+    waitpid(pid, &st, 0);
+    uint64_t wall = now_ns() - t0;
+    *enq = wall / 2;
+    *deq = wall - *enq;
+    munmap(mem, bytes);
+}
+
+static void bench_sqlite(void **items, int n, int payload, uint64_t *enq, uint64_t *deq) {
+    char path[128];
+    snprintf(path, sizeof path, "/tmp/qb-d-%d-%ld.sqlite", (int)getpid(), (long)now_ns());
+    sqlite3 *db = NULL;
+    if (sqlite3_open(path, &db) != SQLITE_OK) { *enq = *deq = 0; return; }
+    int fsync = env_on("BENCHMARK_FSYNC");
+    sqlite3_exec(db, "PRAGMA journal_mode=WAL", NULL, NULL, NULL);
+    sqlite3_exec(db, fsync ? "PRAGMA synchronous=FULL" : "PRAGMA synchronous=OFF", NULL, NULL, NULL);
+    sqlite3_exec(db, "CREATE TABLE q (id INTEGER PRIMARY KEY, payload BLOB)", NULL, NULL, NULL);
+    sqlite3_stmt *ins = NULL, *sel = NULL;
+    sqlite3_prepare_v2(db, "INSERT INTO q(payload) VALUES (?)", -1, &ins, NULL);
+    uint64_t t0 = now_ns();
+    for (int i = 0; i < n; i++) {
+        sqlite3_bind_blob(ins, 1, items[i], payload, SQLITE_STATIC);
+        sqlite3_step(ins);
+        sqlite3_reset(ins);
+    }
+    *enq = now_ns() - t0;
+    sqlite3_prepare_v2(db, "SELECT payload FROM q ORDER BY id", -1, &sel, NULL);
+    t0 = now_ns();
+    while (sqlite3_step(sel) == SQLITE_ROW) { (void)sqlite3_column_blob(sel, 0); }
+    *deq = now_ns() - t0;
+    sqlite3_finalize(ins);
+    sqlite3_finalize(sel);
+    sqlite3_close(db);
+    unlink(path);
 }
 
 typedef struct {
@@ -140,13 +311,13 @@ static double ops(uint64_t ns) {
 static void write_row(FILE *f, const char *mode, const char *ty, int reps, int idx,
                       const char *name, const char *ver, uint64_t enq, uint64_t deq,
                       size_t size, int n, const char *hash, const char *kind, int order,
-                      uint64_t cpu) {
+                      uint64_t cpu, uint64_t rss) {
     uint64_t tot = enq + deq;
     fprintf(f,
-            "c,%s,%s,%d,%d,%s,%s,%llu,%llu,%zu,%llu,%.6f,%.6f,%.6f,0,1.0000,%d,%s,0,0,%s,%s,%d,%d,%llu\n",
+            "c,%s,%s,%d,%d,%s,%s,%llu,%llu,%zu,%llu,%.6f,%.6f,%.6f,%llu,1.0000,%d,%s,0,0,%s,%s,%d,%d,%llu\n",
             mode, ty, reps, idx, name, ver,
             (unsigned long long)enq, (unsigned long long)deq, size, (unsigned long long)tot,
-            ops(enq), ops(deq), ops(tot), n, hash, kind,
+            ops(enq), ops(deq), ops(tot), (unsigned long long)rss, n, hash, kind,
             strcmp(mode, "stream") == 0 ? "native" : "", order, order,
             (unsigned long long)cpu);
 }
@@ -183,6 +354,9 @@ int main(int argc, char **argv) {
         const char *w = getenv("BENCHMARK_WAIT_NS");
         if (w && w[0]) wait_ns = strtoull(w, NULL, 10);
     }
+    int include_psd = env_on("BENCHMARK_INCLUDE_PSD");
+    const char *psd_names = getenv("BENCHMARK_PSD_NAMES");
+    if (!psd_names) psd_names = "";
     fprintf(out, "Language,StringOrStream,TestDataName,Repetitions,RepetitionIndex,SerializerName,SerializerVersion,TimeSer,TimeDeser,Size,TimeSerAndDeser,OpPerSecSer,OpPerSecDeser,OpPerSecSerAndDeser,MemoryPeakBytes,FidelityScore,DataTypeInstanceCount,TypeConfigHash,SizeGzip,SizeZstd,NativeKind,StreamMode,RunOrder,SchedulePosition,CpuTimeNs\n");
 
     FILE *cf = fopen(cells, "r");
@@ -205,18 +379,24 @@ int main(int argc, char **argv) {
         void **items = calloc((size_t)n, sizeof(void *));
         for (int i = 0; i < n; i++) items[i] = item;
         size_t size = (size_t)payload * (size_t)n;
-        const char *names[] = {"mutex-queue", "spsc-ring"};
-        for (int qi = 0; qi < 2; qi++) {
-            if (qf[0] && !strstr(names[qi], qf))
+        const char *names[] = {"mutex-queue", "spsc-ring", "steal-deque", "pipe-ipc", "shared-ring", "sqlite-queue"};
+        const char *kinds[] = {"locked", "spsc", "work-stealing", "concurrent", "spsc", "durable"};
+        const int opt_in[] = {0, 0, 0, 1, 1, 1};
+        const int spsc_only[] = {0, 1, 0, 1, 1, 1};
+        for (int qi = 0; qi < 6; qi++) {
+            if (!name_wanted(names[qi], qf, opt_in[qi], include_psd, psd_names))
                 continue;
             int producers = 1, consumers = 1;
             parse_pattern(mode, &producers, &consumers);
-            if (strcmp(names[qi], "spsc-ring") == 0 && (producers != 1 || consumers != 1))
+            if (spsc_only[qi] && (producers != 1 || consumers != 1))
                 continue;
-            /* No async cancel in C. SPSC ring spins — skip wakeup (not an OS wait). */
             if (strcmp(special, "cancel") == 0)
                 continue;
-            if (strcmp(special, "wakeup") == 0 && strcmp(names[qi], "spsc-ring") == 0)
+            if (special[0] && opt_in[qi])
+                continue;
+            if (strcmp(special, "wakeup") == 0 &&
+                (strcmp(names[qi], "spsc-ring") == 0 || strcmp(names[qi], "steal-deque") == 0 ||
+                 strcmp(names[qi], "shared-ring") == 0))
                 continue;
             for (int i = 0; i < reps; i++) {
                 uint64_t enq = 0, deq = 0;
@@ -239,17 +419,7 @@ int main(int argc, char **argv) {
                     deq = wall - enq;
                     mq_free(&q);
                 } else if (strcmp(special, "burst") == 0) {
-                    if (strcmp(names[qi], "mutex-queue") == 0) {
-                        MutexQ q;
-                        mq_init(&q, (size_t)n + 1);
-                        uint64_t t0 = now_ns();
-                        for (int k = 0; k < n; k++) mq_push(&q, items[k]);
-                        enq = now_ns() - t0;
-                        t0 = now_ns();
-                        for (int k = 0; k < n; k++) (void)mq_pop(&q);
-                        deq = now_ns() - t0;
-                        mq_free(&q);
-                    } else {
+                    if (strcmp(names[qi], "spsc-ring") == 0) {
                         Spsc q;
                         spsc_init(&q, (size_t)n + 2);
                         uint64_t t0 = now_ns();
@@ -259,8 +429,24 @@ int main(int argc, char **argv) {
                         for (int k = 0; k < n; k++) (void)spsc_pop(&q);
                         deq = now_ns() - t0;
                         free(q.buf);
+                    } else {
+                        MutexQ q;
+                        mq_init(&q, (size_t)n + 1);
+                        uint64_t t0 = now_ns();
+                        for (int k = 0; k < n; k++) mq_push(&q, items[k]);
+                        enq = now_ns() - t0;
+                        t0 = now_ns();
+                        for (int k = 0; k < n; k++) (void)mq_pop(&q);
+                        deq = now_ns() - t0;
+                        mq_free(&q);
                     }
-                } else if (strcmp(names[qi], "mutex-queue") == 0) {
+                } else if (strcmp(names[qi], "pipe-ipc") == 0) {
+                    bench_pipe(items, n, payload, &enq, &deq);
+                } else if (strcmp(names[qi], "shared-ring") == 0) {
+                    bench_shared(items, n, payload, &enq, &deq);
+                } else if (strcmp(names[qi], "sqlite-queue") == 0) {
+                    bench_sqlite(items, n, payload, &enq, &deq);
+                } else if (strcmp(names[qi], "mutex-queue") == 0 || strcmp(names[qi], "steal-deque") == 0) {
                     MutexQ q;
                     mq_init(&q, (size_t)n + 1);
                     if (producers == 1 && consumers == 1) {
@@ -304,9 +490,8 @@ int main(int argc, char **argv) {
                     free(q.buf);
                 }
                 write_row(out, mode, type_id, reps, i, names[qi], "0.1.0",
-                          enq, deq, size, n, hash,
-                          strcmp(names[qi], "spsc-ring") == 0 ? "spsc" : "locked", order,
-                          cpu_ns() - cpu0);
+                          enq, deq, size, n, hash, kinds[qi], order,
+                          cpu_ns() - cpu0, rss_bytes());
                 order++;
             }
         }

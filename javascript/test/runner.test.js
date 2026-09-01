@@ -11,5 +11,8 @@ test("runner source exists", () => {
   assert.match(src, /scheduler/);
   assert.match(src, /benchWakeup/);
   assert.match(src, /benchCancel/);
+  assert.match(src, /steal-deque/);
+  assert.match(src, /pipe-ipc/);
+  assert.match(src, /sqlite-queue/);
   assert.doesNotMatch(src, /Python-only/);
 });

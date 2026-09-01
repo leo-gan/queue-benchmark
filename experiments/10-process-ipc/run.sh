@@ -10,7 +10,7 @@ fi
 export BENCHMARK_RUN_CONFIG="$HERE/run.yaml"
 export BENCHMARK_SEED=42
 export BENCHMARK_INCLUDE_PSD="1"
-export BENCHMARK_PSD_NAMES="multiprocessing.Queue"
+export BENCHMARK_PSD_NAMES="multiprocessing.Queue,pipe-ipc"
 while IFS='|' read -r id runner_dir runner_script; do
   [[ -z "$id" ]] && continue
   skip=1

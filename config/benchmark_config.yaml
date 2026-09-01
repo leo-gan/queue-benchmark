@@ -266,6 +266,26 @@ languages:
         communication: async
         package: stdlib
         rationale: "System.Threading.Channels unbounded channel"
+      - name: steal-deque
+        category: work-stealing
+        communication: thread
+        package: harness
+        rationale: "Owner-push / steal-from-top deque"
+      - name: pipe-ipc
+        category: concurrent
+        communication: process
+        package: harness
+        rationale: "Cross-process length-prefixed pipe (opt-in; category P)"
+      - name: shared-ring
+        category: spsc
+        communication: shared
+        package: harness
+        rationale: "Memory-mapped SPSC ring (opt-in; category S)"
+      - name: sqlite-queue
+        category: durable
+        communication: durable
+        package: Microsoft.Data.Sqlite
+        rationale: "SQLite-backed local queue (opt-in; category D)"
 
   python:
     display_name: Python
@@ -347,6 +367,26 @@ languages:
         communication: thread
         crate: crossbeam-queue
         rationale: "Lock-free unbounded MPMC (SegQueue)"
+      - name: steal-deque
+        category: work-stealing
+        communication: thread
+        crate: crossbeam-deque
+        rationale: "Chase-Lev injector / steal (crossbeam-deque)"
+      - name: pipe-ipc
+        category: concurrent
+        communication: process
+        crate: std
+        rationale: "Cross-process length-prefixed pipe (opt-in; category P)"
+      - name: shared-ring
+        category: spsc
+        communication: shared
+        crate: memmap2
+        rationale: "mmap SPSC ring (opt-in; category S)"
+      - name: sqlite-queue
+        category: durable
+        communication: durable
+        crate: rusqlite
+        rationale: "SQLite-backed local queue (opt-in; category D)"
 
   c:
     display_name: C
@@ -368,6 +408,26 @@ languages:
         communication: thread
         library: harness
         rationale: "Single-producer single-consumer ring buffer"
+      - name: steal-deque
+        category: work-stealing
+        communication: thread
+        library: harness
+        rationale: "Owner-push / steal-from-top deque"
+      - name: pipe-ipc
+        category: concurrent
+        communication: process
+        library: harness
+        rationale: "pipe + fork IPC (opt-in; category P)"
+      - name: shared-ring
+        category: spsc
+        communication: shared
+        library: harness
+        rationale: "mmap + fork SPSC ring (opt-in; category S)"
+      - name: sqlite-queue
+        category: durable
+        communication: durable
+        library: sqlite3
+        rationale: "SQLite-backed local queue (opt-in; category D)"
 
   javascript:
     display_name: "JavaScript (Node.js)"
@@ -395,3 +455,23 @@ languages:
         communication: scheduler
         package: p-queue
         rationale: "Promise concurrency limiter — not a handoff queue"
+      - name: steal-deque
+        category: work-stealing
+        communication: thread
+        package: harness
+        rationale: "Owner-push / steal-from-top deque"
+      - name: pipe-ipc
+        category: concurrent
+        communication: process
+        package: harness
+        rationale: "Child-process length-prefixed pipe (opt-in; category P)"
+      - name: shared-ring
+        category: spsc
+        communication: shared
+        package: harness
+        rationale: "SharedArrayBuffer SPSC ring via worker (opt-in; category S)"
+      - name: sqlite-queue
+        category: durable
+        communication: durable
+        package: node:sqlite
+        rationale: "SQLite-backed local queue (opt-in; category D)"
