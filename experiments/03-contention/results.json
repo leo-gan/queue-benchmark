@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-01T00:23:54Z",
+  "generated_at": "2026-09-01T00:59:38Z",
   "languages": {
     "python": {
       "status": "ok",
@@ -8,109 +8,109 @@
           "library": "asyncio.Queue",
           "pattern": "1p4c",
           "n": 9,
-          "median_handoff_ns": 96271.0,
-          "p50_ns": 96271.0,
-          "mean_ns": 99290.55555555556,
+          "median_handoff_ns": 97526.0,
+          "p50_ns": 97526.0,
+          "mean_ns": 99677.22222222222,
           "rel_to_fastest": 1.0
         },
         {
           "library": "asyncio.Queue",
-          "pattern": "4p4c",
+          "pattern": "4p1c",
           "n": 9,
-          "median_handoff_ns": 104223.0,
-          "p50_ns": 104223.0,
-          "mean_ns": 105336.66666666667,
-          "rel_to_fastest": 1.0826001599650985
+          "median_handoff_ns": 98006.0,
+          "p50_ns": 98006.0,
+          "mean_ns": 101300.77777777778,
+          "rel_to_fastest": 1.0049217644525563
         },
         {
           "library": "asyncio.Queue",
-          "pattern": "4p1c",
+          "pattern": "4p4c",
           "n": 9,
-          "median_handoff_ns": 105011.0,
-          "p50_ns": 105011.0,
-          "mean_ns": 105146.88888888889,
-          "rel_to_fastest": 1.0907853870843764
+          "median_handoff_ns": 110693.0,
+          "p50_ns": 110693.0,
+          "mean_ns": 111250.22222222222,
+          "rel_to_fastest": 1.1350101511391835
         },
         {
           "library": "steal-deque",
           "pattern": "1p4c",
           "n": 9,
-          "median_handoff_ns": 224839.0,
-          "p50_ns": 224839.0,
-          "mean_ns": 228998.22222222222,
-          "rel_to_fastest": 2.335480051105733
-        },
-        {
-          "library": "deque-lock",
-          "pattern": "1p4c",
-          "n": 9,
-          "median_handoff_ns": 235124.0,
-          "p50_ns": 235124.0,
-          "mean_ns": 264138.44444444444,
-          "rel_to_fastest": 2.442313884762805
+          "median_handoff_ns": 228190.0,
+          "p50_ns": 228190.0,
+          "mean_ns": 246380.88888888888,
+          "rel_to_fastest": 2.3397863133933514
         },
         {
           "library": "deque-lock",
           "pattern": "4p1c",
           "n": 9,
-          "median_handoff_ns": 236152.0,
-          "p50_ns": 236152.0,
-          "mean_ns": 245189.22222222222,
-          "rel_to_fastest": 2.4529920744564824
+          "median_handoff_ns": 234600.0,
+          "p50_ns": 234600.0,
+          "mean_ns": 242357.88888888888,
+          "rel_to_fastest": 2.405512376186863
         },
         {
           "library": "steal-deque",
           "pattern": "4p1c",
           "n": 9,
-          "median_handoff_ns": 246468.0,
-          "p50_ns": 246468.0,
-          "mean_ns": 256765.22222222222,
-          "rel_to_fastest": 2.5601479157794143
+          "median_handoff_ns": 235450.0,
+          "p50_ns": 235450.0,
+          "mean_ns": 272527.44444444444,
+          "rel_to_fastest": 2.4142280007382646
         },
         {
-          "library": "queue.Queue",
+          "library": "deque-lock",
           "pattern": "1p4c",
           "n": 9,
-          "median_handoff_ns": 293926.0,
-          "p50_ns": 293926.0,
-          "mean_ns": 296522.6666666667,
-          "rel_to_fastest": 3.0531104901787662
+          "median_handoff_ns": 260066.0,
+          "p50_ns": 260066.0,
+          "mean_ns": 305795.55555555556,
+          "rel_to_fastest": 2.6666324877468575
         },
         {
           "library": "queue.Queue",
           "pattern": "4p1c",
           "n": 9,
-          "median_handoff_ns": 307044.0,
-          "p50_ns": 307044.0,
-          "mean_ns": 327199.22222222225,
-          "rel_to_fastest": 3.189371669557811
+          "median_handoff_ns": 304949.0,
+          "p50_ns": 304949.0,
+          "mean_ns": 310745.22222222225,
+          "rel_to_fastest": 3.126848225088694
+        },
+        {
+          "library": "queue.Queue",
+          "pattern": "1p4c",
+          "n": 9,
+          "median_handoff_ns": 310008.0,
+          "p50_ns": 310008.0,
+          "mean_ns": 332740.1111111111,
+          "rel_to_fastest": 3.1787215716834485
         },
         {
           "library": "steal-deque",
           "pattern": "4p4c",
           "n": 9,
-          "median_handoff_ns": 354218.0,
-          "p50_ns": 354218.0,
-          "mean_ns": 396510.22222222225,
-          "rel_to_fastest": 3.6793842382441233
+          "median_handoff_ns": 359653.0,
+          "p50_ns": 359653.0,
+          "mean_ns": 367563.77777777775,
+          "rel_to_fastest": 3.687765313865021
         },
         {
           "library": "deque-lock",
           "pattern": "4p4c",
           "n": 9,
-          "median_handoff_ns": 406576.0,
-          "p50_ns": 406576.0,
-          "mean_ns": 416411.22222222225,
-          "rel_to_fastest": 4.223244798537462
+          "median_handoff_ns": 387393.0,
+          "p50_ns": 387393.0,
+          "mean_ns": 394770.55555555556,
+          "rel_to_fastest": 3.972202284519
         },
         {
           "library": "queue.Queue",
           "pattern": "4p4c",
           "n": 9,
-          "median_handoff_ns": 458795.0,
-          "p50_ns": 458795.0,
-          "mean_ns": 454947.77777777775,
-          "rel_to_fastest": 4.7656615180064605
+          "median_handoff_ns": 424936.0,
+          "p50_ns": 424936.0,
+          "mean_ns": 434184.0,
+          "rel_to_fastest": 4.357156040440498
         }
       ]
     },
@@ -121,55 +121,82 @@
           "library": "crossbeam-queue",
           "pattern": "4p1c",
           "n": 9,
-          "median_handoff_ns": 85746.0,
-          "p50_ns": 85746.0,
-          "mean_ns": 86609.22222222222,
+          "median_handoff_ns": 74459.0,
+          "p50_ns": 74459.0,
+          "mean_ns": 81676.22222222222,
           "rel_to_fastest": 1.0
+        },
+        {
+          "library": "steal-deque",
+          "pattern": "4p1c",
+          "n": 9,
+          "median_handoff_ns": 75794.0,
+          "p50_ns": 75794.0,
+          "mean_ns": 102644.55555555556,
+          "rel_to_fastest": 1.0179293302354315
         },
         {
           "library": "crossbeam-queue",
           "pattern": "1p4c",
           "n": 9,
-          "median_handoff_ns": 92958.0,
-          "p50_ns": 92958.0,
-          "mean_ns": 102137.55555555556,
-          "rel_to_fastest": 1.0841088797145055
+          "median_handoff_ns": 95746.0,
+          "p50_ns": 95746.0,
+          "mean_ns": 105599.55555555556,
+          "rel_to_fastest": 1.2858888784431701
         },
         {
           "library": "crossbeam-channel",
           "pattern": "4p1c",
           "n": 9,
-          "median_handoff_ns": 94232.0,
-          "p50_ns": 94232.0,
-          "mean_ns": 109170.77777777778,
-          "rel_to_fastest": 1.0989667156485434
+          "median_handoff_ns": 96011.0,
+          "p50_ns": 96011.0,
+          "mean_ns": 104834.33333333333,
+          "rel_to_fastest": 1.289447884070428
         },
         {
           "library": "crossbeam-channel",
           "pattern": "1p4c",
           "n": 9,
-          "median_handoff_ns": 113390.0,
-          "p50_ns": 113390.0,
-          "mean_ns": 116466.55555555556,
-          "rel_to_fastest": 1.3223940475357452
-        },
-        {
-          "library": "crossbeam-channel",
-          "pattern": "4p4c",
-          "n": 9,
-          "median_handoff_ns": 121878.0,
-          "p50_ns": 121878.0,
-          "mean_ns": 129046.22222222222,
-          "rel_to_fastest": 1.4213840878874817
+          "median_handoff_ns": 102709.0,
+          "p50_ns": 102709.0,
+          "mean_ns": 107366.22222222222,
+          "rel_to_fastest": 1.3794034300756122
         },
         {
           "library": "crossbeam-queue",
           "pattern": "4p4c",
           "n": 9,
-          "median_handoff_ns": 122294.0,
-          "p50_ns": 122294.0,
-          "mean_ns": 136125.22222222222,
-          "rel_to_fastest": 1.426235626151657
+          "median_handoff_ns": 118935.0,
+          "p50_ns": 118935.0,
+          "mean_ns": 121364.44444444444,
+          "rel_to_fastest": 1.5973220161431123
+        },
+        {
+          "library": "crossbeam-channel",
+          "pattern": "4p4c",
+          "n": 9,
+          "median_handoff_ns": 126118.0,
+          "p50_ns": 126118.0,
+          "mean_ns": 162702.77777777778,
+          "rel_to_fastest": 1.6937912139566742
+        },
+        {
+          "library": "steal-deque",
+          "pattern": "1p4c",
+          "n": 9,
+          "median_handoff_ns": 139148.0,
+          "p50_ns": 139148.0,
+          "mean_ns": 124464.44444444444,
+          "rel_to_fastest": 1.868786849138452
+        },
+        {
+          "library": "steal-deque",
+          "pattern": "4p4c",
+          "n": 9,
+          "median_handoff_ns": 146370.0,
+          "p50_ns": 146370.0,
+          "mean_ns": 144232.0,
+          "rel_to_fastest": 1.965779825138667
         }
       ]
     },
@@ -178,30 +205,57 @@
       "rows": [
         {
           "library": "fastq",
-          "pattern": "4p1c",
+          "pattern": "4p4c",
           "n": 9,
-          "median_handoff_ns": 2269.0,
-          "p50_ns": 2269.0,
-          "mean_ns": 37972.22222222222,
+          "median_handoff_ns": 1508.0,
+          "p50_ns": 1508.0,
+          "mean_ns": 1500.111111111111,
           "rel_to_fastest": 1.0
         },
         {
           "library": "fastq",
+          "pattern": "4p1c",
+          "n": 9,
+          "median_handoff_ns": 2419.0,
+          "p50_ns": 2419.0,
+          "mean_ns": 2216.4444444444443,
+          "rel_to_fastest": 1.6041114058355437
+        },
+        {
+          "library": "steal-deque",
+          "pattern": "4p1c",
+          "n": 9,
+          "median_handoff_ns": 7191.0,
+          "p50_ns": 7191.0,
+          "mean_ns": 7219.777777777777,
+          "rel_to_fastest": 4.768567639257294
+        },
+        {
+          "library": "steal-deque",
           "pattern": "4p4c",
           "n": 9,
-          "median_handoff_ns": 2391.0,
-          "p50_ns": 2391.0,
-          "mean_ns": 2123.222222222222,
-          "rel_to_fastest": 1.0537681798148963
+          "median_handoff_ns": 7254.0,
+          "p50_ns": 7254.0,
+          "mean_ns": 19186.88888888889,
+          "rel_to_fastest": 4.810344827586207
+        },
+        {
+          "library": "steal-deque",
+          "pattern": "1p4c",
+          "n": 9,
+          "median_handoff_ns": 9652.0,
+          "p50_ns": 9652.0,
+          "mean_ns": 9540.888888888889,
+          "rel_to_fastest": 6.400530503978779
         },
         {
           "library": "fastq",
           "pattern": "1p4c",
           "n": 9,
-          "median_handoff_ns": 8372.0,
-          "p50_ns": 8372.0,
-          "mean_ns": 9349.444444444445,
-          "rel_to_fastest": 3.6897311591009254
+          "median_handoff_ns": 14633.0,
+          "p50_ns": 14633.0,
+          "mean_ns": 19562.777777777777,
+          "rel_to_fastest": 9.703580901856764
         }
       ]
     },
@@ -210,57 +264,84 @@
       "rows": [
         {
           "library": "ConcurrentQueue",
-          "pattern": "1p4c",
+          "pattern": "4p1c",
           "n": 9,
-          "median_handoff_ns": 20300.0,
-          "p50_ns": 20300.0,
-          "mean_ns": 33100.0,
+          "median_handoff_ns": 19900.0,
+          "p50_ns": 19900.0,
+          "mean_ns": 20800.0,
           "rel_to_fastest": 1.0
         },
         {
           "library": "ConcurrentQueue",
-          "pattern": "4p1c",
-          "n": 9,
-          "median_handoff_ns": 22000.0,
-          "p50_ns": 22000.0,
-          "mean_ns": 21966.666666666668,
-          "rel_to_fastest": 1.083743842364532
-        },
-        {
-          "library": "ConcurrentQueue",
           "pattern": "4p4c",
           "n": 9,
-          "median_handoff_ns": 29000.0,
-          "p50_ns": 29000.0,
-          "mean_ns": 28677.777777777777,
-          "rel_to_fastest": 1.4285714285714286
+          "median_handoff_ns": 20900.0,
+          "p50_ns": 20900.0,
+          "mean_ns": 22566.666666666668,
+          "rel_to_fastest": 1.050251256281407
+        },
+        {
+          "library": "Channel",
+          "pattern": "4p1c",
+          "n": 9,
+          "median_handoff_ns": 26700.0,
+          "p50_ns": 26700.0,
+          "mean_ns": 28022.222222222223,
+          "rel_to_fastest": 1.3417085427135678
         },
         {
           "library": "Channel",
           "pattern": "1p4c",
           "n": 9,
-          "median_handoff_ns": 33300.0,
-          "p50_ns": 33300.0,
-          "mean_ns": 78377.77777777778,
-          "rel_to_fastest": 1.6403940886699508
+          "median_handoff_ns": 30300.0,
+          "p50_ns": 30300.0,
+          "mean_ns": 37355.555555555555,
+          "rel_to_fastest": 1.5226130653266332
         },
         {
-          "library": "Channel",
+          "library": "steal-deque",
           "pattern": "4p1c",
           "n": 9,
-          "median_handoff_ns": 33400.0,
-          "p50_ns": 33400.0,
-          "mean_ns": 34633.333333333336,
-          "rel_to_fastest": 1.645320197044335
+          "median_handoff_ns": 33100.0,
+          "p50_ns": 33100.0,
+          "mean_ns": 34411.11111111111,
+          "rel_to_fastest": 1.6633165829145728
         },
         {
           "library": "Channel",
           "pattern": "4p4c",
           "n": 9,
-          "median_handoff_ns": 39800.0,
-          "p50_ns": 39800.0,
-          "mean_ns": 40600.0,
-          "rel_to_fastest": 1.9605911330049262
+          "median_handoff_ns": 34400.0,
+          "p50_ns": 34400.0,
+          "mean_ns": 69444.44444444444,
+          "rel_to_fastest": 1.728643216080402
+        },
+        {
+          "library": "steal-deque",
+          "pattern": "1p4c",
+          "n": 9,
+          "median_handoff_ns": 45000.0,
+          "p50_ns": 45000.0,
+          "mean_ns": 47822.22222222222,
+          "rel_to_fastest": 2.2613065326633164
+        },
+        {
+          "library": "steal-deque",
+          "pattern": "4p4c",
+          "n": 9,
+          "median_handoff_ns": 49800.0,
+          "p50_ns": 49800.0,
+          "mean_ns": 48177.77777777778,
+          "rel_to_fastest": 2.5025125628140703
+        },
+        {
+          "library": "ConcurrentQueue",
+          "pattern": "1p4c",
+          "n": 9,
+          "median_handoff_ns": 58600.0,
+          "p50_ns": 58600.0,
+          "mean_ns": 88266.66666666667,
+          "rel_to_fastest": 2.9447236180904524
         }
       ]
     },
@@ -269,30 +350,57 @@
       "rows": [
         {
           "library": "mutex-queue",
-          "pattern": "1p4c",
+          "pattern": "4p1c",
           "n": 9,
-          "median_handoff_ns": 70067.0,
-          "p50_ns": 70067.0,
-          "mean_ns": 73651.88888888889,
+          "median_handoff_ns": 90346.0,
+          "p50_ns": 90346.0,
+          "mean_ns": 90581.0,
           "rel_to_fastest": 1.0
         },
         {
-          "library": "mutex-queue",
+          "library": "steal-deque",
           "pattern": "4p1c",
           "n": 9,
-          "median_handoff_ns": 72626.0,
-          "p50_ns": 72626.0,
-          "mean_ns": 77934.88888888889,
-          "rel_to_fastest": 1.036522185907774
+          "median_handoff_ns": 94726.0,
+          "p50_ns": 94726.0,
+          "mean_ns": 93063.66666666667,
+          "rel_to_fastest": 1.0484802868970402
+        },
+        {
+          "library": "mutex-queue",
+          "pattern": "1p4c",
+          "n": 9,
+          "median_handoff_ns": 95300.0,
+          "p50_ns": 95300.0,
+          "mean_ns": 95217.0,
+          "rel_to_fastest": 1.054833639563456
+        },
+        {
+          "library": "steal-deque",
+          "pattern": "1p4c",
+          "n": 9,
+          "median_handoff_ns": 106632.0,
+          "p50_ns": 106632.0,
+          "mean_ns": 103927.77777777778,
+          "rel_to_fastest": 1.1802625462112324
         },
         {
           "library": "mutex-queue",
           "pattern": "4p4c",
           "n": 9,
-          "median_handoff_ns": 122852.0,
-          "p50_ns": 122852.0,
-          "mean_ns": 127144.88888888889,
-          "rel_to_fastest": 1.753350364650977
+          "median_handoff_ns": 170172.0,
+          "p50_ns": 170172.0,
+          "mean_ns": 171460.11111111112,
+          "rel_to_fastest": 1.883558762977885
+        },
+        {
+          "library": "steal-deque",
+          "pattern": "4p4c",
+          "n": 9,
+          "median_handoff_ns": 179516.0,
+          "p50_ns": 179516.0,
+          "mean_ns": 182987.66666666666,
+          "rel_to_fastest": 1.9869833750249042
         }
       ]
     }

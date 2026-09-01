@@ -41,3 +41,19 @@ languages:
     enabled: true
     libraries:
       - {name: sqlite-queue, role: durable local queue}
+  - id: csharp
+    enabled: true
+    libraries:
+      - {name: sqlite-queue, role: durable local queue}
+  - id: rust
+    enabled: true
+    libraries:
+      - {name: sqlite-queue, role: durable local queue}
+  - id: c
+    enabled: true
+    libraries:
+      - {name: sqlite-queue, role: durable local queue}
+  - id: javascript
+    enabled: true
+    libraries:
+      - {name: sqlite-queue, role: durable local queue}

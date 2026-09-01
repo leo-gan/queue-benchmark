@@ -1,4 +1,50 @@
 {
   "status": "ok",
-  "rows": []
+  "rows": [
+    {
+      "library": "ConcurrentQueue",
+      "pattern": "bytes",
+      "n": 9,
+      "median_handoff_ns": 3600.0,
+      "p50_ns": 3600.0,
+      "mean_ns": 4888.888888888889,
+      "rel_to_fastest": 1.0
+    },
+    {
+      "library": "Queue+lock",
+      "pattern": "bytes",
+      "n": 9,
+      "median_handoff_ns": 6900.0,
+      "p50_ns": 6900.0,
+      "mean_ns": 7588.888888888889,
+      "rel_to_fastest": 1.9166666666666667
+    },
+    {
+      "library": "steal-deque",
+      "pattern": "bytes",
+      "n": 9,
+      "median_handoff_ns": 10500.0,
+      "p50_ns": 10500.0,
+      "mean_ns": 10033.333333333334,
+      "rel_to_fastest": 2.9166666666666665
+    },
+    {
+      "library": "Channel",
+      "pattern": "bytes",
+      "n": 9,
+      "median_handoff_ns": 14600.0,
+      "p50_ns": 14600.0,
+      "mean_ns": 16555.555555555555,
+      "rel_to_fastest": 4.055555555555555
+    },
+    {
+      "library": "pipe-ipc",
+      "pattern": "bytes",
+      "n": 9,
+      "median_handoff_ns": 36914900.0,
+      "p50_ns": 36914900.0,
+      "mean_ns": 36887344.44444445,
+      "rel_to_fastest": 10254.138888888889
+    }
+  ]
 }

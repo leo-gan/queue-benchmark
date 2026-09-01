@@ -2,15 +2,15 @@
 
 | Library | Pattern | Median handoff (ns) | vs fastest | n |
 |---------|---------|--------------------:|-----------:|--:|
-| asyncio.Queue | 1p4c | 96271 | 1.00× | 9 |
-| asyncio.Queue | 4p4c | 104223 | 1.08× | 9 |
-| asyncio.Queue | 4p1c | 105011 | 1.09× | 9 |
-| steal-deque | 1p4c | 224839 | 2.34× | 9 |
-| deque-lock | 1p4c | 235124 | 2.44× | 9 |
-| deque-lock | 4p1c | 236152 | 2.45× | 9 |
-| steal-deque | 4p1c | 246468 | 2.56× | 9 |
-| queue.Queue | 1p4c | 293926 | 3.05× | 9 |
-| queue.Queue | 4p1c | 307044 | 3.19× | 9 |
-| steal-deque | 4p4c | 354218 | 3.68× | 9 |
-| deque-lock | 4p4c | 406576 | 4.22× | 9 |
-| queue.Queue | 4p4c | 458795 | 4.77× | 9 |
+| asyncio.Queue | 1p4c | 97526 | 1.00× | 9 |
+| asyncio.Queue | 4p1c | 98006 | 1.00× | 9 |
+| asyncio.Queue | 4p4c | 110693 | 1.14× | 9 |
+| steal-deque | 1p4c | 228190 | 2.34× | 9 |
+| deque-lock | 4p1c | 234600 | 2.41× | 9 |
+| steal-deque | 4p1c | 235450 | 2.41× | 9 |
+| deque-lock | 1p4c | 260066 | 2.67× | 9 |
+| queue.Queue | 4p1c | 304949 | 3.13× | 9 |
+| queue.Queue | 1p4c | 310008 | 3.18× | 9 |
+| steal-deque | 4p4c | 359653 | 3.69× | 9 |
+| deque-lock | 4p4c | 387393 | 3.97× | 9 |
+| queue.Queue | 4p4c | 424936 | 4.36× | 9 |

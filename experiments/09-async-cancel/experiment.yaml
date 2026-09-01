@@ -49,3 +49,7 @@ languages:
     enabled: true
     libraries:
       - {name: Channel, role: async channel}
+  - id: javascript
+    enabled: true
+    libraries:
+      - {name: p-queue, role: scheduler cancel}

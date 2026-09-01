@@ -11,3 +11,7 @@
 |----------|----------|---------------|---------|-------|
 | `mutex-queue` | locked | T (thread) | harness | pthread mutex + ring |
 | `spsc-ring` | spsc | T (thread) | harness | Single-producer ring; MPMC skipped |
+| `steal-deque` | work-stealing | T (thread) | harness | Owner-push / steal-from-top |
+| `pipe-ipc` | concurrent | P (process) | harness | Opt-in pipe + fork |
+| `shared-ring` | spsc | S (shared) | harness | Opt-in mmap + fork ring |
+| `sqlite-queue` | durable | D (durable) | sqlite3 | Opt-in SQLite queue |

@@ -49,7 +49,7 @@ priority, blocking vs spin vs yield, SPSC / MPSC / SPMC / MPMC.
 | locked | Mutex baseline | `deque-lock`, `Queue+lock`, `Array`, `mutex-queue` |
 | concurrent | Thread-safe MPSC/MPMC | `queue.Queue`, `ConcurrentQueue`, `crossbeam-channel`, `fastq` |
 | spsc-ring | No mutex on the happy path | C `spsc-ring`, Python `spsc-ring` |
-| work-stealing | Steal from the other end | Python `steal-deque` |
+| work-stealing | Steal from the other end | Python `steal-deque`, Rust `crossbeam-deque`, C# / C / JS `steal-deque` |
 
 Async channels (`asyncio.Queue`, `Channel`, `tokio::mpsc`) live in **A**.
 
@@ -89,9 +89,10 @@ it (do not rank it against `asyncio.Queue`).
 
 ### P / S / D
 
-Python opt-in runners exist (true two-process P and S; SQLite D). Each
-has its own experiment folder (10–12) and dashboard filter. No shared
-violin with T. Other languages do not have P/S/D adapters yet.
+Opt-in runners exist in every language (`pipe-ipc` / Python
+`multiprocessing.Queue` for P, `shared-ring` for S, `sqlite-queue` for D).
+Each has its own experiment folder (10–12) and dashboard filter. No
+shared violin with T.
 
 ### Never
 

@@ -41,3 +41,19 @@ languages:
     enabled: true
     libraries:
       - {name: shared-ring, role: mapped SPSC ring}
+  - id: csharp
+    enabled: true
+    libraries:
+      - {name: shared-ring, role: mapped SPSC ring}
+  - id: rust
+    enabled: true
+    libraries:
+      - {name: shared-ring, role: mapped SPSC ring}
+  - id: c
+    enabled: true
+    libraries:
+      - {name: shared-ring, role: mapped SPSC ring}
+  - id: javascript
+    enabled: true
+    libraries:
+      - {name: shared-ring, role: SharedArrayBuffer ring}

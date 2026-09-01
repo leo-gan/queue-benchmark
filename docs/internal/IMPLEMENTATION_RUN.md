@@ -147,19 +147,17 @@ export BENCHMARK_SPECIAL=wakeup BENCHMARK_WAIT_NS=1000000
 Cross-process tests start real child processes (four items / three items).
 They must pass on Linux fork.
 
-## Still not the original spec
+## Follow-up run (all languages)
 
-These remain after this run. They are either designed-out or follow-ups.
+Landed on `feat/follow-ups-all-langs` after #18.
 
-| Item | Why it is still open |
-|------|----------------------|
-| Category **N** | Separate system report; not this lab |
-| Lock-free Chase-Lev / crossbeam deque | `steal-deque` is a locked first member |
-| P/S/D in C#, Rust, C, JS | Python-only opt-in runners |
-| Rust `CpuTimeNs` | Would need `libc` / a CPU-time crate |
-| Peak RSS as a measured column | Still optional / often 0 |
-| Dashboard Category filter listing `work-stealing` as its own chip | Family is a label inside T, not a communication category |
-| Re-running experiments 05 / 06 / 09 for non-Python languages | Harness is ready; published `results.json` in those folders is still the previous Python-only (or skipped) pass |
+| Item | Status |
+|------|--------|
+| Category **N** | Still out of this lab |
+| Work-stealing in every language | Rust `crossbeam-deque` Chase-Lev injector; C# / C / JS / Python `steal-deque` |
+| P/S/D in C#, Rust, C, JS | `pipe-ipc`, `shared-ring`, `sqlite-queue` (opt-in, same names as experiments 10–12) |
+| Rust `CpuTimeNs` | `CLOCK_PROCESS_CPUTIME_ID` via `libc` |
+| Peak RSS | `MemoryPeakBytes` from `getrusage` / `PeakWorkingSet64` / `process.memoryUsage().rss` |
+| Experiments 05 / 06 / 09 / 10 / 11 / 12 | Enabled for every language that has the adapter |
 
-Do not treat this run as a new publication matrix until `prepare-pr` has
-re-benched the changed languages and refreshed analysis / dashboard data.
+JS `shared-ring` is a `worker_threads` + `SharedArrayBuffer` ring (Node has no anonymous process mmap). C `pipe-ipc` / `shared-ring` use `fork`. C# / Rust / JS spawn the same binary as a child.

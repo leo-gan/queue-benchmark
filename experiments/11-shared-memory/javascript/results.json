@@ -1,4 +1,14 @@
 {
   "status": "ok",
-  "rows": []
+  "rows": [
+    {
+      "library": "shared-ring",
+      "pattern": "bytes",
+      "n": 9,
+      "median_handoff_ns": 19416988.0,
+      "p50_ns": 19416988.0,
+      "mean_ns": 19799208.0,
+      "rel_to_fastest": 1.0
+    }
+  ]
 }

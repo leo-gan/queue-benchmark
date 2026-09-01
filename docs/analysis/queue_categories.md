@@ -22,7 +22,7 @@ rank them against each other.
 | **locked** | Mutex around a stdlib queue. Baseline. | Python `deque-lock`, C# `Queue+lock`, JS `Array`, C `mutex-queue` |
 | **concurrent** | Thread-safe MPSC/MPMC | Python `queue.Queue`, C# `ConcurrentQueue`, Rust `crossbeam-channel`, JS `fastq` |
 | **spsc** | Single-producer ring (no mutex on the happy path) | C `spsc-ring`, Python `spsc-ring` |
-| **work-stealing** | Owner-push / steal-from-the-other-end | Python `steal-deque` |
+| **work-stealing** | Owner-push / steal-from-the-other-end | Python `steal-deque`, Rust `crossbeam-deque`, C# / C / JS `steal-deque` |
 
 ### A — async
 
