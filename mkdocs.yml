@@ -63,6 +63,7 @@ nav:
   - Languages:
       - C:
           - Overview: c/index.md
+          - Library selection: c/library-selection.md
       - C#:
           - Overview: c-sharp/index.md
           - Library selection: c-sharp/library-selection.md

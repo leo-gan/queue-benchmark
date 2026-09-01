@@ -5,136 +5,136 @@
       "library": "async-channel",
       "pattern": "4p1c",
       "n": 9,
-      "median_handoff_ns": 28074.0,
-      "p50_ns": 28074.0,
-      "mean_ns": 27408.88888888889,
+      "median_handoff_ns": 25178.0,
+      "p50_ns": 25178.0,
+      "mean_ns": 28390.222222222223,
       "rel_to_fastest": 1.0
     },
     {
       "library": "async-channel",
-      "pattern": "4p4c",
+      "pattern": "1p4c",
       "n": 9,
-      "median_handoff_ns": 53470.0,
-      "p50_ns": 53470.0,
-      "mean_ns": 53554.555555555555,
-      "rel_to_fastest": 1.9046092469900977
+      "median_handoff_ns": 39389.0,
+      "p50_ns": 39389.0,
+      "mean_ns": 42232.333333333336,
+      "rel_to_fastest": 1.5644213202001747
     },
     {
       "library": "async-channel",
-      "pattern": "1p4c",
+      "pattern": "4p4c",
       "n": 9,
-      "median_handoff_ns": 58001.0,
-      "p50_ns": 58001.0,
-      "mean_ns": 86388.55555555556,
-      "rel_to_fastest": 2.0660041319370235
-    },
-    {
-      "library": "steal-deque",
-      "pattern": "4p1c",
-      "n": 9,
-      "median_handoff_ns": 77175.0,
-      "p50_ns": 77175.0,
-      "mean_ns": 90806.0,
-      "rel_to_fastest": 2.7489848258174825
-    },
-    {
-      "library": "flume",
-      "pattern": "4p1c",
-      "n": 9,
-      "median_handoff_ns": 78567.0,
-      "p50_ns": 78567.0,
-      "mean_ns": 96237.22222222222,
-      "rel_to_fastest": 2.798568070100449
-    },
-    {
-      "library": "crossbeam-queue",
-      "pattern": "4p1c",
-      "n": 9,
-      "median_handoff_ns": 78664.0,
-      "p50_ns": 78664.0,
-      "mean_ns": 75590.22222222222,
-      "rel_to_fastest": 2.8020232243356844
+      "median_handoff_ns": 43144.0,
+      "p50_ns": 43144.0,
+      "mean_ns": 58654.666666666664,
+      "rel_to_fastest": 1.7135594566685202
     },
     {
       "library": "crossbeam-channel",
       "pattern": "4p1c",
       "n": 9,
-      "median_handoff_ns": 96141.0,
-      "p50_ns": 96141.0,
-      "mean_ns": 119189.77777777778,
-      "rel_to_fastest": 3.4245565291729
+      "median_handoff_ns": 78889.0,
+      "p50_ns": 78889.0,
+      "mean_ns": 83962.66666666667,
+      "rel_to_fastest": 3.1332512510922235
+    },
+    {
+      "library": "steal-deque",
+      "pattern": "4p1c",
+      "n": 9,
+      "median_handoff_ns": 82226.0,
+      "p50_ns": 82226.0,
+      "mean_ns": 84182.55555555556,
+      "rel_to_fastest": 3.2657875923425213
+    },
+    {
+      "library": "flume",
+      "pattern": "4p1c",
+      "n": 9,
+      "median_handoff_ns": 85579.0,
+      "p50_ns": 85579.0,
+      "mean_ns": 88603.77777777778,
+      "rel_to_fastest": 3.398959409007864
     },
     {
       "library": "flume",
       "pattern": "1p4c",
       "n": 9,
-      "median_handoff_ns": 102476.0,
-      "p50_ns": 102476.0,
-      "mean_ns": 132624.11111111112,
-      "rel_to_fastest": 3.6502101588658546
+      "median_handoff_ns": 86008.0,
+      "p50_ns": 86008.0,
+      "mean_ns": 85863.44444444444,
+      "rel_to_fastest": 3.415998093573755
     },
     {
       "library": "crossbeam-queue",
-      "pattern": "1p4c",
+      "pattern": "4p1c",
       "n": 9,
-      "median_handoff_ns": 106588.0,
-      "p50_ns": 106588.0,
-      "mean_ns": 126875.88888888889,
-      "rel_to_fastest": 3.7966802023224338
-    },
-    {
-      "library": "crossbeam-channel",
-      "pattern": "1p4c",
-      "n": 9,
-      "median_handoff_ns": 114931.0,
-      "p50_ns": 114931.0,
-      "mean_ns": 117331.22222222222,
-      "rel_to_fastest": 4.093859086699437
+      "median_handoff_ns": 86413.0,
+      "p50_ns": 86413.0,
+      "mean_ns": 93420.44444444444,
+      "rel_to_fastest": 3.4320835650170785
     },
     {
       "library": "steal-deque",
       "pattern": "1p4c",
       "n": 9,
-      "median_handoff_ns": 140146.0,
-      "p50_ns": 140146.0,
-      "mean_ns": 169659.55555555556,
-      "rel_to_fastest": 4.992021087126879
+      "median_handoff_ns": 94573.0,
+      "p50_ns": 94573.0,
+      "mean_ns": 94478.77777777778,
+      "rel_to_fastest": 3.7561760266899675
+    },
+    {
+      "library": "crossbeam-queue",
+      "pattern": "1p4c",
+      "n": 9,
+      "median_handoff_ns": 97595.0,
+      "p50_ns": 97595.0,
+      "mean_ns": 96210.33333333333,
+      "rel_to_fastest": 3.8762014457065694
     },
     {
       "library": "crossbeam-channel",
-      "pattern": "4p4c",
+      "pattern": "1p4c",
       "n": 9,
-      "median_handoff_ns": 142295.0,
-      "p50_ns": 142295.0,
-      "mean_ns": 164400.66666666666,
-      "rel_to_fastest": 5.068568782503384
+      "median_handoff_ns": 121339.0,
+      "p50_ns": 121339.0,
+      "mean_ns": 135124.22222222222,
+      "rel_to_fastest": 4.819246961633172
     },
     {
       "library": "flume",
       "pattern": "4p4c",
       "n": 9,
-      "median_handoff_ns": 148533.0,
-      "p50_ns": 148533.0,
-      "mean_ns": 173878.0,
-      "rel_to_fastest": 5.290767257961103
-    },
-    {
-      "library": "steal-deque",
-      "pattern": "4p4c",
-      "n": 9,
-      "median_handoff_ns": 153225.0,
-      "p50_ns": 153225.0,
-      "mean_ns": 200833.88888888888,
-      "rel_to_fastest": 5.457896986535585
+      "median_handoff_ns": 126264.0,
+      "p50_ns": 126264.0,
+      "mean_ns": 134018.77777777778,
+      "rel_to_fastest": 5.0148542378266745
     },
     {
       "library": "crossbeam-queue",
       "pattern": "4p4c",
       "n": 9,
-      "median_handoff_ns": 162606.0,
-      "p50_ns": 162606.0,
-      "mean_ns": 171538.55555555556,
-      "rel_to_fastest": 5.792049583244283
+      "median_handoff_ns": 127290.0,
+      "p50_ns": 127290.0,
+      "mean_ns": 129648.22222222222,
+      "rel_to_fastest": 5.055604098816427
+    },
+    {
+      "library": "steal-deque",
+      "pattern": "4p4c",
+      "n": 9,
+      "median_handoff_ns": 129610.0,
+      "p50_ns": 129610.0,
+      "mean_ns": 138651.88888888888,
+      "rel_to_fastest": 5.147748033997935
+    },
+    {
+      "library": "crossbeam-channel",
+      "pattern": "4p4c",
+      "n": 9,
+      "median_handoff_ns": 129869.0,
+      "p50_ns": 129869.0,
+      "mean_ns": 146502.0,
+      "rel_to_fastest": 5.158034792278974
     }
   ]
 }

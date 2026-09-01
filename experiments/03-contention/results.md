@@ -4,7 +4,7 @@ Times are not comparable across languages.
 
 ## python
 
-Similar set (within 15% of fastest on this sample): asyncio.Queue, asyncio.Queue
+Similar set (within 15% of fastest on this sample): asyncio.Queue, asyncio.Queue, asyncio.Queue
 
 See `python/results.md`.
 
@@ -28,6 +28,6 @@ See `csharp/results.md`.
 
 ## c
 
-Similar set (within 15% of fastest on this sample): mutex-queue, steal-deque, mutex-queue, steal-deque
+Similar set (within 15% of fastest on this sample): steal-deque
 
 See `c/results.md`.

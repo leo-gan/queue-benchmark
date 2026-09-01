@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 project(queue_benchmark_c C)
 set(CMAKE_C_STANDARD 11)
-add_executable(queue_benchmark_c src/main.c)
+add_executable(queue_benchmark_c src/main.c third_party/lfqueue/lfqueue.c)
+target_include_directories(queue_benchmark_c PRIVATE third_party/lfqueue)
 find_package(SQLite3 REQUIRED)
 target_link_libraries(queue_benchmark_c PRIVATE pthread SQLite::SQLite3)

@@ -15,6 +15,7 @@ export const QUEUE_CATALOG = {
   janus: { communication: 'async', family: 'async' },
   'spsc-ring': { communication: 'thread', family: 'spsc' },
   'mutex-queue': { communication: 'thread', family: 'locked' },
+  lfqueue: { communication: 'thread', family: 'concurrent' },
   'std-mpsc': { communication: 'thread', family: 'concurrent' },
   'crossbeam-channel': { communication: 'thread', family: 'concurrent' },
   flume: { communication: 'thread', family: 'concurrent' },

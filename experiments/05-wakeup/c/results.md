@@ -2,4 +2,4 @@
 
 | Library | Pattern | Median handoff (ns) | vs fastest | n |
 |---------|---------|--------------------:|-----------:|--:|
-| mutex-queue | bytes | 107053453 | 1.00× | 9 |
+| mutex-queue | bytes | 115296788 | 1.00× | 9 |
