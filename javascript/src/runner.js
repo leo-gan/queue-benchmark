@@ -6,6 +6,7 @@ const { performance } = require("perf_hooks");
 const { spawn } = require("child_process");
 const { Worker, isMainThread, workerData } = require("worker_threads");
 const fastq = require("fastq");
+const Denque = require("denque");
 
 function envOn(name) {
   const v = process.env[name] || "";
@@ -215,6 +216,27 @@ function benchSteal(items) {
   return [t1 - t0, ns() - t1];
 }
 
+function benchDenque(items) {
+  const q = new Denque();
+  const t0 = ns();
+  for (const it of items) q.push(it);
+  const t1 = ns();
+  const got = [];
+  while (q.length) got.push(q.shift());
+  return [t1 - t0, ns() - t1];
+}
+
+async function benchYocto(items) {
+  const { default: Queue } = await import("yocto-queue");
+  const q = new Queue();
+  const t0 = ns();
+  for (const it of items) q.enqueue(it);
+  const t1 = ns();
+  const got = [];
+  while (q.size) got.push(q.dequeue());
+  return [t1 - t0, ns() - t1];
+}
+
 function writeFrame(stream, item) {
   const hdr = Buffer.alloc(4);
   hdr.writeUInt32BE(item.length);
@@ -333,6 +355,8 @@ async function main() {
   let order = 0;
   const queues = [
     { name: "Array", kind: "locked", optIn: false, spscOnly: true },
+    { name: "denque", kind: "locked", optIn: false, spscOnly: true },
+    { name: "yocto-queue", kind: "locked", optIn: false, spscOnly: true },
     { name: "fastq", kind: "concurrent", optIn: false, spscOnly: false },
     { name: "p-queue", kind: "scheduler", optIn: false, spscOnly: true },
     { name: "steal-deque", kind: "work-stealing", optIn: false, spscOnly: false },
@@ -363,12 +387,18 @@ async function main() {
           [enq, deq] = await benchWakeup(cell.n);
         } else if (special === "burst") {
           if (q.name === "Array" || q.name === "steal-deque") [enq, deq] = benchArray(items);
+          else if (q.name === "denque") [enq, deq] = benchDenque(items);
+          else if (q.name === "yocto-queue") [enq, deq] = await benchYocto(items);
           else if (q.name === "fastq") [enq, deq] = await benchFastq(items);
           else [enq, deq] = await benchPQueue(items);
         } else if (special === "cancel") {
           [enq, deq] = await benchCancel(cell.n);
         } else if (q.name === "Array") {
           [enq, deq] = benchArray(items);
+        } else if (q.name === "denque") {
+          [enq, deq] = benchDenque(items);
+        } else if (q.name === "yocto-queue") {
+          [enq, deq] = await benchYocto(items);
         } else if (q.name === "fastq") {
           [enq, deq] = await benchFastq(items);
         } else if (q.name === "p-queue") {

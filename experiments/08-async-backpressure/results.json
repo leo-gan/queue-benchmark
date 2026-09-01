@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-01T19:55:37Z",
+  "generated_at": "2026-09-01T20:02:00Z",
   "languages": {
     "python": {
       "status": "ok",
@@ -8,46 +8,46 @@
           "library": "deque-lock",
           "pattern": "bytes",
           "n": 9,
-          "median_handoff_ns": 6615904.0,
-          "p50_ns": 6615904.0,
-          "mean_ns": 6745264.333333333,
+          "median_handoff_ns": 6447802.0,
+          "p50_ns": 6447802.0,
+          "mean_ns": 6502867.666666667,
           "rel_to_fastest": 1.0
         },
         {
           "library": "steal-deque",
           "pattern": "bytes",
           "n": 9,
-          "median_handoff_ns": 7250072.0,
-          "p50_ns": 7250072.0,
-          "mean_ns": 7345709.111111111,
-          "rel_to_fastest": 1.0958550789128743
+          "median_handoff_ns": 6771765.0,
+          "p50_ns": 6771765.0,
+          "mean_ns": 6833235.222222222,
+          "rel_to_fastest": 1.0502439435950421
         },
         {
           "library": "queue.Queue",
           "pattern": "bytes",
           "n": 9,
-          "median_handoff_ns": 8256307.0,
-          "p50_ns": 8256307.0,
-          "mean_ns": 8234615.777777778,
-          "rel_to_fastest": 1.2479484285140776
-        },
-        {
-          "library": "asyncio.Queue",
-          "pattern": "bytes",
-          "n": 9,
-          "median_handoff_ns": 15265042.0,
-          "p50_ns": 15265042.0,
-          "mean_ns": 22418001.777777776,
-          "rel_to_fastest": 2.3073251969798836
+          "median_handoff_ns": 7955314.0,
+          "p50_ns": 7955314.0,
+          "mean_ns": 7990715.0,
+          "rel_to_fastest": 1.2338024647779198
         },
         {
           "library": "janus",
           "pattern": "bytes",
           "n": 9,
-          "median_handoff_ns": 17472604.0,
-          "p50_ns": 17472604.0,
-          "mean_ns": 18675358.111111112,
-          "rel_to_fastest": 2.6410002321678188
+          "median_handoff_ns": 18222134.0,
+          "p50_ns": 18222134.0,
+          "mean_ns": 19004559.777777776,
+          "rel_to_fastest": 2.826100119079339
+        },
+        {
+          "library": "asyncio.Queue",
+          "pattern": "bytes",
+          "n": 9,
+          "median_handoff_ns": 19042693.0,
+          "p50_ns": 19042693.0,
+          "mean_ns": 22654445.333333332,
+          "rel_to_fastest": 2.9533619363621897
         }
       ]
     },
@@ -55,49 +55,49 @@
       "status": "ok",
       "rows": [
         {
-          "library": "crossbeam-queue",
-          "pattern": "bytes",
-          "n": 9,
-          "median_handoff_ns": 6606.0,
-          "p50_ns": 6606.0,
-          "mean_ns": 7035.555555555556,
-          "rel_to_fastest": 1.0
-        },
-        {
           "library": "steal-deque",
           "pattern": "bytes",
           "n": 9,
-          "median_handoff_ns": 6720.0,
-          "p50_ns": 6720.0,
-          "mean_ns": 6839.333333333333,
-          "rel_to_fastest": 1.017257039055404
+          "median_handoff_ns": 5821.0,
+          "p50_ns": 5821.0,
+          "mean_ns": 5823.111111111111,
+          "rel_to_fastest": 1.0
+        },
+        {
+          "library": "crossbeam-queue",
+          "pattern": "bytes",
+          "n": 9,
+          "median_handoff_ns": 5915.0,
+          "p50_ns": 5915.0,
+          "mean_ns": 6066.777777777777,
+          "rel_to_fastest": 1.0161484281051365
         },
         {
           "library": "crossbeam-channel",
           "pattern": "bytes",
           "n": 9,
-          "median_handoff_ns": 9478.0,
-          "p50_ns": 9478.0,
-          "mean_ns": 9530.777777777777,
-          "rel_to_fastest": 1.4347562821677262
-        },
-        {
-          "library": "std-mpsc",
-          "pattern": "bytes",
-          "n": 9,
-          "median_handoff_ns": 10001.0,
-          "p50_ns": 10001.0,
-          "mean_ns": 10683.444444444445,
-          "rel_to_fastest": 1.5139267332727824
+          "median_handoff_ns": 7201.0,
+          "p50_ns": 7201.0,
+          "mean_ns": 8386.111111111111,
+          "rel_to_fastest": 1.2370726679264732
         },
         {
           "library": "tokio-mpsc",
           "pattern": "bytes",
           "n": 9,
-          "median_handoff_ns": 11071.0,
-          "p50_ns": 11071.0,
-          "mean_ns": 10813.0,
-          "rel_to_fastest": 1.6759006963366636
+          "median_handoff_ns": 7511.0,
+          "p50_ns": 7511.0,
+          "mean_ns": 7656.555555555556,
+          "rel_to_fastest": 1.2903281223157532
+        },
+        {
+          "library": "std-mpsc",
+          "pattern": "bytes",
+          "n": 9,
+          "median_handoff_ns": 9747.0,
+          "p50_ns": 9747.0,
+          "mean_ns": 10384.0,
+          "rel_to_fastest": 1.6744545610719808
         }
       ]
     },
@@ -140,28 +140,28 @@
           "library": "ConcurrentQueue",
           "pattern": "bytes",
           "n": 9,
-          "median_handoff_ns": 2800.0,
-          "p50_ns": 2800.0,
-          "mean_ns": 3822.222222222222,
+          "median_handoff_ns": 3000.0,
+          "p50_ns": 3000.0,
+          "mean_ns": 3911.1111111111113,
           "rel_to_fastest": 1.0
         },
         {
           "library": "Queue+lock",
           "pattern": "bytes",
           "n": 9,
-          "median_handoff_ns": 6600.0,
-          "p50_ns": 6600.0,
-          "mean_ns": 7066.666666666667,
-          "rel_to_fastest": 2.357142857142857
+          "median_handoff_ns": 6200.0,
+          "p50_ns": 6200.0,
+          "mean_ns": 6955.555555555556,
+          "rel_to_fastest": 2.066666666666667
         },
         {
           "library": "steal-deque",
           "pattern": "bytes",
           "n": 9,
-          "median_handoff_ns": 10400.0,
-          "p50_ns": 10400.0,
-          "mean_ns": 10288.888888888889,
-          "rel_to_fastest": 3.7142857142857144
+          "median_handoff_ns": 10700.0,
+          "p50_ns": 10700.0,
+          "mean_ns": 10266.666666666666,
+          "rel_to_fastest": 3.566666666666667
         },
         {
           "library": "Channel",
@@ -169,8 +169,8 @@
           "n": 9,
           "median_handoff_ns": 14400.0,
           "p50_ns": 14400.0,
-          "mean_ns": 16900.0,
-          "rel_to_fastest": 5.142857142857143
+          "mean_ns": 17666.666666666668,
+          "rel_to_fastest": 4.8
         }
       ]
     },

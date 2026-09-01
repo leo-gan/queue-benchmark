@@ -2,6 +2,6 @@
 
 | Library | Pattern | Median handoff (ns) | vs fastest | n |
 |---------|---------|--------------------:|-----------:|--:|
-| spsc-ring | bytes | 758 | 1.00× | 9 |
-| steal-deque | bytes | 1230 | 1.62× | 9 |
-| mutex-queue | bytes | 2239 | 2.95× | 9 |
+| spsc-ring | bytes | 735 | 1.00× | 9 |
+| steal-deque | bytes | 2172 | 2.96× | 9 |
+| mutex-queue | bytes | 2177 | 2.96× | 9 |

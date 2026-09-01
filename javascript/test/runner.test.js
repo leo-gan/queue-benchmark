@@ -14,5 +14,25 @@ test("runner source exists", () => {
   assert.match(src, /steal-deque/);
   assert.match(src, /pipe-ipc/);
   assert.match(src, /sqlite-queue/);
+  assert.match(src, /denque/);
+  assert.match(src, /yocto-queue/);
   assert.doesNotMatch(src, /Python-only/);
+});
+
+test("denque FIFO roundtrip", () => {
+  const Denque = require("denque");
+  const q = new Denque();
+  q.push(Buffer.from("a"));
+  q.push(Buffer.from("b"));
+  assert.equal(q.shift().toString(), "a");
+  assert.equal(q.shift().toString(), "b");
+});
+
+test("yocto-queue FIFO roundtrip", async () => {
+  const { default: Queue } = await import("yocto-queue");
+  const q = new Queue();
+  q.enqueue(Buffer.from("a"));
+  q.enqueue(Buffer.from("b"));
+  assert.equal(q.dequeue().toString(), "a");
+  assert.equal(q.dequeue().toString(), "b");
 });

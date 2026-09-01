@@ -19,6 +19,8 @@ export const QUEUE_CATALOG = {
   'crossbeam-queue': { communication: 'thread', family: 'concurrent' },
   'tokio-mpsc': { communication: 'async', family: 'async' },
   Array: { communication: 'thread', family: 'locked' },
+  denque: { communication: 'thread', family: 'locked' },
+  'yocto-queue': { communication: 'thread', family: 'locked' },
   fastq: { communication: 'thread', family: 'concurrent' },
   'p-queue': { communication: 'scheduler', family: 'scheduler' },
   'multiprocessing.Queue': { communication: 'process', family: 'concurrent' },

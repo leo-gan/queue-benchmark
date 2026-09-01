@@ -16,7 +16,7 @@ See `rust/results.md`.
 
 ## javascript
 
-Similar set (within 15% of fastest on this sample): steal-deque
+Similar set (within 15% of fastest on this sample): steal-deque, fastq, Array
 
 See `javascript/results.md`.
 

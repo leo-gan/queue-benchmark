@@ -62,3 +62,5 @@ languages:
     enabled: true
     libraries:
       - {name: Array, role: locked baseline}
+      - {name: denque, role: O(1) circular FIFO}
+      - {name: yocto-queue, role: O(1) linked-list FIFO}

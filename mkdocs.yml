@@ -67,6 +67,7 @@ nav:
           - Overview: c-sharp/index.md
       - JavaScript:
           - Overview: javascript/index.md
+          - Library selection: javascript/library-selection.md
       - Python:
           - Overview: python/index.md
           - Library selection: python/library-selection.md

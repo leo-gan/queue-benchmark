@@ -10,7 +10,7 @@ See `python/results.md`.
 
 ## rust
 
-Similar set (within 15% of fastest on this sample): crossbeam-queue, steal-deque, crossbeam-channel
+Similar set (within 15% of fastest on this sample): steal-deque
 
 See `rust/results.md`.
 
@@ -22,7 +22,7 @@ See `javascript/results.md`.
 
 ## csharp
 
-Similar set (within 15% of fastest on this sample): ConcurrentQueue
+Similar set (within 15% of fastest on this sample): steal-deque, ConcurrentQueue
 
 See `csharp/results.md`.
 

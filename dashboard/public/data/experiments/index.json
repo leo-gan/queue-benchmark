@@ -1,6 +1,6 @@
 {
   "schema": "gld.dashboard.experiments/1",
-  "generated_at": "2026-09-01T19:56:08Z",
+  "generated_at": "2026-09-01T20:02:24Z",
   "count": 12,
   "with_results": 12,
   "experiments": [
@@ -19,7 +19,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/01-spsc-handoff.json.gz",
-      "generated_at": "2026-09-01T19:54:34Z",
+      "generated_at": "2026-09-01T20:00:56Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -38,7 +38,7 @@
         {
           "id": "javascript",
           "status": "ok",
-          "rows": 4
+          "rows": 6
         },
         {
           "id": "csharp",
@@ -51,7 +51,7 @@
           "rows": 3
         }
       ],
-      "source_bytes": 6274
+      "source_bytes": 6808
     },
     {
       "id": "02-payload-size",
@@ -68,7 +68,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/02-payload-size.json.gz",
-      "generated_at": "2026-09-01T19:54:38Z",
+      "generated_at": "2026-09-01T20:01:00Z",
       "sample": {
         "kind": "document",
         "n": 100
@@ -87,7 +87,7 @@
         {
           "id": "javascript",
           "status": "ok",
-          "rows": 4
+          "rows": 6
         },
         {
           "id": "csharp",
@@ -100,7 +100,7 @@
           "rows": 3
         }
       ],
-      "source_bytes": 6262
+      "source_bytes": 6785
     },
     {
       "id": "03-contention",
@@ -117,7 +117,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/03-contention.json.gz",
-      "generated_at": "2026-09-01T19:54:42Z",
+      "generated_at": "2026-09-01T20:01:04Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -149,7 +149,7 @@
           "rows": 6
         }
       ],
-      "source_bytes": 12829
+      "source_bytes": 12807
     },
     {
       "id": "04-backpressure",
@@ -166,7 +166,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/04-backpressure.json.gz",
-      "generated_at": "2026-09-01T19:54:44Z",
+      "generated_at": "2026-09-01T20:01:06Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -198,7 +198,7 @@
           "rows": 3
         }
       ],
-      "source_bytes": 4983
+      "source_bytes": 4993
     },
     {
       "id": "05-wakeup",
@@ -215,7 +215,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/05-wakeup.json.gz",
-      "generated_at": "2026-09-01T19:55:26Z",
+      "generated_at": "2026-09-01T20:01:50Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -234,7 +234,7 @@
         {
           "id": "javascript",
           "status": "ok",
-          "rows": 4
+          "rows": 6
         },
         {
           "id": "csharp",
@@ -247,7 +247,7 @@
           "rows": 1
         }
       ],
-      "source_bytes": 5430
+      "source_bytes": 5932
     },
     {
       "id": "06-burst",
@@ -264,7 +264,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/06-burst.json.gz",
-      "generated_at": "2026-09-01T19:55:30Z",
+      "generated_at": "2026-09-01T20:01:54Z",
       "sample": {
         "kind": "message",
         "n": 1000
@@ -283,7 +283,7 @@
         {
           "id": "javascript",
           "status": "ok",
-          "rows": 4
+          "rows": 6
         },
         {
           "id": "csharp",
@@ -296,7 +296,7 @@
           "rows": 3
         }
       ],
-      "source_bytes": 6054
+      "source_bytes": 6535
     },
     {
       "id": "07-async-waiters",
@@ -313,7 +313,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/07-async-waiters.json.gz",
-      "generated_at": "2026-09-01T19:55:33Z",
+      "generated_at": "2026-09-01T20:01:57Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -345,7 +345,7 @@
           "rows": 1
         }
       ],
-      "source_bytes": 4005
+      "source_bytes": 3998
     },
     {
       "id": "08-async-backpressure",
@@ -362,7 +362,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/08-async-backpressure.json.gz",
-      "generated_at": "2026-09-01T19:55:37Z",
+      "generated_at": "2026-09-01T20:02:00Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -394,7 +394,7 @@
           "rows": 2
         }
       ],
-      "source_bytes": 5259
+      "source_bytes": 5243
     },
     {
       "id": "09-async-cancel",
@@ -411,7 +411,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/09-async-cancel.json.gz",
-      "generated_at": "2026-09-01T19:55:40Z",
+      "generated_at": "2026-09-01T20:02:04Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -443,7 +443,7 @@
           "rows": 2
         }
       ],
-      "source_bytes": 2136
+      "source_bytes": 2124
     },
     {
       "id": "10-process-ipc",
@@ -460,7 +460,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/10-process-ipc.json.gz",
-      "generated_at": "2026-09-01T19:55:45Z",
+      "generated_at": "2026-09-01T20:02:09Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -479,7 +479,7 @@
         {
           "id": "javascript",
           "status": "ok",
-          "rows": 5
+          "rows": 7
         },
         {
           "id": "csharp",
@@ -492,7 +492,7 @@
           "rows": 4
         }
       ],
-      "source_bytes": 7853
+      "source_bytes": 8364
     },
     {
       "id": "11-shared-memory",
@@ -509,7 +509,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/11-shared-memory.json.gz",
-      "generated_at": "2026-09-01T19:55:50Z",
+      "generated_at": "2026-09-01T20:02:14Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -541,7 +541,7 @@
           "rows": 1
         }
       ],
-      "source_bytes": 1640
+      "source_bytes": 1646
     },
     {
       "id": "12-durable-local",
@@ -558,7 +558,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/12-durable-local.json.gz",
-      "generated_at": "2026-09-01T19:55:59Z",
+      "generated_at": "2026-09-01T20:02:23Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -590,7 +590,7 @@
           "rows": 1
         }
       ],
-      "source_bytes": 1663
+      "source_bytes": 1669
     }
   ]
 }

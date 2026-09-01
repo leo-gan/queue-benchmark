@@ -460,6 +460,16 @@ languages:
         communication: thread
         package: builtin
         rationale: "Array push/shift SPSC baseline"
+      - name: denque
+        category: locked
+        communication: thread
+        package: denque
+        rationale: "O(1) circular deque used as FIFO; SPSC only"
+      - name: yocto-queue
+        category: locked
+        communication: thread
+        package: yocto-queue
+        rationale: "O(1) linked-list FIFO; SPSC only"
       - name: fastq
         category: concurrent
         communication: thread

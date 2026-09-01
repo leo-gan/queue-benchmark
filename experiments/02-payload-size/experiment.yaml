@@ -58,6 +58,8 @@ languages:
     enabled: true
     libraries:
       - {name: Array, role: push/shift baseline}
+      - {name: denque, role: O(1) circular FIFO}
+      - {name: yocto-queue, role: O(1) linked-list FIFO}
       - {name: fastq, role: job queue}
       - {name: p-queue, role: scheduler (not ranked as a queue)}
   - id: csharp

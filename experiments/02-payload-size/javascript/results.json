@@ -2,40 +2,58 @@
   "status": "ok",
   "rows": [
     {
-      "library": "steal-deque",
-      "pattern": "bytes",
-      "n": 9,
-      "median_handoff_ns": 7001.0,
-      "p50_ns": 7001.0,
-      "mean_ns": 7695.555555555556,
-      "rel_to_fastest": 1.0
-    },
-    {
       "library": "fastq",
       "pattern": "bytes",
       "n": 9,
-      "median_handoff_ns": 9291.0,
-      "p50_ns": 9291.0,
-      "mean_ns": 10654.0,
-      "rel_to_fastest": 1.3270961291244108
+      "median_handoff_ns": 8857.0,
+      "p50_ns": 8857.0,
+      "mean_ns": 9316.333333333334,
+      "rel_to_fastest": 1.0
+    },
+    {
+      "library": "steal-deque",
+      "pattern": "bytes",
+      "n": 9,
+      "median_handoff_ns": 9565.0,
+      "p50_ns": 9565.0,
+      "mean_ns": 9522.888888888889,
+      "rel_to_fastest": 1.0799367731737608
     },
     {
       "library": "Array",
       "pattern": "bytes",
       "n": 9,
-      "median_handoff_ns": 9453.0,
-      "p50_ns": 9453.0,
-      "mean_ns": 10754.444444444445,
-      "rel_to_fastest": 1.3502356806170548
+      "median_handoff_ns": 10397.0,
+      "p50_ns": 10397.0,
+      "mean_ns": 10840.666666666666,
+      "rel_to_fastest": 1.1738737721576153
+    },
+    {
+      "library": "yocto-queue",
+      "pattern": "bytes",
+      "n": 9,
+      "median_handoff_ns": 22383.0,
+      "p50_ns": 22383.0,
+      "mean_ns": 25233.333333333332,
+      "rel_to_fastest": 2.5271536637687704
+    },
+    {
+      "library": "denque",
+      "pattern": "bytes",
+      "n": 9,
+      "median_handoff_ns": 26914.0,
+      "p50_ns": 26914.0,
+      "mean_ns": 28681.555555555555,
+      "rel_to_fastest": 3.038726431071469
     },
     {
       "library": "p-queue",
       "pattern": "bytes",
       "n": 9,
-      "median_handoff_ns": 130773.0,
-      "p50_ns": 130773.0,
-      "mean_ns": 157527.0,
-      "rel_to_fastest": 18.67918868733038
+      "median_handoff_ns": 123624.0,
+      "p50_ns": 123624.0,
+      "mean_ns": 191327.55555555556,
+      "rel_to_fastest": 13.957773512476008
     }
   ]
 }
