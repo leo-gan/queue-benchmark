@@ -32,6 +32,21 @@ export function normalizeExperimentRow(row) {
   return out;
 }
 
+function hasFiniteMetric(rows, key) {
+  return (rows || []).some((r) => Number.isFinite(Number(r?.[key])));
+}
+
+/** Which optional experiment-table columns have at least one real value. */
+export function experimentTableFlags(rows) {
+  const list = rows || [];
+  return {
+    write: hasFiniteMetric(list, 'write_median_ns'),
+    read: hasFiniteMetric(list, 'read_median_ns'),
+    size: hasFiniteMetric(list, 'size_bytes'),
+    spread: list.some((r) => totalStdUs(r) != null),
+  };
+}
+
 const CSV_COLUMNS = [
   'library',
   'version',

@@ -20,6 +20,7 @@ import {
   isAllLang,
   isShapeSkip,
   mixedLanguages,
+  experimentTableFlags,
   normalizeExperimentRow,
   peerRows,
   rowsToDelimited,
@@ -447,6 +448,11 @@ function renderTable(rows) {
   const showKind = unique(rows, 'kind').length > 1;
   const showN = unique(rows, 'n').length > 1;
   const showIo = unique(rows, 'io').length > 1;
+  const flags = experimentTableFlags(rows);
+  const showWrite = flags.write;
+  const showRead = flags.read;
+  const showSize = flags.size;
+  const showSpread = flags.spread;
   const showGzip = rows.some((r) => r.size_gzip_bytes != null);
   const showZstd = rows.some((r) => r.size_zstd_bytes != null);
   const sorted = [...rows].sort((a, b) => {
@@ -467,11 +473,11 @@ function renderTable(rows) {
       ${showKind ? '<th class="str">Record</th>' : ''}
       ${showN ? '<th class="num">How many</th>' : ''}
       ${showIo ? '<th class="str">How written</th>' : ''}
-      <th class="num">Write (µs)</th>
-      <th class="num">Read (µs)</th>
+      ${showWrite ? '<th class="num">Write (µs)</th>' : ''}
+      ${showRead ? '<th class="num">Read (µs)</th>' : ''}
       <th class="num">Total (µs)</th>
-      <th class="num">Spread (std)</th>
-      <th class="num">Size</th>
+      ${showSpread ? '<th class="num">Spread (std)</th>' : ''}
+      ${showSize ? '<th class="num">Size</th>' : ''}
       ${showGzip ? '<th class="num">After gzip</th>' : ''}
       ${showZstd ? '<th class="num">After zstd</th>' : ''}
       <th class="num">Trials</th>
@@ -503,11 +509,11 @@ function renderTable(rows) {
           ${showKind ? `<td class="str">${escapeHtml(kindLabel(row.kind))}</td>` : ''}
           ${showN ? `<td class="num">${escapeHtml(row.n ?? '')}</td>` : ''}
           ${showIo ? `<td class="str">${escapeHtml(row.io === 'memory' ? 'in memory' : row.io ?? '')}</td>` : ''}
-          ${skipped ? `<td class="num">${formatSig(Number(row.write_median_ns) / 1000)}</td>` : ratioCell(row.write_median_ns, bestWrite, 'write_median_ns')}
-          ${skipped ? `<td class="num">${formatSig(Number(row.read_median_ns) / 1000)}</td>` : ratioCell(row.read_median_ns, bestRead, 'read_median_ns')}
+          ${showWrite ? (skipped ? `<td class="num">${formatSig(Number(row.write_median_ns) / 1000)}</td>` : ratioCell(row.write_median_ns, bestWrite, 'write_median_ns')) : ''}
+          ${showRead ? (skipped ? `<td class="num">${formatSig(Number(row.read_median_ns) / 1000)}</td>` : ratioCell(row.read_median_ns, bestRead, 'read_median_ns')) : ''}
           ${skipped ? `<td class="num">${formatSig(Number(row.total_median_ns) / 1000)}</td>` : ratioCell(row.total_median_ns, bestTotal, 'total_median_ns')}
-          <td class="num">${std == null ? '—' : formatSig(std)}</td>
-          ${skipped ? `<td class="num">${formatIntGrouped(row.size_bytes)}</td>` : sizeCell(row.size_bytes, bestSize)}
+          ${showSpread ? `<td class="num">${std == null ? '—' : formatSig(std)}</td>` : ''}
+          ${showSize ? (skipped ? `<td class="num">${formatIntGrouped(row.size_bytes)}</td>` : sizeCell(row.size_bytes, bestSize)) : ''}
           ${showGzip ? (skipped ? `<td class="num">${formatIntGrouped(row.size_gzip_bytes)}</td>` : sizeCell(row.size_gzip_bytes, bestGzip)) : ''}
           ${showZstd ? (skipped ? `<td class="num">${formatIntGrouped(row.size_zstd_bytes)}</td>` : sizeCell(row.size_zstd_bytes, bestZstd)) : ''}
           <td class="num">${trials}</td>
