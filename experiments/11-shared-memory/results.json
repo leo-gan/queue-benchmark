@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-01T00:24:19Z",
+  "generated_at": "2026-09-01T01:00:43Z",
   "languages": {
     "python": {
       "status": "ok",
@@ -8,28 +8,68 @@
           "library": "shared-ring",
           "pattern": "bytes",
           "n": 9,
-          "median_handoff_ns": 42125209.0,
-          "p50_ns": 42125209.0,
-          "mean_ns": 42358953.88888889,
+          "median_handoff_ns": 44185095.0,
+          "p50_ns": 44185095.0,
+          "mean_ns": 43730000.666666664,
           "rel_to_fastest": 1.0
         }
       ]
     },
     "rust": {
       "status": "ok",
-      "rows": []
+      "rows": [
+        {
+          "library": "shared-ring",
+          "pattern": "bytes",
+          "n": 9,
+          "median_handoff_ns": 573617.0,
+          "p50_ns": 573617.0,
+          "mean_ns": 573928.6666666666,
+          "rel_to_fastest": 1.0
+        }
+      ]
     },
     "javascript": {
       "status": "ok",
-      "rows": []
+      "rows": [
+        {
+          "library": "shared-ring",
+          "pattern": "bytes",
+          "n": 9,
+          "median_handoff_ns": 19416988.0,
+          "p50_ns": 19416988.0,
+          "mean_ns": 19799208.0,
+          "rel_to_fastest": 1.0
+        }
+      ]
     },
     "csharp": {
       "status": "ok",
-      "rows": []
+      "rows": [
+        {
+          "library": "shared-ring",
+          "pattern": "bytes",
+          "n": 9,
+          "median_handoff_ns": 36219900.0,
+          "p50_ns": 36219900.0,
+          "mean_ns": 36680600.0,
+          "rel_to_fastest": 1.0
+        }
+      ]
     },
     "c": {
       "status": "ok",
-      "rows": []
+      "rows": [
+        {
+          "library": "shared-ring",
+          "pattern": "bytes",
+          "n": 9,
+          "median_handoff_ns": 51767.0,
+          "p50_ns": 51767.0,
+          "mean_ns": 51961.666666666664,
+          "rel_to_fastest": 1.0
+        }
+      ]
     }
   }
 }

@@ -5,37 +5,37 @@
       "library": "asyncio.Queue",
       "pattern": "1p32c",
       "n": 9,
-      "median_handoff_ns": 146681.0,
-      "p50_ns": 146681.0,
-      "mean_ns": 149359.44444444444,
+      "median_handoff_ns": 144307.0,
+      "p50_ns": 144307.0,
+      "mean_ns": 147016.22222222222,
       "rel_to_fastest": 1.0
-    },
-    {
-      "library": "deque-lock",
-      "pattern": "1p32c",
-      "n": 9,
-      "median_handoff_ns": 1351719.0,
-      "p50_ns": 1351719.0,
-      "mean_ns": 1440625.5555555555,
-      "rel_to_fastest": 9.215365316571335
     },
     {
       "library": "steal-deque",
       "pattern": "1p32c",
       "n": 9,
-      "median_handoff_ns": 1400350.0,
-      "p50_ns": 1400350.0,
-      "mean_ns": 1440021.2222222222,
-      "rel_to_fastest": 9.546907915817318
+      "median_handoff_ns": 1332916.0,
+      "p50_ns": 1332916.0,
+      "mean_ns": 1341926.111111111,
+      "rel_to_fastest": 9.236669045853631
     },
     {
       "library": "queue.Queue",
       "pattern": "1p32c",
       "n": 9,
-      "median_handoff_ns": 1413579.0,
-      "p50_ns": 1413579.0,
-      "mean_ns": 1429187.5555555555,
-      "rel_to_fastest": 9.637096829173512
+      "median_handoff_ns": 1441615.0,
+      "p50_ns": 1441615.0,
+      "mean_ns": 1485180.3333333333,
+      "rel_to_fastest": 9.989917329027698
+    },
+    {
+      "library": "deque-lock",
+      "pattern": "1p32c",
+      "n": 9,
+      "median_handoff_ns": 1473006.0,
+      "p50_ns": 1473006.0,
+      "mean_ns": 1527427.4444444445,
+      "rel_to_fastest": 10.207446624210883
     }
   ]
 }

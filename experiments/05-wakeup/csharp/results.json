@@ -1,0 +1,32 @@
+{
+  "status": "ok",
+  "rows": [
+    {
+      "library": "Queue+lock",
+      "pattern": "bytes",
+      "n": 9,
+      "median_handoff_ns": 110684800.0,
+      "p50_ns": 110684800.0,
+      "mean_ns": 110873122.22222222,
+      "rel_to_fastest": 1.0
+    },
+    {
+      "library": "Channel",
+      "pattern": "bytes",
+      "n": 9,
+      "median_handoff_ns": 110898400.0,
+      "p50_ns": 110898400.0,
+      "mean_ns": 111296811.1111111,
+      "rel_to_fastest": 1.0019298042730347
+    },
+    {
+      "library": "ConcurrentQueue",
+      "pattern": "bytes",
+      "n": 9,
+      "median_handoff_ns": 112051700.0,
+      "p50_ns": 112051700.0,
+      "mean_ns": 111304922.22222222,
+      "rel_to_fastest": 1.0123494824944346
+    }
+  ]
+}
