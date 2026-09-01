@@ -45,15 +45,16 @@ This document is the source of truth for the stacked PRs. Domain words change
    | Type | Meaning | Implementations |
    |------|---------|-----------------|
    | locked | Mutex + stdlib queue (baseline) | Python `deque-lock`, C# `Queue+lock`, JS `Array`, C `mutex-queue` |
-   | concurrent | Thread-safe MPMC / MPSC | Python `queue.Queue`, C# `ConcurrentQueue`, Rust `std-mpsc` + `crossbeam-channel` + `crossbeam-queue`, JS `fastq` |
-   | async | Event-loop / async channel (category A) | Python `asyncio.Queue`, C# `Channel`, Rust `tokio::sync::mpsc` |
+   | concurrent | Thread-safe MPMC / MPSC | Python `queue.Queue` + `queue.SimpleQueue`, C# `ConcurrentQueue`, Rust `std-mpsc` + `crossbeam-channel` + `crossbeam-queue`, JS `fastq` |
+   | async | Event-loop / async channel (category A) | Python `asyncio.Queue` + `janus` (async face), C# `Channel`, Rust `tokio::sync::mpsc` |
    | spsc-ring | Single-producer ring | C `spsc-ring`, Python `spsc-ring` |
    | work-stealing | Owner-push / steal-from-top | Python `steal-deque`, Rust `crossbeam-deque`, C# / C / JS `steal-deque` |
    | scheduler | Not a handoff queue | JS `p-queue` (concurrency limiter) |
 
    Category plan: [CATEGORY_BENCHMARK_PLAN.md](CATEGORY_BENCHMARK_PLAN.md).
-   Out of scope for T/A charts: Redis, ZeroMQ, Celery, BullMQ, janus, flume,
-   kanal, BufferBlock, rxjs.
+   Out of scope for T/A charts: Redis, ZeroMQ, Celery, BullMQ, flume,
+   kanal, BufferBlock, rxjs. `janus` is in as category A (async face
+   only); the hybrid thread↔async path is not a category.
 
 4. **Same modes.** smoke=2, all-single=10, full=100, research=500.
 

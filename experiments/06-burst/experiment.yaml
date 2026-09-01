@@ -42,6 +42,8 @@ languages:
     libraries:
       - {name: deque-lock, role: locked baseline}
       - {name: queue.Queue, role: threading queue}
+      - {name: queue.SimpleQueue, role: unbounded threading queue}
+      - {name: janus, role: third-party async queue}
   - id: csharp
     enabled: true
     libraries:

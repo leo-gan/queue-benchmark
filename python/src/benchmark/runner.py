@@ -8,6 +8,7 @@ import sys
 import threading
 import time
 from pathlib import Path
+from typing import Any
 
 from .data import expand_cells, load_run_config, make_payload, type_config_hash
 from .patterns import env_bound, env_slow_consumer_ns, env_special, env_wait_ns, parse_pattern
@@ -64,6 +65,8 @@ def _can_run(adapter: QueueAdapter, producers: int, consumers: int) -> bool:
     if adapter.supports_spsc_only and (producers, consumers) != (1, 1):
         return False
     if (producers > 1 or consumers > 1) and not adapter.supports_mpmc:
+        return False
+    if env_bound() is not None and not getattr(adapter, "supports_bounded", True):
         return False
     return True
 
@@ -123,6 +126,12 @@ def _run_sync(
     return wall // 2, wall - wall // 2, 1.0 if ok else 0.0
 
 
+async def _aclose(adapter: QueueAdapter, q: Any) -> None:
+    closer = getattr(adapter, "close_async", None)
+    if closer is not None:
+        await closer(q)
+
+
 async def _run_async(
     adapter: QueueAdapter,
     items: list[bytes],
@@ -133,47 +142,50 @@ async def _run_async(
 ) -> tuple[int, int, float]:
     cap = capacity if capacity is not None else len(items)
     q = adapter.create(capacity=cap)
-    if producers == 1 and consumers == 1 and slow_ns <= 0:
-        t0 = _now_ns()
-        for item in items:
-            await adapter.enqueue_async(q, item)  # type: ignore[attr-defined]
-        t1 = _now_ns()
+    try:
+        if producers == 1 and consumers == 1 and slow_ns <= 0:
+            t0 = _now_ns()
+            for item in items:
+                await adapter.enqueue_async(q, item)  # type: ignore[attr-defined]
+            t1 = _now_ns()
+            got: list[bytes] = []
+            for _ in items:
+                got.append(await adapter.dequeue_async(q))  # type: ignore[attr-defined]
+            t2 = _now_ns()
+            return t1 - t0, t2 - t1, 1.0 if got == items else 0.0
+
+        batches = _split(items, producers)
         got: list[bytes] = []
-        for _ in items:
-            got.append(await adapter.dequeue_async(q))  # type: ignore[attr-defined]
-        t2 = _now_ns()
-        return t1 - t0, t2 - t1, 1.0 if got == items else 0.0
+        lock = asyncio.Lock()
+        remaining = len(items)
 
-    batches = _split(items, producers)
-    got: list[bytes] = []
-    lock = asyncio.Lock()
-    remaining = len(items)
+        async def producer(batch: list[bytes]) -> None:
+            for item in batch:
+                await adapter.enqueue_async(q, item)  # type: ignore[attr-defined]
 
-    async def producer(batch: list[bytes]) -> None:
-        for item in batch:
-            await adapter.enqueue_async(q, item)  # type: ignore[attr-defined]
+        async def consumer() -> None:
+            nonlocal remaining
+            while True:
+                async with lock:
+                    if remaining <= 0:
+                        return
+                    remaining -= 1
+                item = await adapter.dequeue_async(q)  # type: ignore[attr-defined]
+                if slow_ns:
+                    await asyncio.sleep(slow_ns / 1e9)
+                async with lock:
+                    got.append(item)
 
-    async def consumer() -> None:
-        nonlocal remaining
-        while True:
-            async with lock:
-                if remaining <= 0:
-                    return
-                remaining -= 1
-            item = await adapter.dequeue_async(q)  # type: ignore[attr-defined]
-            if slow_ns:
-                await asyncio.sleep(slow_ns / 1e9)
-            async with lock:
-                got.append(item)
-
-    t0 = _now_ns()
-    await asyncio.gather(
-        *[producer(b) for b in batches if b],
-        *[consumer() for _ in range(consumers)],
-    )
-    wall = _now_ns() - t0
-    ok = sorted(got) == sorted(items)
-    return wall // 2, wall - wall // 2, 1.0 if ok else 0.0
+        t0 = _now_ns()
+        await asyncio.gather(
+            *[producer(b) for b in batches if b],
+            *[consumer() for _ in range(consumers)],
+        )
+        wall = _now_ns() - t0
+        ok = sorted(got) == sorted(items)
+        return wall // 2, wall - wall // 2, 1.0 if ok else 0.0
+    finally:
+        await _aclose(adapter, q)
 
 
 def _run_wakeup(adapter: QueueAdapter, n: int, wait_ns: int) -> tuple[int, int, float]:
@@ -223,29 +235,35 @@ async def _run_wakeup_async(adapter: QueueAdapter, n: int, wait_ns: int) -> tupl
             await adapter.dequeue_async(q)  # type: ignore[attr-defined]
             latencies.append(_now_ns() - t_wait)
 
-    task = asyncio.create_task(consumer())
-    await asyncio.sleep(0.002)
-    t0 = _now_ns()
-    for _ in range(n):
-        await asyncio.sleep(wait_ns / 1e9)
-        await adapter.enqueue_async(q, item)  # type: ignore[attr-defined]
-    await task
-    wall = _now_ns() - t0
-    mid = sorted(latencies)[len(latencies) // 2] if latencies else 0
-    return mid, max(0, wall - mid), 1.0 if len(latencies) == n else 0.0
+    try:
+        task = asyncio.create_task(consumer())
+        await asyncio.sleep(0.002)
+        t0 = _now_ns()
+        for _ in range(n):
+            await asyncio.sleep(wait_ns / 1e9)
+            await adapter.enqueue_async(q, item)  # type: ignore[attr-defined]
+        await task
+        wall = _now_ns() - t0
+        mid = sorted(latencies)[len(latencies) // 2] if latencies else 0
+        return mid, max(0, wall - mid), 1.0 if len(latencies) == n else 0.0
+    finally:
+        await _aclose(adapter, q)
 
 
 async def _run_burst_async(
     adapter: QueueAdapter, items: list[bytes], capacity: int | None
 ) -> tuple[int, int, float]:
     q = adapter.create(capacity=capacity or len(items))
-    t0 = _now_ns()
-    for item in items:
-        await adapter.enqueue_async(q, item)  # type: ignore[attr-defined]
-    t1 = _now_ns()
-    got = [await adapter.dequeue_async(q) for _ in items]  # type: ignore[attr-defined]
-    t2 = _now_ns()
-    return t1 - t0, t2 - t1, 1.0 if got == items else 0.0
+    try:
+        t0 = _now_ns()
+        for item in items:
+            await adapter.enqueue_async(q, item)  # type: ignore[attr-defined]
+        t1 = _now_ns()
+        got = [await adapter.dequeue_async(q) for _ in items]  # type: ignore[attr-defined]
+        t2 = _now_ns()
+        return t1 - t0, t2 - t1, 1.0 if got == items else 0.0
+    finally:
+        await _aclose(adapter, q)
 
 
 async def _run_cancel(adapter: QueueAdapter, waiters: int) -> tuple[int, int, float]:
@@ -257,14 +275,17 @@ async def _run_cancel(adapter: QueueAdapter, waiters: int) -> tuple[int, int, fl
         except asyncio.CancelledError:
             return
 
-    tasks = [asyncio.create_task(waiter()) for _ in range(waiters)]
-    await asyncio.sleep(0.001)
-    t0 = _now_ns()
-    for task in tasks:
-        task.cancel()
-    await asyncio.gather(*tasks, return_exceptions=True)
-    wall = _now_ns() - t0
-    return wall, 0, 1.0
+    try:
+        tasks = [asyncio.create_task(waiter()) for _ in range(waiters)]
+        await asyncio.sleep(0.001)
+        t0 = _now_ns()
+        for task in tasks:
+            task.cancel()
+        await asyncio.gather(*tasks, return_exceptions=True)
+        wall = _now_ns() - t0
+        return wall, 0, 1.0
+    finally:
+        await _aclose(adapter, q)
 
 
 def _measure(adapter: QueueAdapter, items: list[bytes], io_mode: str) -> tuple[int, int, float]:

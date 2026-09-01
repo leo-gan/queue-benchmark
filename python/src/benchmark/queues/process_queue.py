@@ -24,11 +24,15 @@ def run_cross_process(
     producers: int,
     consumers: int,
     capacity: int | None,
+    make_queue: Any | None = None,
 ) -> tuple[int, int, float]:
     """Time a real multi-process handoff. Returns (enq_ns, deq_ns, fidelity)."""
     import time
 
-    q: Queue = Queue(maxsize=int(capacity) if capacity else 0)
+    if make_queue is None:
+        q: Any = Queue(maxsize=int(capacity) if capacity else 0)
+    else:
+        q = make_queue(capacity)
     n = len(items)
     producers = max(1, producers)
     consumers = max(1, consumers)

@@ -4,13 +4,13 @@ Times are not comparable across languages.
 
 ## python
 
-Similar set (within 15% of fastest on this sample): asyncio.Queue, asyncio.Queue
+Similar set (within 15% of fastest on this sample): asyncio.Queue, asyncio.Queue, asyncio.Queue
 
 See `python/results.md`.
 
 ## rust
 
-Similar set (within 15% of fastest on this sample): steal-deque, crossbeam-channel
+Similar set (within 15% of fastest on this sample): steal-deque
 
 See `rust/results.md`.
 
@@ -28,6 +28,6 @@ See `csharp/results.md`.
 
 ## c
 
-Similar set (within 15% of fastest on this sample): steal-deque, mutex-queue, steal-deque, mutex-queue
+Similar set (within 15% of fastest on this sample): mutex-queue, mutex-queue, steal-deque, steal-deque
 
 See `c/results.md`.

@@ -11,6 +11,7 @@ class QueueAdapter(ABC):
     category: str
     supports_mpmc: bool = True
     supports_spsc_only: bool = False
+    supports_bounded: bool = True
     is_async: bool = False
     communication: str = "thread"
     opt_in: bool = False

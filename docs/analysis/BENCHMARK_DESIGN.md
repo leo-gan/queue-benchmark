@@ -98,7 +98,7 @@ A library against a T library.
 
 Python runners exist (opt-in, not in the default matrix):
 
-- P: `multiprocessing.Queue` — experiment 10
+- P: `multiprocessing.Queue` / `multiprocessing.SimpleQueue` — experiment 10
 - S: `shared-ring` — experiment 11
 - D: `sqlite-queue` — experiment 12
 

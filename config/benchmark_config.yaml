@@ -306,11 +306,21 @@ languages:
         communication: thread
         package: stdlib
         rationale: "Threading MPMC blocking queue"
+      - name: queue.SimpleQueue
+        category: concurrent
+        communication: thread
+        package: stdlib
+        rationale: "Unbounded C-accelerated threading MPMC; no maxsize"
       - name: asyncio.Queue
         category: async
         communication: async
         package: stdlib
         rationale: "Event-loop queue"
+      - name: janus
+        category: async
+        communication: async
+        package: janus
+        rationale: "Third-party async face of janus.Queue; not the hybrid T/A path"
       - name: spsc-ring
         category: spsc
         communication: thread
@@ -326,6 +336,11 @@ languages:
         communication: process
         package: stdlib
         rationale: "Cross-process IPC queue (opt-in; category P)"
+      - name: multiprocessing.SimpleQueue
+        category: concurrent
+        communication: process
+        package: stdlib
+        rationale: "Unbounded cross-process pipe (opt-in; category P)"
       - name: shared-ring
         category: spsc
         communication: shared

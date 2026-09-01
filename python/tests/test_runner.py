@@ -18,6 +18,85 @@ def test_parse_pattern():
     assert parse_pattern("4p4c") == (4, 4)
 
 
+def test_simple_queue_roundtrip():
+    from benchmark.queues.simple_queue import SimpleQueueAdapter
+
+    q = SimpleQueueAdapter()
+    assert q.supports_bounded is False
+    bucket = q.create()
+    q.enqueue(bucket, b"a")
+    q.enqueue(bucket, b"b")
+    assert q.dequeue(bucket) == b"a"
+    assert q.dequeue(bucket) == b"b"
+
+
+def test_janus_async_roundtrip():
+    import asyncio
+
+    from benchmark.queues.janus_queue import JanusQueue
+
+    q = JanusQueue()
+    assert q.is_async is True
+    assert q.communication == "async"
+
+    async def _go() -> None:
+        bucket = q.create(capacity=4)
+        try:
+            await q.enqueue_async(bucket, b"a")
+            await q.enqueue_async(bucket, b"b")
+            assert await q.dequeue_async(bucket) == b"a"
+            assert await q.dequeue_async(bucket) == b"b"
+        finally:
+            await q.close_async(bucket)
+
+    asyncio.run(_go())
+
+
+def test_process_simple_queue_cross_process():
+    from benchmark.queues.process_simple_queue import ProcessSimpleQueue, run_cross_process
+
+    assert ProcessSimpleQueue.cross_process is True
+    assert ProcessSimpleQueue.supports_bounded is False
+    items = [b"a", b"b", b"c", b"d"]
+    enq, deq, fid = run_cross_process(items, 1, 1, None)
+    assert fid == 1.0
+    assert enq > 0 and deq > 0
+
+
+def test_simple_queue_and_janus_measure_mpmc():
+    from benchmark.queues.janus_queue import JanusQueue
+    from benchmark.queues.simple_queue import SimpleQueueAdapter
+    from benchmark.runner import _measure
+
+    items = [b"a", b"b", b"c", b"d"]
+    enq, deq, fid = _measure(SimpleQueueAdapter(), items, "stream")
+    assert fid == 1.0
+    assert enq > 0 and deq > 0
+    enq, deq, fid = _measure(JanusQueue(), items, "stream")
+    assert fid == 1.0
+    assert enq > 0 and deq > 0
+
+
+def test_janus_cancel(monkeypatch):
+    from benchmark.queues.janus_queue import JanusQueue
+    from benchmark.runner import _measure
+
+    monkeypatch.setenv("BENCHMARK_SPECIAL", "cancel")
+    enq, deq, fid = _measure(JanusQueue(), [b"x"] * 8, "bytes")
+    assert fid == 1.0
+    assert enq >= 0
+
+
+def test_unbounded_skipped_when_bound(monkeypatch):
+    from benchmark.queues.simple_queue import SimpleQueueAdapter
+    from benchmark.runner import _can_run
+
+    monkeypatch.setenv("BENCHMARK_BOUND", "32")
+    assert _can_run(SimpleQueueAdapter(), 1, 1) is False
+    monkeypatch.delenv("BENCHMARK_BOUND")
+    assert _can_run(SimpleQueueAdapter(), 1, 1) is True
+
+
 def test_spsc_ring_roundtrip():
     from benchmark.queues.spsc_ring import SpscRingQueue
 

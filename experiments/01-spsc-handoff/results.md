@@ -4,7 +4,7 @@ Times are not comparable across languages.
 
 ## python
 
-Similar set (within 15% of fastest on this sample): spsc-ring, steal-deque
+Similar set (within 15% of fastest on this sample): queue.SimpleQueue
 
 See `python/results.md`.
 
@@ -22,7 +22,7 @@ See `javascript/results.md`.
 
 ## csharp
 
-Similar set (within 15% of fastest on this sample): ConcurrentQueue, Queue+lock
+Similar set (within 15% of fastest on this sample): ConcurrentQueue
 
 See `csharp/results.md`.
 

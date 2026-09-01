@@ -44,7 +44,9 @@ languages:
     libraries:
       - {name: deque-lock, role: locked baseline}
       - {name: queue.Queue, role: threading MPMC used as SPSC}
+      - {name: queue.SimpleQueue, role: unbounded threading MPMC used as SPSC}
       - {name: asyncio.Queue, role: event-loop queue}
+      - {name: janus, role: third-party async queue}
   - id: rust
     enabled: true
     libraries:

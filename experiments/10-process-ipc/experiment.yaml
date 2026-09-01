@@ -41,6 +41,7 @@ languages:
     enabled: true
     libraries:
       - {name: multiprocessing.Queue, role: IPC queue}
+      - {name: multiprocessing.SimpleQueue, role: unbounded IPC pipe}
   - id: csharp
     enabled: true
     libraries:

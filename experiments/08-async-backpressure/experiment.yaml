@@ -41,6 +41,7 @@ languages:
     enabled: true
     libraries:
       - {name: asyncio.Queue, role: event-loop queue}
+      - {name: janus, role: third-party async queue}
   - id: rust
     enabled: true
     libraries:

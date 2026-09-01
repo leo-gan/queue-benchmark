@@ -42,6 +42,7 @@ languages:
     libraries:
       - {name: deque-lock, role: locked baseline}
       - {name: queue.Queue, role: threading MPMC}
+      - {name: queue.SimpleQueue, role: unbounded threading MPMC}
       - {name: spsc-ring, role: SPSC ring}
   - id: rust
     enabled: true

@@ -5,9 +5,9 @@
       "library": "p-queue",
       "pattern": "bytes",
       "n": 9,
-      "median_handoff_ns": 148270.0,
-      "p50_ns": 148270.0,
-      "mean_ns": 140801.33333333334,
+      "median_handoff_ns": 153205.0,
+      "p50_ns": 153205.0,
+      "mean_ns": 174234.66666666666,
       "rel_to_fastest": 1.0
     }
   ]

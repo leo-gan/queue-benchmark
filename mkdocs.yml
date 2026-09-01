@@ -69,6 +69,7 @@ nav:
           - Overview: javascript/index.md
       - Python:
           - Overview: python/index.md
+          - Library selection: python/library-selection.md
       - Rust:
           - Overview: rust/index.md
   - Benchmarks:

@@ -2,4 +2,4 @@
 
 | Library | Pattern | Median handoff (ns) | vs fastest | n |
 |---------|---------|--------------------:|-----------:|--:|
-| sqlite-queue | bytes | 81869702 | 1.00× | 9 |
+| sqlite-queue | bytes | 69787522 | 1.00× | 9 |

@@ -20,14 +20,14 @@ rank them against each other.
 | Family | What it is | Example |
 |--------|------------|---------|
 | **locked** | Mutex around a stdlib queue. Baseline. | Python `deque-lock`, C# `Queue+lock`, JS `Array`, C `mutex-queue` |
-| **concurrent** | Thread-safe MPSC/MPMC | Python `queue.Queue`, C# `ConcurrentQueue`, Rust `crossbeam-channel`, JS `fastq` |
+| **concurrent** | Thread-safe MPSC/MPMC | Python `queue.Queue` / `queue.SimpleQueue`, C# `ConcurrentQueue`, Rust `crossbeam-channel`, JS `fastq` |
 | **spsc** | Single-producer ring (no mutex on the happy path) | C `spsc-ring`, Python `spsc-ring` |
 | **work-stealing** | Owner-push / steal-from-the-other-end | Python `steal-deque`, Rust `crossbeam-deque`, C# / C / JS `steal-deque` |
 
 ### A — async
 
 The runtime’s own queue: Python `asyncio.Queue`, C# `Channel`, Rust
-`tokio::sync::mpsc`.
+`tokio::sync::mpsc`. Python also has `janus` (async face only).
 
 JavaScript `p-queue` is a **concurrency limiter** (scheduler), not a
 handoff queue. It is listed in the inventory; do not treat it as category A
