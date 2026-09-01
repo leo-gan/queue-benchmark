@@ -61,6 +61,7 @@ static (int p, int c) ParsePattern(string mode)
 [
     ("Queue+lock", "locked", false, true),
     ("ConcurrentQueue", "concurrent", false, false),
+    ("BlockingCollection", "concurrent", false, false),
     ("Channel", "async", false, false),
     ("steal-deque", "work-stealing", false, false),
     ("pipe-ipc", "concurrent", true, true),
@@ -101,6 +102,7 @@ foreach (var cell in cells)
                 {
                     "Queue+lock" => BenchLocked(items),
                     "ConcurrentQueue" => BenchConcurrent(items, 1, 1),
+                    "BlockingCollection" => BenchBlocking(items, 1, 1),
                     "Channel" => BenchChannel(items, 1, 1).GetAwaiter().GetResult(),
                     "steal-deque" => BenchSteal(items, 1, 1),
                     _ => (0L, 0L)
@@ -110,6 +112,7 @@ foreach (var cell in cells)
                 {
                     "Queue+lock" => BenchLocked(items),
                     "ConcurrentQueue" => BenchConcurrent(items, producers, consumers),
+                    "BlockingCollection" => BenchBlocking(items, producers, consumers),
                     "Channel" => BenchChannel(items, producers, consumers).GetAwaiter().GetResult(),
                     "steal-deque" => BenchSteal(items, producers, consumers),
                     "pipe-ipc" => BenchPipe(items),
@@ -151,6 +154,39 @@ static (long enq, long deq) BenchLocked(byte[][] items)
         lock (gate) q.Dequeue();
     }
     return (enq, (long)sw.Elapsed.TotalNanoseconds);
+}
+
+static (long enq, long deq) BenchBlocking(byte[][] items, int producers, int consumers)
+{
+    var q = new BlockingCollection<byte[]>();
+    if (producers == 1 && consumers == 1)
+    {
+        var sw = Stopwatch.StartNew();
+        foreach (var it in items) q.Add(it);
+        var enq = (long)sw.Elapsed.TotalNanoseconds;
+        sw.Restart();
+        for (int i = 0; i < items.Length; i++) q.Take();
+        return (enq, (long)sw.Elapsed.TotalNanoseconds);
+    }
+    var n = items.Length;
+    var tasks = new List<Task>();
+    var sw2 = Stopwatch.StartNew();
+    for (int p = 0; p < producers; p++)
+    {
+        var a = n * p / producers;
+        var b = n * (p + 1) / producers;
+        tasks.Add(Task.Run(() => { for (int i = a; i < b; i++) q.Add(items[i]); }));
+    }
+    var per = n / consumers;
+    var extra = n % consumers;
+    for (int c = 0; c < consumers; c++)
+    {
+        var take = per + (c == 0 ? extra : 0);
+        tasks.Add(Task.Run(() => { for (int i = 0; i < take; i++) q.Take(); }));
+    }
+    Task.WaitAll(tasks.ToArray());
+    var wall = (long)sw2.Elapsed.TotalNanoseconds;
+    return (wall / 2, wall - wall / 2);
 }
 
 static (long enq, long deq) BenchConcurrent(byte[][] items, int producers, int consumers)

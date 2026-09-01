@@ -5,19 +5,19 @@
       "library": "tokio-mpsc",
       "pattern": "bytes",
       "n": 9,
-      "median_handoff_ns": 90616.0,
-      "p50_ns": 90616.0,
-      "mean_ns": 111373.55555555556,
+      "median_handoff_ns": 216378.0,
+      "p50_ns": 216378.0,
+      "mean_ns": 186344.77777777778,
       "rel_to_fastest": 1.0
     },
     {
       "library": "async-channel",
       "pattern": "bytes",
       "n": 9,
-      "median_handoff_ns": 204402.0,
-      "p50_ns": 204402.0,
-      "mean_ns": 212216.88888888888,
-      "rel_to_fastest": 2.255694358612166
+      "median_handoff_ns": 260918.0,
+      "p50_ns": 260918.0,
+      "mean_ns": 252797.44444444444,
+      "rel_to_fastest": 1.2058434776178724
     }
   ]
 }

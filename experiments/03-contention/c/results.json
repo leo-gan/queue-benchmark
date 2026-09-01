@@ -2,58 +2,58 @@
   "status": "ok",
   "rows": [
     {
-      "library": "steal-deque",
-      "pattern": "4p1c",
+      "library": "mutex-queue",
+      "pattern": "1p4c",
       "n": 9,
-      "median_handoff_ns": 60556.0,
-      "p50_ns": 60556.0,
-      "mean_ns": 60464.22222222222,
+      "median_handoff_ns": 81707.0,
+      "p50_ns": 81707.0,
+      "mean_ns": 94216.77777777778,
       "rel_to_fastest": 1.0
     },
     {
+      "library": "steal-deque",
+      "pattern": "4p1c",
+      "n": 9,
+      "median_handoff_ns": 83987.0,
+      "p50_ns": 83987.0,
+      "mean_ns": 85178.11111111111,
+      "rel_to_fastest": 1.027904585898393
+    },
+    {
       "library": "mutex-queue",
       "pattern": "4p1c",
       "n": 9,
-      "median_handoff_ns": 61643.0,
-      "p50_ns": 61643.0,
-      "mean_ns": 60831.22222222222,
-      "rel_to_fastest": 1.0179503269700774
+      "median_handoff_ns": 86447.0,
+      "p50_ns": 86447.0,
+      "mean_ns": 87461.0,
+      "rel_to_fastest": 1.0580121654203434
     },
     {
       "library": "steal-deque",
       "pattern": "1p4c",
       "n": 9,
-      "median_handoff_ns": 66894.0,
-      "p50_ns": 66894.0,
-      "mean_ns": 93157.22222222222,
-      "rel_to_fastest": 1.1046634520113614
+      "median_handoff_ns": 86587.0,
+      "p50_ns": 86587.0,
+      "mean_ns": 87092.33333333333,
+      "rel_to_fastest": 1.0597256049053325
     },
     {
       "library": "mutex-queue",
-      "pattern": "1p4c",
+      "pattern": "4p4c",
       "n": 9,
-      "median_handoff_ns": 93284.0,
-      "p50_ns": 93284.0,
-      "mean_ns": 99817.77777777778,
-      "rel_to_fastest": 1.540458418653808
+      "median_handoff_ns": 167188.0,
+      "p50_ns": 167188.0,
+      "mean_ns": 166893.11111111112,
+      "rel_to_fastest": 2.046189432973919
     },
     {
       "library": "steal-deque",
       "pattern": "4p4c",
       "n": 9,
-      "median_handoff_ns": 106089.0,
-      "p50_ns": 106089.0,
-      "mean_ns": 105938.44444444444,
-      "rel_to_fastest": 1.7519155822709558
-    },
-    {
-      "library": "mutex-queue",
-      "pattern": "4p4c",
-      "n": 9,
-      "median_handoff_ns": 108430.0,
-      "p50_ns": 108430.0,
-      "mean_ns": 108050.11111111111,
-      "rel_to_fastest": 1.790574014135676
+      "median_handoff_ns": 184518.0,
+      "p50_ns": 184518.0,
+      "mean_ns": 198496.33333333334,
+      "rel_to_fastest": 2.2582887635086344
     }
   ]
 }

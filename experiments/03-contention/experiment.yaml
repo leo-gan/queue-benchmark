@@ -54,6 +54,7 @@ languages:
     enabled: true
     libraries:
       - {name: ConcurrentQueue, role: concurrent MPMC}
+      - {name: BlockingCollection, role: blocking MPMC}
       - {name: Channel, role: async channel}
   - id: c
     enabled: true

@@ -2,9 +2,9 @@
 
 | Library | Pattern | Median handoff (ns) | vs fastest | n |
 |---------|---------|--------------------:|-----------:|--:|
-| steal-deque | bytes | 8715 | 1.00× | 9 |
-| Array | bytes | 10113 | 1.16× | 9 |
-| fastq | bytes | 11032 | 1.27× | 9 |
-| yocto-queue | bytes | 18846 | 2.16× | 9 |
-| denque | bytes | 28506 | 3.27× | 9 |
-| p-queue | bytes | 152721 | 17.52× | 9 |
+| fastq | bytes | 8830 | 1.00× | 9 |
+| steal-deque | bytes | 9677 | 1.10× | 9 |
+| Array | bytes | 10022 | 1.13× | 9 |
+| yocto-queue | bytes | 26471 | 3.00× | 9 |
+| denque | bytes | 28598 | 3.24× | 9 |
+| p-queue | bytes | 159697 | 18.09× | 9 |

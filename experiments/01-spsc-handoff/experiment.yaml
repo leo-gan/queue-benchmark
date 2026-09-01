@@ -69,6 +69,7 @@ languages:
     libraries:
       - {name: Queue+lock, role: locked baseline}
       - {name: ConcurrentQueue, role: concurrent MPMC}
+      - {name: BlockingCollection, role: blocking MPMC}
       - {name: Channel, role: async channel}
   - id: c
     enabled: true

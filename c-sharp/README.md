@@ -1,6 +1,6 @@
 # C# Queue Benchmark
 
-`Queue+lock`, `ConcurrentQueue`, `Channel`.
+`Queue+lock`, `ConcurrentQueue`, `BlockingCollection`, `Channel`.
 
 ```bash
 cd c-sharp

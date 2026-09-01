@@ -5,55 +5,55 @@
       "library": "fastq",
       "pattern": "4p4c",
       "n": 9,
-      "median_handoff_ns": 1708.0,
-      "p50_ns": 1708.0,
-      "mean_ns": 1983.7777777777778,
+      "median_handoff_ns": 1674.0,
+      "p50_ns": 1674.0,
+      "mean_ns": 1644.5555555555557,
       "rel_to_fastest": 1.0
     },
     {
       "library": "fastq",
       "pattern": "4p1c",
       "n": 9,
-      "median_handoff_ns": 2471.0,
-      "p50_ns": 2471.0,
-      "mean_ns": 2308.3333333333335,
-      "rel_to_fastest": 1.4467213114754098
+      "median_handoff_ns": 2436.0,
+      "p50_ns": 2436.0,
+      "mean_ns": 2373.8888888888887,
+      "rel_to_fastest": 1.4551971326164874
     },
     {
       "library": "steal-deque",
       "pattern": "4p4c",
       "n": 9,
-      "median_handoff_ns": 2791.0,
-      "p50_ns": 2791.0,
-      "mean_ns": 2793.3333333333335,
-      "rel_to_fastest": 1.6340749414519906
+      "median_handoff_ns": 2872.0,
+      "p50_ns": 2872.0,
+      "mean_ns": 21029.555555555555,
+      "rel_to_fastest": 1.7156511350059738
     },
     {
       "library": "steal-deque",
       "pattern": "4p1c",
       "n": 9,
-      "median_handoff_ns": 7167.0,
-      "p50_ns": 7167.0,
-      "mean_ns": 7145.555555555556,
-      "rel_to_fastest": 4.196135831381733
-    },
-    {
-      "library": "fastq",
-      "pattern": "1p4c",
-      "n": 9,
-      "median_handoff_ns": 8809.0,
-      "p50_ns": 8809.0,
-      "mean_ns": 12704.333333333334,
-      "rel_to_fastest": 5.157494145199063
+      "median_handoff_ns": 7381.0,
+      "p50_ns": 7381.0,
+      "mean_ns": 7620.222222222223,
+      "rel_to_fastest": 4.409199522102748
     },
     {
       "library": "steal-deque",
       "pattern": "1p4c",
       "n": 9,
-      "median_handoff_ns": 9910.0,
-      "p50_ns": 9910.0,
-      "mean_ns": 9888.888888888889,
-      "rel_to_fastest": 5.802107728337236
+      "median_handoff_ns": 9423.0,
+      "p50_ns": 9423.0,
+      "mean_ns": 9656.777777777777,
+      "rel_to_fastest": 5.629032258064516
+    },
+    {
+      "library": "fastq",
+      "pattern": "1p4c",
+      "n": 9,
+      "median_handoff_ns": 9558.0,
+      "p50_ns": 9558.0,
+      "mean_ns": 14249.0,
+      "rel_to_fastest": 5.709677419354839
     }
   ]
 }
