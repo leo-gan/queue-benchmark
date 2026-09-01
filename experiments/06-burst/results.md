@@ -4,13 +4,13 @@ Times are not comparable across languages.
 
 ## python
 
-Similar set (within 15% of fastest on this sample): deque-lock, steal-deque
+Similar set (within 15% of fastest on this sample): queue.SimpleQueue
 
 See `python/results.md`.
 
 ## rust
 
-Similar set (within 15% of fastest on this sample): steal-deque, crossbeam-queue
+Similar set (within 15% of fastest on this sample): crossbeam-queue, steal-deque
 
 See `rust/results.md`.
 

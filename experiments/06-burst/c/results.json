@@ -5,28 +5,28 @@
       "library": "spsc-ring",
       "pattern": "bytes",
       "n": 9,
-      "median_handoff_ns": 7385.0,
-      "p50_ns": 7385.0,
-      "mean_ns": 7382.555555555556,
+      "median_handoff_ns": 7856.0,
+      "p50_ns": 7856.0,
+      "mean_ns": 7855.666666666667,
       "rel_to_fastest": 1.0
     },
     {
       "library": "steal-deque",
       "pattern": "bytes",
       "n": 9,
-      "median_handoff_ns": 21759.0,
-      "p50_ns": 21759.0,
-      "mean_ns": 21768.222222222223,
-      "rel_to_fastest": 2.9463777928232906
+      "median_handoff_ns": 10121.0,
+      "p50_ns": 10121.0,
+      "mean_ns": 10125.0,
+      "rel_to_fastest": 1.2883146639511203
     },
     {
       "library": "mutex-queue",
       "pattern": "bytes",
       "n": 9,
-      "median_handoff_ns": 21771.0,
-      "p50_ns": 21771.0,
-      "mean_ns": 22201.333333333332,
-      "rel_to_fastest": 2.9480027081922815
+      "median_handoff_ns": 11219.0,
+      "p50_ns": 11219.0,
+      "mean_ns": 11005.555555555555,
+      "rel_to_fastest": 1.4280804480651732
     }
   ]
 }

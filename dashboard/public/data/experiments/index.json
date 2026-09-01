@@ -1,6 +1,6 @@
 {
   "schema": "gld.dashboard.experiments/1",
-  "generated_at": "2026-09-01T01:47:03Z",
+  "generated_at": "2026-09-01T19:56:08Z",
   "count": 12,
   "with_results": 12,
   "experiments": [
@@ -19,7 +19,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/01-spsc-handoff.json.gz",
-      "generated_at": "2026-09-01T01:45:05Z",
+      "generated_at": "2026-09-01T19:54:34Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -28,7 +28,7 @@
         {
           "id": "python",
           "status": "ok",
-          "rows": 5
+          "rows": 7
         },
         {
           "id": "rust",
@@ -51,7 +51,7 @@
           "rows": 3
         }
       ],
-      "source_bytes": 5752
+      "source_bytes": 6274
     },
     {
       "id": "02-payload-size",
@@ -68,7 +68,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/02-payload-size.json.gz",
-      "generated_at": "2026-09-01T01:45:08Z",
+      "generated_at": "2026-09-01T19:54:38Z",
       "sample": {
         "kind": "document",
         "n": 100
@@ -77,7 +77,7 @@
         {
           "id": "python",
           "status": "ok",
-          "rows": 5
+          "rows": 7
         },
         {
           "id": "rust",
@@ -100,7 +100,7 @@
           "rows": 3
         }
       ],
-      "source_bytes": 5742
+      "source_bytes": 6262
     },
     {
       "id": "03-contention",
@@ -117,7 +117,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/03-contention.json.gz",
-      "generated_at": "2026-09-01T01:45:13Z",
+      "generated_at": "2026-09-01T19:54:42Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -126,7 +126,7 @@
         {
           "id": "python",
           "status": "ok",
-          "rows": 12
+          "rows": 18
         },
         {
           "id": "rust",
@@ -149,7 +149,7 @@
           "rows": 6
         }
       ],
-      "source_bytes": 11197
+      "source_bytes": 12829
     },
     {
       "id": "04-backpressure",
@@ -166,7 +166,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/04-backpressure.json.gz",
-      "generated_at": "2026-09-01T01:45:14Z",
+      "generated_at": "2026-09-01T19:54:44Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -175,7 +175,7 @@
         {
           "id": "python",
           "status": "ok",
-          "rows": 4
+          "rows": 5
         },
         {
           "id": "rust",
@@ -198,7 +198,7 @@
           "rows": 3
         }
       ],
-      "source_bytes": 4730
+      "source_bytes": 4983
     },
     {
       "id": "05-wakeup",
@@ -215,7 +215,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/05-wakeup.json.gz",
-      "generated_at": "2026-09-01T01:45:54Z",
+      "generated_at": "2026-09-01T19:55:26Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -224,7 +224,7 @@
         {
           "id": "python",
           "status": "ok",
-          "rows": 4
+          "rows": 6
         },
         {
           "id": "rust",
@@ -247,7 +247,7 @@
           "rows": 1
         }
       ],
-      "source_bytes": 4892
+      "source_bytes": 5430
     },
     {
       "id": "06-burst",
@@ -264,7 +264,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/06-burst.json.gz",
-      "generated_at": "2026-09-01T01:45:58Z",
+      "generated_at": "2026-09-01T19:55:30Z",
       "sample": {
         "kind": "message",
         "n": 1000
@@ -273,7 +273,7 @@
         {
           "id": "python",
           "status": "ok",
-          "rows": 4
+          "rows": 6
         },
         {
           "id": "rust",
@@ -296,7 +296,7 @@
           "rows": 3
         }
       ],
-      "source_bytes": 5535
+      "source_bytes": 6054
     },
     {
       "id": "07-async-waiters",
@@ -313,7 +313,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/07-async-waiters.json.gz",
-      "generated_at": "2026-09-01T01:46:01Z",
+      "generated_at": "2026-09-01T19:55:33Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -322,7 +322,7 @@
         {
           "id": "python",
           "status": "ok",
-          "rows": 4
+          "rows": 6
         },
         {
           "id": "rust",
@@ -345,7 +345,7 @@
           "rows": 1
         }
       ],
-      "source_bytes": 3467
+      "source_bytes": 4005
     },
     {
       "id": "08-async-backpressure",
@@ -362,7 +362,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/08-async-backpressure.json.gz",
-      "generated_at": "2026-09-01T01:46:04Z",
+      "generated_at": "2026-09-01T19:55:37Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -371,7 +371,7 @@
         {
           "id": "python",
           "status": "ok",
-          "rows": 4
+          "rows": 5
         },
         {
           "id": "rust",
@@ -394,7 +394,7 @@
           "rows": 2
         }
       ],
-      "source_bytes": 4956
+      "source_bytes": 5259
     },
     {
       "id": "09-async-cancel",
@@ -411,7 +411,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/09-async-cancel.json.gz",
-      "generated_at": "2026-09-01T01:46:07Z",
+      "generated_at": "2026-09-01T19:55:40Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -420,7 +420,7 @@
         {
           "id": "python",
           "status": "ok",
-          "rows": 1
+          "rows": 2
         },
         {
           "id": "rust",
@@ -443,7 +443,7 @@
           "rows": 2
         }
       ],
-      "source_bytes": 1868
+      "source_bytes": 2136
     },
     {
       "id": "10-process-ipc",
@@ -460,7 +460,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/10-process-ipc.json.gz",
-      "generated_at": "2026-09-01T01:46:13Z",
+      "generated_at": "2026-09-01T19:55:45Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -469,7 +469,7 @@
         {
           "id": "python",
           "status": "ok",
-          "rows": 6
+          "rows": 9
         },
         {
           "id": "rust",
@@ -492,7 +492,7 @@
           "rows": 4
         }
       ],
-      "source_bytes": 7057
+      "source_bytes": 7853
     },
     {
       "id": "11-shared-memory",
@@ -509,7 +509,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/11-shared-memory.json.gz",
-      "generated_at": "2026-09-01T01:46:18Z",
+      "generated_at": "2026-09-01T19:55:50Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -541,7 +541,7 @@
           "rows": 1
         }
       ],
-      "source_bytes": 1656
+      "source_bytes": 1640
     },
     {
       "id": "12-durable-local",
@@ -558,7 +558,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/12-durable-local.json.gz",
-      "generated_at": "2026-09-01T01:46:27Z",
+      "generated_at": "2026-09-01T19:55:59Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -590,7 +590,7 @@
           "rows": 1
         }
       ],
-      "source_bytes": 1668
+      "source_bytes": 1663
     }
   ]
 }

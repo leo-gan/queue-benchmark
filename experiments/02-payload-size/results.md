@@ -4,13 +4,13 @@ Times are not comparable across languages.
 
 ## python
 
-Similar set (within 15% of fastest on this sample): spsc-ring
+Similar set (within 15% of fastest on this sample): queue.SimpleQueue
 
 See `python/results.md`.
 
 ## rust
 
-Similar set (within 15% of fastest on this sample): steal-deque, crossbeam-queue, crossbeam-channel, std-mpsc
+Similar set (within 15% of fastest on this sample): steal-deque, crossbeam-queue, crossbeam-channel, tokio-mpsc
 
 See `rust/results.md`.
 

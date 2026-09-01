@@ -2,9 +2,9 @@
 
 | Library | Pattern | Median handoff (ns) | vs fastest | n |
 |---------|---------|--------------------:|-----------:|--:|
-| steal-deque | 1p4c | 49643 | 1.00× | 9 |
-| mutex-queue | 1p4c | 52054 | 1.05× | 9 |
-| steal-deque | 4p1c | 52963 | 1.07× | 9 |
-| mutex-queue | 4p1c | 55237 | 1.11× | 9 |
-| mutex-queue | 4p4c | 87831 | 1.77× | 9 |
-| steal-deque | 4p4c | 88562 | 1.78× | 9 |
+| mutex-queue | 4p1c | 58844 | 1.00× | 9 |
+| mutex-queue | 1p4c | 61319 | 1.04× | 9 |
+| steal-deque | 4p1c | 61427 | 1.04× | 9 |
+| steal-deque | 1p4c | 61461 | 1.04× | 9 |
+| steal-deque | 4p4c | 95815 | 1.63× | 9 |
+| mutex-queue | 4p4c | 98827 | 1.68× | 9 |

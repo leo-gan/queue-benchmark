@@ -42,6 +42,7 @@ languages:
     libraries:
       - {name: queue.Queue, role: bounded threading queue}
       - {name: asyncio.Queue, role: bounded async queue}
+      - {name: janus, role: bounded third-party async queue}
   - id: c
     enabled: true
     libraries:

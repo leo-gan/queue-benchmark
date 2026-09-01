@@ -6,8 +6,8 @@ How to pick an in-process queue.
 |-----------|------------|
 | One thread only | A deque or ring. Do not pay for locks you do not need. |
 | One producer, one consumer | SPSC ring or a simple channel. See experiment 1. |
-| Many producers | MPMC (`queue.Queue`, `ConcurrentQueue`, `crossbeam-channel`). |
-| Event loop | The runtime’s own queue (`asyncio.Queue`, `Channel`, `tokio::mpsc`). |
+| Many producers | MPMC (`queue.Queue`, `queue.SimpleQueue`, `ConcurrentQueue`, `crossbeam-channel`). |
+| Event loop | The runtime’s own queue (`asyncio.Queue`, `Channel`, `tokio::mpsc`) or `janus` (async face). |
 | Need backpressure | Bounded + blocking/async wait. |
 | Need a broker | Leave this lab. Redis / Kafka / ZeroMQ are category N (system bench). |
 | Need processes | Category P (`multiprocessing.Queue`), not a thread queue. |

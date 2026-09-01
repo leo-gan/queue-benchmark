@@ -47,7 +47,7 @@ priority, blocking vs spin vs yield, SPSC / MPSC / SPMC / MPMC.
 | Family | Role | Examples |
 |--------|------|----------|
 | locked | Mutex baseline | `deque-lock`, `Queue+lock`, `Array`, `mutex-queue` |
-| concurrent | Thread-safe MPSC/MPMC | `queue.Queue`, `ConcurrentQueue`, `crossbeam-channel`, `fastq` |
+| concurrent | Thread-safe MPSC/MPMC | `queue.Queue`, `queue.SimpleQueue`, `ConcurrentQueue`, `crossbeam-channel`, `fastq` |
 | spsc-ring | No mutex on the happy path | C `spsc-ring`, Python `spsc-ring` |
 | work-stealing | Steal from the other end | Python `steal-deque`, Rust `crossbeam-deque`, C# / C / JS `steal-deque` |
 

@@ -2,9 +2,9 @@
 
 | Library | Pattern | Median handoff (ns) | vs fastest | n |
 |---------|---------|--------------------:|-----------:|--:|
-| fastq | 4p4c | 1547 | 1.00× | 9 |
-| fastq | 4p1c | 2663 | 1.72× | 9 |
-| steal-deque | 4p4c | 7424 | 4.80× | 9 |
-| steal-deque | 4p1c | 8819 | 5.70× | 9 |
-| steal-deque | 1p4c | 11802 | 7.63× | 9 |
-| fastq | 1p4c | 12187 | 7.88× | 9 |
+| fastq | 4p4c | 1665 | 1.00× | 9 |
+| fastq | 4p1c | 2352 | 1.41× | 9 |
+| steal-deque | 4p1c | 6904 | 4.15× | 9 |
+| steal-deque | 4p4c | 6918 | 4.15× | 9 |
+| fastq | 1p4c | 9371 | 5.63× | 9 |
+| steal-deque | 1p4c | 9446 | 5.67× | 9 |

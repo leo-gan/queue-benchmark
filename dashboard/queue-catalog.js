@@ -9,7 +9,9 @@ export const QUEUE_CATALOG = {
   Channel: { communication: 'async', family: 'async' },
   'deque-lock': { communication: 'thread', family: 'locked' },
   'queue.Queue': { communication: 'thread', family: 'concurrent' },
+  'queue.SimpleQueue': { communication: 'thread', family: 'concurrent' },
   'asyncio.Queue': { communication: 'async', family: 'async' },
+  janus: { communication: 'async', family: 'async' },
   'spsc-ring': { communication: 'thread', family: 'spsc' },
   'mutex-queue': { communication: 'thread', family: 'locked' },
   'std-mpsc': { communication: 'thread', family: 'concurrent' },
@@ -20,6 +22,7 @@ export const QUEUE_CATALOG = {
   fastq: { communication: 'thread', family: 'concurrent' },
   'p-queue': { communication: 'scheduler', family: 'scheduler' },
   'multiprocessing.Queue': { communication: 'process', family: 'concurrent' },
+  'multiprocessing.SimpleQueue': { communication: 'process', family: 'concurrent' },
   'shared-ring': { communication: 'shared', family: 'spsc' },
   'sqlite-queue': { communication: 'durable', family: 'durable' },
 };

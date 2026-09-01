@@ -4,19 +4,19 @@ Times are not comparable across languages.
 
 ## python
 
-Similar set (within 15% of fastest on this sample): queue.Queue, asyncio.Queue
+Similar set (within 15% of fastest on this sample): queue.SimpleQueue, queue.Queue, asyncio.Queue, janus
 
 See `python/results.md`.
 
 ## rust
 
-Similar set (within 15% of fastest on this sample): crossbeam-queue, tokio-mpsc, std-mpsc, steal-deque, crossbeam-channel
+Similar set (within 15% of fastest on this sample): std-mpsc, crossbeam-channel, steal-deque, tokio-mpsc, crossbeam-queue
 
 See `rust/results.md`.
 
 ## javascript
 
-Similar set (within 15% of fastest on this sample): p-queue, fastq, steal-deque, Array
+Similar set (within 15% of fastest on this sample): fastq, p-queue, Array, steal-deque
 
 See `javascript/results.md`.
 

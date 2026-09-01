@@ -22,7 +22,7 @@ See `javascript/results.md`.
 
 ## csharp
 
-Similar set (within 15% of fastest on this sample): steal-deque
+Similar set (within 15% of fastest on this sample): ConcurrentQueue
 
 See `csharp/results.md`.
 
