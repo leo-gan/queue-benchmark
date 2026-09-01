@@ -5,8 +5,8 @@ a chart that looks decisive and is wrong.
 
 ## Never
 
-1. **Never publish one “fastest queue” number.** A library that wins SPSC
-   handoff of a 256-byte ticket can lose at 4 KiB, under 4 producers, or
+1. **Never publish one “fastest queue” number.** A library that wins 1P1C
+   handoff of a 256-byte ticket can lose at 4 KiB, under 4P4C, or
    when the queue is bounded. Report by category × pattern × payload.
 
 2. **Never rank across languages.** A C ring and a Python deque are not
@@ -25,14 +25,14 @@ a chart that looks decisive and is wrong.
    concurrency. It does not hand a payload from a producer to a consumer.
    It lives under Other, not A.
 
-6. **Never invent MPMC.** If the library cannot run two producers and two
-   consumers, skip the cell. Do not wrap an SPSC structure in a mutex and
-   log it as MPMC.
+6. **Never invent a multi-worker cell.** If the library cannot run four
+   producers and four consumers, skip 4P4C. Do not wrap a 1P1C structure
+   in a mutex and log it as 4P4C.
 
 ## Always
 
 - Compare **inside one language and one communication category**.
-- Say **SPSC / MPMC** in prose. The CSV still says `bytes` / `stream`.
+- Say **1P1C / 4P4C** in prose. The CSV still says `bytes` / `4p4c`.
 - A failed fidelity check is an error, not a speed win.
 - Warmup index 0 stays in the raw CSV; analysis drops it.
 

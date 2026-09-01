@@ -1,6 +1,6 @@
 # Run config: smoke (CI / fast path)
 id: smoke
-description: "Minimal matrix — 256-byte payload, single instance, SPSC only"
+description: "Minimal matrix — 256-byte payload, single instance, 1P1C only"
 data_model_version: 2
 
 types:

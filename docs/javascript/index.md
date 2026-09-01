@@ -9,9 +9,9 @@
 
 | Log name | Category | Communication | Package | Notes |
 |----------|----------|---------------|---------|-------|
-| `Array` | locked | T (thread) | builtin | `push` / `shift` SPSC baseline |
-| `denque` | locked | T (thread) | denque | O(1) circular deque; SPSC only |
-| `yocto-queue` | locked | T (thread) | yocto-queue | O(1) linked-list FIFO; SPSC only |
+| `Array` | locked | T (thread) | builtin | `push` / `shift` 1P1C baseline |
+| `denque` | locked | T (thread) | denque | O(1) circular deque; 1P1C only |
+| `yocto-queue` | locked | T (thread) | yocto-queue | O(1) linked-list FIFO; 1P1C only |
 | `fastq` | concurrent | T (thread) | fastq | In-process job queue |
 | `p-queue` | scheduler | — | p-queue | Concurrency limiter, not a handoff queue |
 | `steal-deque` | work-stealing | T (thread) | harness | Owner-push / steal-from-top |

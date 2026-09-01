@@ -71,14 +71,15 @@ serializer-benchmark columns so historical logs keep loading.
 | `TimeEnq` | Enqueue ns |
 | `TimeDeq` | Dequeue ns |
 | `TimeHandoff` | Handoff ns |
-| `Pattern` | `bytes` = **SPSC**, `stream` = **MPMC** (not I/O) |
+| `Pattern` | `bytes` = **1P1C**, `4p4c` = **4P4C** (`stream` is leftover 2P2C, not I/O) |
 | `CpuTimeNs` | Process CPU time (spin vs block) |
 
 ## Patterns
 
-- **SPSC** (CSV `bytes`): one producer, one consumer. Every library must implement this.
-- **MPMC** (CSV `stream`): two producers, two consumers. Libraries that cannot do MPMC
-  skip the cell rather than fake it.
+- **1P1C** (CSV `bytes`): one producer, one consumer. Every library must implement this.
+- **4P4C** (CSV `4p4c`): four producers, four consumers. Libraries that cannot
+  run that cell skip it rather than fake it.
 
-The word *stream* is a leftover ABI name. The dashboard and docs say SPSC / MPMC.
+The word *stream* is a leftover ABI name for 2P2C. The dashboard and docs say
+1P1C / 4P4C.
 See [Benchmark design](BENCHMARK_DESIGN.md).

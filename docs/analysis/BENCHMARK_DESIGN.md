@@ -34,13 +34,13 @@ priority, blocking vs spin vs yield, SPSC vs MPMC.
 
 | CSV value | Say this | What actually ran |
 |-----------|----------|-------------------|
-| `bytes` | **SPSC** | One producer, one consumer |
-| `stream` | **MPMC** | Two producers, two consumers |
-| `1p4c` / `4p1c` / `4p4c` | Named P×C | Default full matrix + experiment 3 |
+| `bytes` | **1P1C** | One producer, one consumer |
+| `stream` | **2P2C** | Two producers, two consumers (experiment / old logs) |
+| `1p4c` / `4p1c` / `4p4c` | **1P4C** / **4P1C** / **4P4C** | Experiment 3; 4P4C is also on the default matrix |
 
 There is no stream I/O in this suite. In-process queues move already-built
-payloads. If a library cannot do MPMC, **skip the cell** — do not fake it
-with a mutex around an SPSC structure.
+payloads. If a library cannot run with more than one producer or consumer,
+**skip the cell** — do not fake it with a mutex around a 1P1C structure.
 
 ## What we time
 
@@ -75,7 +75,7 @@ Same run modes as [Modes](modes.md): smoke / all-single / full / research.
 |------|-----|
 | Languages | C, C#, JavaScript, Python, Rust |
 | Categories | T and A on the default matrix; P/S/D opt-in (see [categories](queue_categories.md)) |
-| Pattern | SPSC, 2P2C, 1P4C, 4P1C, 4P4C (skip if the library cannot) |
+| Pattern | 1P1C and 4P4C (skip 4P4C if the library cannot) |
 | Payloads | 256 B (`size_256`) and 4 KiB (`size_4096`) |
 | Experiments | [01](../experiments/01-spsc-handoff/)–[12](../experiments/12-durable-local/) |
 
@@ -94,7 +94,7 @@ Same run modes as [Modes](modes.md): smoke / all-single / full / research.
 
 ### Category A
 
-Same SPSC/MPMC cells as T, but the workers are async tasks. Extra tests:
+Same 1P1C / 4P4C cells as T, but the workers are async tasks. Extra tests:
 experiment 7 (many waiters), 8 (bounded async), 9 (cancel). Do not rank an
 A library against a T library.
 
@@ -125,7 +125,7 @@ is multi-socket and the run says so.
 
 1. Pick a **language**.
 2. Pick a **category** (T or A) in the dashboard Category control.
-3. Pick a **pattern** (SPSC or MPMC) and a **payload**.
+3. Pick a **pattern** (1P1C or 4P4C) and a **payload size**.
 4. Compare families inside that slice.
 
 There is no overall score. A queue that wins T1 can lose T2 or T4.

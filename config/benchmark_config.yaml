@@ -67,15 +67,15 @@ test_data:
       description: "4 KiB payload (copy cost starts to matter)"
       supports_circular: false
 
-# Pattern axis (CSV StringOrStream). Logged names are serializer ABI leftovers:
-# bytes = SPSC, stream = MPMC. Docs and dashboard say SPSC / MPMC, never "stream API".
+# Pattern axis (CSV StringOrStream). Logged names are serializer ABI leftovers.
+# Docs and dashboard say 1P1C / 2P2C / 1P4C / 4P1C / 4P4C, never "stream API".
 io_modes:
   - name: bytes
-    aliases: [string, buffer, spsc]
-    description: "SPSC: single producer, single consumer"
+    aliases: [string, buffer, spsc, 1p1c]
+    description: "1P1C: one producer, one consumer"
   - name: stream
-    aliases: [stream, mpmc]
-    description: "MPMC: 2 producers, 2 consumers (when the library supports it)"
+    aliases: [stream, mpmc, 2p2c]
+    description: "2P2C: two producers, two consumers (when the library supports it)"
   - name: 1p4c
     aliases: [1p4c]
     description: "1 producer, 4 consumers"

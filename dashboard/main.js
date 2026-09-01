@@ -1687,9 +1687,9 @@ function applyFilterPolicyToAllGroups({ refreshSelectors = false } = {}) {
     if (modeOptions.includes(wantMode)) {
       state.currentMode = wantMode;
     } else {
-      // Prefer SPSC (bytes) when nothing is selected yet. Insertion order in
-      // the stats file often starts at 1p4c, which hid the usual first view.
-      const prefer = ['bytes', 'stream', '1p4c', '4p1c', '4p4c'];
+      // Prefer 1P1C when nothing is selected yet. Insertion order in the
+      // stats file often starts at 1p4c, which hid the usual first view.
+      const prefer = ['bytes', '4p4c', 'stream', '1p4c', '4p1c'];
       state.currentMode =
         prefer.find((m) => modeOptions.includes(m)) || modeOptions[0] || '';
     }
@@ -2545,8 +2545,8 @@ function normalizeMode(mode) {
 }
 
 function modeDisplayLabel(norm) {
-  if (norm === 'bytes' || norm === 'spsc') return 'SPSC';
-  if (norm === 'stream' || norm === 'mpmc') return 'MPMC (2P2C)';
+  if (norm === 'bytes' || norm === 'spsc' || norm === '1p1c') return '1P1C';
+  if (norm === 'stream' || norm === 'mpmc' || norm === '2p2c') return '2P2C';
   if (/^\d+p\d+c$/.test(String(norm || ''))) return String(norm).toUpperCase();
   return norm || '—';
 }
@@ -2589,7 +2589,7 @@ function summarizeStreamHonesty(groups) {
 function updateStreamHonestyChip() {
   const chip = document.getElementById('stream-honesty-chip');
   if (!chip) return;
-  // Pattern=stream means MPMC, not stream I/O. Do not show serializer honesty.
+  // Pattern=stream means 2P2C, not stream I/O. Do not show serializer honesty.
   chip.hidden = true;
   chip.textContent = '';
   chip.removeAttribute('title');

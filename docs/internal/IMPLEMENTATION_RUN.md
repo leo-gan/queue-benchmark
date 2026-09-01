@@ -16,7 +16,7 @@ items. Category **N** (localhost broker) stays out of this lab, as designed.
 | True two-process **P** | Same-process `multiprocessing.Queue` pickle | Parent + child `Process` producers/consumers (`run_cross_process`) |
 | True two-process **S** | Same-process mapped `Array` | Parent maps `Array`/`Value`; child process produce + consume |
 | Work-stealing family | None | Python `steal-deque` (owner-push / steal-from-top) |
-| Default matrix P×C | SPSC + 2P2C only | `bytes`, `stream`, `1p4c`, `4p1c`, `4p4c` |
+| Default matrix P×C | 1P1C + 4P4C | `bytes`, `4p4c` (2P2C / 1P4C / 4P1C stay on experiment 3) |
 | Wakeup / burst / cancel | Python only | Python, Rust, C#, C, JavaScript |
 | p99.9 | Described, not first-class | `report_percentiles` includes 99.9 → `total_p999_ns` (label is `p999`, not `int(99.9)=99`) |
 | Messages / CPU-second | Described, not first-class | Optional CSV `CpuTimeNs`; stats `msgs_per_cpu_sec` (high importance) |
@@ -52,18 +52,17 @@ broker). That is a system bench, not a data-structure bench.
 - This is a locked Chase-Lev *shape*, not a published lock-free steal
   algorithm. It exists so the family has a first member.
 
-### 3. Default full matrix includes 1P4C / 4P1C / 4P4C
+### 3. Default full matrix is 1P1C and 4P4C
 
 `config/library/default.yaml`:
 
 ```yaml
-io_modes: [bytes, stream, 1p4c, 4p1c, 4p4c]
+io_modes: [bytes, 4p4c]
 ```
 
-CSV `Pattern` values stay `bytes` = SPSC, `stream` = 2P2C.
-Named patterns are first-class cells. Libraries that cannot do MPMC skip
-those cells (existing `_can_run` / SPSC-only rules). A full bench is
-about 2.5× the old SPSC+2P2C matrix.
+CSV `Pattern` values stay `bytes` = 1P1C. `4p4c` is four producers and
+four consumers. Libraries that cannot run with more than one producer or
+consumer skip 4P4C. 2P2C, 1P4C, and 4P1C stay on experiment 3.
 
 ### 4. Wakeup / burst / cancel in every language
 

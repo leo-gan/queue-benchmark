@@ -14,15 +14,15 @@
 | `queue.SimpleQueue` | concurrent | T (thread) | stdlib | Unbounded C-accelerated MPMC; backpressure cells skipped |
 | `asyncio.Queue` | async | A (async) | stdlib | Event-loop queue |
 | `janus` | async | A (async) | janus | Async face only; not the hybrid thread↔async path |
-| `spsc-ring` | spsc | T (thread) | harness | Single-producer ring; MPMC skipped |
+| `spsc-ring` | spsc | T (thread) | harness | Single-producer ring; 1P1C only |
 | `steal-deque` | work-stealing | T (thread) | harness | Owner-push / steal-from-top |
 | `multiprocessing.Queue` | concurrent | P (process) | stdlib | Opt-in two-process IPC |
 | `multiprocessing.SimpleQueue` | concurrent | P (process) | stdlib | Opt-in unbounded IPC pipe |
 | `shared-ring` | spsc | S (shared) | harness | Opt-in two-process mapped ring |
 | `sqlite-queue` | durable | D (durable) | stdlib | Opt-in SQLite queue |
 
-SPSC is one producer / one consumer. MPMC is two producers / two consumers
-(CSV still logs `bytes` / `stream`). Compare T libraries separately from A.
+The published patterns are **1P1C** and **4P4C**. CSV still logs `bytes`
+for 1P1C. Compare T libraries separately from A.
 See [Benchmark design](../analysis/BENCHMARK_DESIGN.md).
 
 Celery, RQ, Redis, Kafka, and the other broker/task libraries from the

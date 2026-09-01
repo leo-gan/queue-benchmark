@@ -21,10 +21,11 @@ CSV `Pattern` (formerly `StringOrStream`):
 
 | Logged value | Queue meaning |
 |--------------|---------------|
-| `bytes` | SPSC (1 producer, 1 consumer) |
-| `stream` | MPMC (today: 2 producers, 2 consumers) |
+| `bytes` | 1P1C (1 producer, 1 consumer) |
+| `4p4c` | 4P4C (published multi-worker cell) |
+| `stream` | 2P2C (old logs / experiment 3) |
 
-The dashboard and methodology must say **SPSC / MPMC**, never “stream API.”
+The dashboard and methodology must say **1P1C / 4P4C**, never “stream API” and never SPSC / MPMC on the published filter.
 
 ## Communication categories
 
@@ -55,9 +56,9 @@ Async channels (`asyncio.Queue`, `Channel`, `tokio::mpsc`) live in **A**.
 
 ## Tests
 
-Always-on axes: language, category, family, pattern (`bytes` SPSC,
-`stream` 2P2C, plus `1p4c` / `4p1c` / `4p4c` on the default matrix),
-bound, payload, mode (smoke / all-single / full).
+Always-on axes: language, category, family, pattern (`bytes` 1P1C and
+`4p4c` 4P4C on the default matrix; `1p4c` / `4p1c` / `stream` on
+experiment 3), bound, payload, mode (smoke / all-single / full).
 
 Primary metrics: completed handoffs/s, enqueue ns, dequeue ns, end-to-end
 handoff, p50/p99/`total_p999_ns`, peak RSS, `msgs_per_cpu_sec` when

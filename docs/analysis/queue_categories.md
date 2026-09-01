@@ -61,13 +61,15 @@ These are **properties** that can apply inside T or A:
 - bounded vs unbounded (backpressure)
 - FIFO vs priority
 - blocking vs spin vs yield
-- SPSC vs MPMC (workload / pattern)
+- 1P1C vs 4P4C (workload / pattern)
 
 ## Patterns
 
 | Say | CSV `Pattern` | Work |
 |-----|---------------|------|
-| SPSC | `bytes` | 1 producer, 1 consumer |
-| MPMC | `stream` | 2 producers, 2 consumers |
+| 1P1C | `bytes` | 1 producer, 1 consumer |
+| 4P4C | `4p4c` | 4 producers, 4 consumers |
+| 2P2C | `stream` | 2 producers, 2 consumers (old logs / experiment 3) |
+| 1P4C / 4P1C | `1p4c` / `4p1c` | Experiment 3 only |
 
-Logged values `bytes` / `stream` are pattern tags, not I/O.
+Logged values `bytes` / `stream` / `4p4c` are pattern tags, not I/O.

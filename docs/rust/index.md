@@ -9,7 +9,7 @@
 
 | Log name | Category | Communication | Crate | Notes |
 |----------|----------|---------------|-------|-------|
-| `std-mpsc` | concurrent | T (thread) | std | MPSC only; MPMC cells skipped |
+| `std-mpsc` | concurrent | T (thread) | std | One consumer; skips 4P4C |
 | `crossbeam-channel` | concurrent | T (thread) | crossbeam-channel | Unbounded MPMC |
 | `flume` | concurrent | T (thread) | flume | Unbounded MPMC; sync face only |
 | `tokio-mpsc` | async | A (async) | tokio | Unbounded async MPSC |
