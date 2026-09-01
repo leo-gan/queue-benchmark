@@ -202,13 +202,13 @@
           </div>
         </div>
         <p class="section-help chart-axis-help">
-          Each point is one serializer.
+          Each point is one queue.
           <strong>Right / up</strong> = faster ops/s · <strong>left</strong> = smaller payload.
           Highlighted = Pareto (no other library is both faster and smaller).
         </p>
         <div class="chart-container">
           <canvas id="scatter-chart"></canvas>
-          <div id="scatter-empty" class="chart-empty" hidden>No serializers match this filter. Change data type or mode.</div>
+          <div id="scatter-empty" class="chart-empty" hidden>No queues match this filter. Change data type or mode.</div>
         </div>
       </div>
 
@@ -230,7 +230,7 @@
         </p>
         <div class="chart-container ranking-chart-single">
           <canvas id="bar-chart"></canvas>
-          <div id="bar-empty" class="chart-empty" hidden>No serializers match this filter.</div>
+          <div id="bar-empty" class="chart-empty" hidden>No queues match this filter.</div>
         </div>
       </div>
     </section>
@@ -252,11 +252,11 @@
           </div>
           <label class="filter-label" for="roster-baseline-select" style="margin:0;">Baseline</label>
           <div class="select-wrapper">
-            <select id="roster-baseline-select" aria-label="Roster baseline serializer"></select>
+            <select id="roster-baseline-select" aria-label="Roster baseline queue"></select>
           </div>
           <button type="button" id="btn-copy-roster-md" class="tab-btn" style="font-size:0.8rem;">Copy Markdown</button>
           <div class="search-input-wrapper">
-            <input type="text" id="table-search" class="search-input" placeholder="Search serializers…" aria-label="Search serializers">
+            <input type="text" id="table-search" class="search-input" placeholder="Search queues…" aria-label="Search queues">
           </div>
         </div>
       </div>
@@ -265,7 +265,7 @@
         <table id="analytics-table" class="data-table view-ops">
           <thead>
             <tr>
-              <th id="th-serializer" class="str sort-asc">Serializer</th>
+              <th id="th-serializer" class="str sort-asc">Queue</th>
               <th id="th-honesty" class="str roster-col-honesty">Honesty</th>
               <!-- Ops/s stats (shown when roster view = ops) -->
               <th id="th-ops-median" class="num roster-col-ops">Median</th>
@@ -308,7 +308,7 @@
             </div>
             <span class="filter-label">Baseline</span>
             <div class="select-wrapper">
-              <select id="compare-baseline-select" aria-label="Baseline serializer"></select>
+              <select id="compare-baseline-select" aria-label="Baseline queue"></select>
             </div>
           </div>
 
@@ -327,7 +327,7 @@
             </div>
           </div>
 
-          <span class="compare-status-line" id="compare-status-line">0 serializers · 0 metrics</span>
+          <span class="compare-status-line" id="compare-status-line">0 queues · 0 metrics</span>
           <button type="button" id="btn-copy-compare-md" class="tab-btn chart-tool-btn compare-copy-btn">Copy Markdown</button>
         </div>
 
@@ -336,9 +336,9 @@
             <div class="select-wrapper same-lang-wrap">
               <select id="same-lang-select" aria-label="Language for comparison"></select>
             </div>
-            <input type="search" id="same-ser-search" class="compare-search-input" placeholder="Filter…" aria-label="Filter serializers to add" autocomplete="off">
+            <input type="search" id="same-ser-search" class="compare-search-input" placeholder="Filter…" aria-label="Filter queues to add" autocomplete="off">
             <div class="select-wrapper compare-add-select-wrap">
-              <select id="same-ser-add-select" aria-label="Serializer to add"></select>
+              <select id="same-ser-add-select" aria-label="Queue to add"></select>
             </div>
             <button type="button" id="same-ser-add-btn" class="tab-btn chart-tool-btn">Add</button>
           </div>
@@ -348,13 +348,13 @@
               <select id="xl-add-lang" aria-label="Language to add"></select>
             </div>
             <div class="select-wrapper xl-add-ser-wrap">
-              <select id="xl-add-serializer" aria-label="Serializer to add"></select>
+              <select id="xl-add-serializer" aria-label="Queue to add"></select>
             </div>
             <button type="button" id="xl-add-btn" class="tab-btn chart-tool-btn">Add</button>
           </div>
 
-          <div id="same-selection-chips" class="chip-groups chip-groups-compact" aria-label="Selected serializers"></div>
-          <div id="xl-selection-chips" class="chip-groups chip-groups-compact" hidden aria-label="Selected serializers for comparison"></div>
+          <div id="same-selection-chips" class="chip-groups chip-groups-compact" aria-label="Selected queues"></div>
+          <div id="xl-selection-chips" class="chip-groups chip-groups-compact" hidden aria-label="Selected queues for comparison"></div>
 
           <div class="metrics-checklist-actions compare-sel-actions">
             <button type="button" id="xl-reset-pareto" class="link-btn" hidden title="Up to 2 Pareto-optimal per language">Pareto</button>
@@ -450,7 +450,7 @@
   </main>
 
   <footer>
-    <p>&copy; 2026 Serializer Benchmark Dashboard. Built for high-performance benchmarking analysis.</p>
+    <p>&copy; 2026 Queue Benchmark Dashboard. Built for high-performance benchmarking analysis.</p>
   </footer>
 
   <!-- App logic scripts -->
