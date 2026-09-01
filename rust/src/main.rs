@@ -263,17 +263,57 @@ async fn bench_tokio(items: &[Vec<u8>]) -> (u128, u128) {
     (enq, t1.elapsed().as_nanos())
 }
 
+fn bench_wakeup(items: &[Vec<u8>]) -> (u128, u128) {
+    let (tx, rx) = crossbeam_channel::bounded::<Vec<u8>>(1);
+    let n = items.len().max(1);
+    let wait_ns: u64 = env::var("BENCHMARK_WAIT_NS")
+        .ok()
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(1_000_000);
+    let h = thread::spawn(move || {
+        for _ in 0..n {
+            let _ = rx.recv();
+        }
+    });
+    thread::sleep(std::time::Duration::from_millis(2));
+    let t0 = Instant::now();
+    for _ in 0..n {
+        thread::sleep(std::time::Duration::from_nanos(wait_ns));
+        tx.send(vec![1]).unwrap();
+    }
+    h.join().unwrap();
+    let wall = t0.elapsed().as_nanos();
+    (wall / n as u128, wall - wall / n as u128)
+}
+
+async fn bench_tokio_cancel(waiters: usize) -> (u128, u128) {
+    let (_tx, rx) = tokio::sync::mpsc::unbounded_channel::<Vec<u8>>();
+    let rx = std::sync::Arc::new(tokio::sync::Mutex::new(rx));
+    let mut handles = Vec::new();
+    for _ in 0..waiters.max(8) {
+        let rx = std::sync::Arc::clone(&rx);
+        handles.push(tokio::spawn(async move {
+            let mut g = rx.lock().await;
+            let _ = g.recv().await;
+        }));
+    }
+    tokio::time::sleep(std::time::Duration::from_millis(1)).await;
+    let t0 = Instant::now();
+    for h in &handles {
+        h.abort();
+    }
+    for h in handles {
+        let _ = h.await;
+    }
+    (t0.elapsed().as_nanos(), 0)
+}
+
 #[tokio::main]
 async fn main() {
     let args: Vec<String> = env::args().collect();
     let reps: usize = args.get(1).and_then(|s| s.parse().ok()).unwrap_or(10);
     let qf = args.get(2).cloned().unwrap_or_default();
     let df = args.get(3).cloned().unwrap_or_default();
-    let special = env::var("BENCHMARK_SPECIAL").unwrap_or_default();
-    if special == "wakeup" || special == "cancel" || special == "burst" {
-        eprintln!("skip rust: BENCHMARK_SPECIAL={special} is Python-only");
-        return;
-    }
     let cells = load_cells();
     let dir = log_dir();
     fs::create_dir_all(&dir).unwrap();
@@ -298,13 +338,30 @@ async fn main() {
             {
                 continue;
             }
+            let special = env::var("BENCHMARK_SPECIAL").unwrap_or_default();
+            if special == "cancel" && name != "tokio-mpsc" {
+                continue;
+            }
             for i in 0..reps {
-                let (enq, deq) = match name {
+                let (enq, deq) = if special == "wakeup" {
+                    bench_wakeup(&items)
+                } else if special == "burst" {
+                    match name {
+                        "std-mpsc" => bench_std_mpsc(&items),
+                        "tokio-mpsc" => bench_tokio(&items).await,
+                        "crossbeam-queue" => bench_crossbeam_queue(&items, 1, 1),
+                        _ => bench_crossbeam(&items, 1, 1),
+                    }
+                } else if special == "cancel" {
+                    bench_tokio_cancel(items.len()).await
+                } else {
+                    match name {
                     "std-mpsc" => bench_std_mpsc(&items),
                     "crossbeam-channel" => bench_crossbeam(&items, producers, consumers),
                     "tokio-mpsc" => bench_tokio(&items).await,
                     "crossbeam-queue" => bench_crossbeam_queue(&items, producers, consumers),
                     _ => (0, 0),
+                    }
                 };
                 let ver = match name {
                     "crossbeam-channel" => env!("CARGO_PKG_VERSION"),

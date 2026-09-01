@@ -9,4 +9,7 @@ test("runner source exists", () => {
   const src = fs.readFileSync(p, "utf8");
   assert.match(src, /SerializerName/);
   assert.match(src, /scheduler/);
+  assert.match(src, /benchWakeup/);
+  assert.match(src, /benchCancel/);
+  assert.doesNotMatch(src, /Python-only/);
 });

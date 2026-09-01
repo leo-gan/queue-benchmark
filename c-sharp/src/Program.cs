@@ -8,11 +8,6 @@ var qf = args.Length > 1 ? args[1] : "";
 var df = args.Length > 2 ? args[2] : "";
 
 var special = Environment.GetEnvironmentVariable("BENCHMARK_SPECIAL") ?? "";
-if (special is "wakeup" or "cancel" or "burst")
-{
-    Console.WriteLine("skip csharp: BENCHMARK_SPECIAL=" + special + " is Python-only");
-    return;
-}
 
 var cellsPath = Environment.GetEnvironmentVariable("BENCHMARK_CELLS_TSV") ?? "cells.tsv";
 var cells = File.ReadAllLines(cellsPath).Skip(1)
@@ -28,7 +23,7 @@ Directory.CreateDirectory(logDir);
 var stamp = Environment.GetEnvironmentVariable("BENCHMARK_TS") ?? "run";
 var csv = Path.Combine(logDir, stamp + ".csv");
 var sb = new StringBuilder();
-sb.AppendLine("Language,StringOrStream,TestDataName,Repetitions,RepetitionIndex,SerializerName,SerializerVersion,TimeSer,TimeDeser,Size,TimeSerAndDeser,OpPerSecSer,OpPerSecDeser,OpPerSecSerAndDeser,MemoryPeakBytes,FidelityScore,DataTypeInstanceCount,TypeConfigHash,SizeGzip,SizeZstd,NativeKind,StreamMode,RunOrder,SchedulePosition");
+sb.AppendLine("Language,StringOrStream,TestDataName,Repetitions,RepetitionIndex,SerializerName,SerializerVersion,TimeSer,TimeDeser,Size,TimeSerAndDeser,OpPerSecSer,OpPerSecDeser,OpPerSecSerAndDeser,MemoryPeakBytes,FidelityScore,DataTypeInstanceCount,TypeConfigHash,SizeGzip,SizeZstd,NativeKind,StreamMode,RunOrder,SchedulePosition,CpuTimeNs");
 
 string Ver = Environment.Version.ToString();
 double Ops(long ns) => ns > 0 ? 1_000_000_000.0 / ns : 0;
@@ -60,15 +55,32 @@ foreach (var cell in cells)
         var (producers, consumers) = ParsePattern(cell.Mode);
         if (name == "Queue+lock" && (producers > 1 || consumers > 1))
             continue;
+        if (special == "cancel" && name != "Channel")
+            continue;
         for (int i = 0; i < reps; i++)
         {
-            var (enq, deq) = name switch
+            var proc = Process.GetCurrentProcess();
+            var cpu0 = proc.TotalProcessorTime;
+            var (enq, deq) = special switch
             {
-                "Queue+lock" => BenchLocked(items),
-                "ConcurrentQueue" => BenchConcurrent(items, producers, consumers),
-                "Channel" => BenchChannel(items, producers, consumers).GetAwaiter().GetResult(),
-                _ => (0L, 0L)
+                "wakeup" => BenchWakeup(items.Length),
+                "burst" => name switch
+                {
+                    "Queue+lock" => BenchLocked(items),
+                    "ConcurrentQueue" => BenchConcurrent(items, 1, 1),
+                    "Channel" => BenchChannel(items, 1, 1).GetAwaiter().GetResult(),
+                    _ => (0L, 0L)
+                },
+                "cancel" => BenchCancel(Math.Max(8, items.Length)).GetAwaiter().GetResult(),
+                _ => name switch
+                {
+                    "Queue+lock" => BenchLocked(items),
+                    "ConcurrentQueue" => BenchConcurrent(items, producers, consumers),
+                    "Channel" => BenchChannel(items, producers, consumers).GetAwaiter().GetResult(),
+                    _ => (0L, 0L)
+                }
             };
+            var cpuNs = (long)((proc.TotalProcessorTime - cpu0).TotalNanoseconds);
             var tot = enq + deq;
             var kind = name == "Channel" ? "async" : name == "ConcurrentQueue" ? "concurrent" : "locked";
             sb.AppendLine(string.Join(",",
@@ -76,7 +88,7 @@ foreach (var cell in cells)
                 enq, deq, size, tot,
                 Ops(enq).ToString("F6"), Ops(deq).ToString("F6"), Ops(tot).ToString("F6"),
                 0, "1.0000", cell.N, cell.Hash, 0, 0, kind,
-                cell.Mode == "stream" ? "native" : "", order, order));
+                cell.Mode == "stream" ? "native" : "", order, order, cpuNs));
             order++;
         }
     }
@@ -176,4 +188,47 @@ static async Task<(long enq, long deq)> BenchChannel(byte[][] items, int produce
     await Task.WhenAll(writers.Concat(readers));
     var wall = (long)sw2.Elapsed.TotalNanoseconds;
     return (wall / 2, wall - wall / 2);
+}
+
+static (long enq, long deq) BenchWakeup(int n)
+{
+    n = Math.Max(1, n);
+    var waitNs = 1_000_000L;
+    var env = Environment.GetEnvironmentVariable("BENCHMARK_WAIT_NS");
+    if (!string.IsNullOrEmpty(env) && long.TryParse(env, out var parsed))
+        waitNs = parsed;
+    var bag = new BlockingCollection<byte[]>(boundedCapacity: 1);
+    var h = Task.Run(() =>
+    {
+        for (int i = 0; i < n; i++)
+            bag.Take();
+    });
+    Thread.Sleep(2);
+    var sw = Stopwatch.StartNew();
+    for (int i = 0; i < n; i++)
+    {
+        var ms = (int)(waitNs / 1_000_000);
+        if (ms > 0) Thread.Sleep(ms);
+        else Thread.SpinWait(50);
+        bag.Add(new byte[] { 1 });
+    }
+    h.Wait();
+    var wall = (long)sw.Elapsed.TotalNanoseconds;
+    return (wall / n, wall - wall / n);
+}
+
+static async Task<(long enq, long deq)> BenchCancel(int waiters)
+{
+    var ch = Channel.CreateUnbounded<byte[]>();
+    using var cts = new CancellationTokenSource();
+    var tasks = Enumerable.Range(0, Math.Max(8, waiters)).Select(_ => Task.Run(async () =>
+    {
+        try { await ch.Reader.ReadAsync(cts.Token); }
+        catch (OperationCanceledException) { }
+    })).ToArray();
+    await Task.Delay(1);
+    var sw = Stopwatch.StartNew();
+    cts.Cancel();
+    await Task.WhenAll(tasks);
+    return ((long)sw.Elapsed.TotalNanoseconds, 0);
 }

@@ -127,6 +127,7 @@ csv_schema:
     - StreamMode
     - RunOrder
     - SchedulePosition
+    - CpuTimeNs
   time_unit: nanoseconds
 
 statistics:
@@ -140,7 +141,7 @@ statistics:
   report_std: true
   report_mad: true
   report_cv: true
-  report_percentiles: [5, 25, 50, 75, 95, 99]
+  report_percentiles: [5, 25, 50, 75, 95, 99, 99.9]
   report_min_max: true
   bootstrap:
     enabled: true
@@ -214,6 +215,8 @@ metrics:
     total_ci_high_ns: medium
     total_p95_ns: medium
     total_p99_ns: medium
+    total_p999_ns: high
+    msgs_per_cpu_sec: high
     total_cv: medium
     total_mad_ns: medium
     total_std_ns: medium
@@ -293,6 +296,11 @@ languages:
         communication: thread
         package: harness
         rationale: "Single-producer ring; MPMC skipped"
+      - name: steal-deque
+        category: work-stealing
+        communication: thread
+        package: harness
+        rationale: "Owner-push / steal-from-top deque"
       - name: multiprocessing.Queue
         category: concurrent
         communication: process

@@ -9,7 +9,7 @@ See [Benchmark design](BENCHMARK_DESIGN.md) for tests and metrics.
 
 | ID | Category | What it is | In this repo |
 |----|----------|------------|--------------|
-| **T** | Thread / in-process | OS threads, one process | locked, concurrent, spsc-ring |
+| **T** | Thread / in-process | OS threads, one process | locked, concurrent, spsc-ring, work-stealing |
 | **A** | Async / event-loop | Tasks on one loop | `asyncio.Queue`, `Channel`, `tokio-mpsc` |
 
 A locked deque and an async channel answer different questions. Do not
@@ -22,6 +22,7 @@ rank them against each other.
 | **locked** | Mutex around a stdlib queue. Baseline. | Python `deque-lock`, C# `Queue+lock`, JS `Array`, C `mutex-queue` |
 | **concurrent** | Thread-safe MPSC/MPMC | Python `queue.Queue`, C# `ConcurrentQueue`, Rust `crossbeam-channel`, JS `fastq` |
 | **spsc** | Single-producer ring (no mutex on the happy path) | C `spsc-ring`, Python `spsc-ring` |
+| **work-stealing** | Owner-push / steal-from-the-other-end | Python `steal-deque` |
 
 ### A — async
 
@@ -32,24 +33,24 @@ JavaScript `p-queue` is a **concurrency limiter** (scheduler), not a
 handoff queue. It is listed in the inventory; do not treat it as category A
 for ranking.
 
-## Not published yet
+## Published as opt-in (Python): P / S / D
 
-Python opt-in runners exist. They never share a violin or rank table with T.
+Python runners exist. They never share a violin or rank table with T.
 The dashboard Category filter includes Thread / Async / Process / Shared /
 Durable / Other.
 
-| ID | Category | Why it is different | First tests when a runner exists |
-|----|----------|---------------------|----------------------------------|
-| **P** | Process / IPC | Serialization and OS pipes dominate | 1P1C 64 B vs 64 KiB vs 1 MB; report MB/s and msgs/s separately |
-| **S** | Shared memory | Same topology as P, different data path | 1P1C GB/s vs the P number on the same payload |
-| **D** | Durable / local disk | fsync / WAL, not coordination primitives | Durability off vs fsync on; kill −9 recovery |
-| **N** | Local broker | Client + localhost server — a **system** bench | Separate report, labeled “localhost” |
+| ID | Category | Why it is different | First tests |
+|----|----------|---------------------|-------------|
+| **P** | Process / IPC | Serialization and OS pipes dominate | Experiment 10 — true two-process `multiprocessing.Queue` |
+| **S** | Shared memory | Same topology as P, different data path | Experiment 11 — two-process mapped ring |
+| **D** | Durable / local disk | fsync / WAL, not coordination primitives | Experiment 12 — SQLite local queue |
+| **N** | Local broker | Client + localhost server — a **system** bench | **Not this lab.** Separate report, labeled “localhost” |
 
 Brokers (Redis, Kafka, ZeroMQ) stay out of T/A charts.
 
 The dashboard **Category** control filters the current language’s table
-to Thread (T), Async (A), or Other (`p-queue` today). P/S/D have no
-series yet.
+to Thread (T), Async (A), Process, Shared, Durable, or Other
+(`p-queue`). P/S/D series exist only for Python opt-in runs.
 
 ## Not categories
 

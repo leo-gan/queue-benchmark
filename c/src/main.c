@@ -5,11 +5,26 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
 
 static uint64_t now_ns(void) {
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
     return (uint64_t)ts.tv_sec * 1000000000ull + (uint64_t)ts.tv_nsec;
+}
+
+static uint64_t cpu_ns(void) {
+    struct timespec ts;
+    if (clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts) != 0)
+        return 0;
+    return (uint64_t)ts.tv_sec * 1000000000ull + (uint64_t)ts.tv_nsec;
+}
+
+static void sleep_ns(uint64_t ns) {
+    struct timespec ts;
+    ts.tv_sec = (time_t)(ns / 1000000000ull);
+    ts.tv_nsec = (long)(ns % 1000000000ull);
+    nanosleep(&ts, NULL);
 }
 
 typedef struct {
@@ -124,14 +139,16 @@ static double ops(uint64_t ns) {
 
 static void write_row(FILE *f, const char *mode, const char *ty, int reps, int idx,
                       const char *name, const char *ver, uint64_t enq, uint64_t deq,
-                      size_t size, int n, const char *hash, const char *kind, int order) {
+                      size_t size, int n, const char *hash, const char *kind, int order,
+                      uint64_t cpu) {
     uint64_t tot = enq + deq;
     fprintf(f,
-            "c,%s,%s,%d,%d,%s,%s,%llu,%llu,%zu,%llu,%.6f,%.6f,%.6f,0,1.0000,%d,%s,0,0,%s,%s,%d,%d\n",
+            "c,%s,%s,%d,%d,%s,%s,%llu,%llu,%zu,%llu,%.6f,%.6f,%.6f,0,1.0000,%d,%s,0,0,%s,%s,%d,%d,%llu\n",
             mode, ty, reps, idx, name, ver,
             (unsigned long long)enq, (unsigned long long)deq, size, (unsigned long long)tot,
             ops(enq), ops(deq), ops(tot), n, hash, kind,
-            strcmp(mode, "stream") == 0 ? "native" : "", order, order);
+            strcmp(mode, "stream") == 0 ? "native" : "", order, order,
+            (unsigned long long)cpu);
 }
 
 int main(int argc, char **argv) {
@@ -159,7 +176,14 @@ int main(int argc, char **argv) {
         perror(outpath);
         return 1;
     }
-    fprintf(out, "Language,StringOrStream,TestDataName,Repetitions,RepetitionIndex,SerializerName,SerializerVersion,TimeSer,TimeDeser,Size,TimeSerAndDeser,OpPerSecSer,OpPerSecDeser,OpPerSecSerAndDeser,MemoryPeakBytes,FidelityScore,DataTypeInstanceCount,TypeConfigHash,SizeGzip,SizeZstd,NativeKind,StreamMode,RunOrder,SchedulePosition\n");
+    const char *special = getenv("BENCHMARK_SPECIAL");
+    if (!special) special = "";
+    uint64_t wait_ns = 1000000ull;
+    {
+        const char *w = getenv("BENCHMARK_WAIT_NS");
+        if (w && w[0]) wait_ns = strtoull(w, NULL, 10);
+    }
+    fprintf(out, "Language,StringOrStream,TestDataName,Repetitions,RepetitionIndex,SerializerName,SerializerVersion,TimeSer,TimeDeser,Size,TimeSerAndDeser,OpPerSecSer,OpPerSecDeser,OpPerSecSerAndDeser,MemoryPeakBytes,FidelityScore,DataTypeInstanceCount,TypeConfigHash,SizeGzip,SizeZstd,NativeKind,StreamMode,RunOrder,SchedulePosition,CpuTimeNs\n");
 
     FILE *cf = fopen(cells, "r");
     if (!cf) {
@@ -189,9 +213,54 @@ int main(int argc, char **argv) {
             parse_pattern(mode, &producers, &consumers);
             if (strcmp(names[qi], "spsc-ring") == 0 && (producers != 1 || consumers != 1))
                 continue;
+            /* No async cancel in C. SPSC ring spins — skip wakeup (not an OS wait). */
+            if (strcmp(special, "cancel") == 0)
+                continue;
+            if (strcmp(special, "wakeup") == 0 && strcmp(names[qi], "spsc-ring") == 0)
+                continue;
             for (int i = 0; i < reps; i++) {
                 uint64_t enq = 0, deq = 0;
-                if (strcmp(names[qi], "mutex-queue") == 0) {
+                uint64_t cpu0 = cpu_ns();
+                if (strcmp(special, "wakeup") == 0) {
+                    MutexQ q;
+                    mq_init(&q, 2);
+                    pthread_t th;
+                    MqJob job = {&q, items, 0, 0, n};
+                    pthread_create(&th, NULL, mq_cons, &job);
+                    sleep_ns(2000000ull);
+                    uint64_t t0 = now_ns();
+                    for (int k = 0; k < n; k++) {
+                        sleep_ns(wait_ns);
+                        mq_push(&q, items[k]);
+                    }
+                    pthread_join(th, NULL);
+                    uint64_t wall = now_ns() - t0;
+                    enq = wall / (uint64_t)(n > 0 ? n : 1);
+                    deq = wall - enq;
+                    mq_free(&q);
+                } else if (strcmp(special, "burst") == 0) {
+                    if (strcmp(names[qi], "mutex-queue") == 0) {
+                        MutexQ q;
+                        mq_init(&q, (size_t)n + 1);
+                        uint64_t t0 = now_ns();
+                        for (int k = 0; k < n; k++) mq_push(&q, items[k]);
+                        enq = now_ns() - t0;
+                        t0 = now_ns();
+                        for (int k = 0; k < n; k++) (void)mq_pop(&q);
+                        deq = now_ns() - t0;
+                        mq_free(&q);
+                    } else {
+                        Spsc q;
+                        spsc_init(&q, (size_t)n + 2);
+                        uint64_t t0 = now_ns();
+                        for (int k = 0; k < n; k++) spsc_push(&q, items[k]);
+                        enq = now_ns() - t0;
+                        t0 = now_ns();
+                        for (int k = 0; k < n; k++) (void)spsc_pop(&q);
+                        deq = now_ns() - t0;
+                        free(q.buf);
+                    }
+                } else if (strcmp(names[qi], "mutex-queue") == 0) {
                     MutexQ q;
                     mq_init(&q, (size_t)n + 1);
                     if (producers == 1 && consumers == 1) {
@@ -236,7 +305,8 @@ int main(int argc, char **argv) {
                 }
                 write_row(out, mode, type_id, reps, i, names[qi], "0.1.0",
                           enq, deq, size, n, hash,
-                          strcmp(names[qi], "spsc-ring") == 0 ? "spsc" : "locked", order);
+                          strcmp(names[qi], "spsc-ring") == 0 ? "spsc" : "locked", order,
+                          cpu_ns() - cpu0);
                 order++;
             }
         }

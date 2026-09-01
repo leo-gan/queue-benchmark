@@ -253,6 +253,28 @@ def test_compute_statistics_has_ci_fields():
     assert entry["avg_ops_per_sec"] > 0
 
 
+def test_p999_label_and_msgs_per_cpu_sec():
+    recs = _make_records(20, ser_ns=1000, deser_ns=2000)
+    for i, r in enumerate(recs):
+        r["DataTypeInstanceCount"] = 100
+        r["CpuTimeNs"] = 50_000_000 + i
+    stats = compute_statistics(
+        recs,
+        config={
+            "exclude_warmup": True,
+            "outlier_method": "none",
+            "bootstrap": {"enabled": False},
+            "effect_sizes": {"enabled": False},
+            "report_percentiles": [5, 50, 99, 99.9],
+        },
+    )
+    entry = next(iter(stats.values()))
+    assert "total_p999_ns" in entry
+    assert entry["total_p999_ns"] >= entry["total_p99_ns"]
+    assert entry["msgs_per_cpu_sec"] is not None
+    assert entry["msgs_per_cpu_sec"] > 0
+
+
 def test_effect_sizes_attached():
     recs = _make_records(20, ser_ns=1000, serializer="fast") + _make_records(20, ser_ns=5000, serializer="slow")
     stats = compute_statistics(recs, config={

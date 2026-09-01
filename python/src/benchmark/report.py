@@ -26,6 +26,7 @@ class BenchmarkLog:
     stream_mode: str = ""
     run_order: int = -1
     schedule_position: int = -1
+    cpu_time_ns: int = 0
 
     @property
     def time_ser_and_deser_ns(self) -> int:
@@ -70,6 +71,7 @@ CSV_HEADER = [
     "StreamMode",
     "RunOrder",
     "SchedulePosition",
+    "CpuTimeNs",
 ]
 
 
@@ -109,6 +111,7 @@ class LogStorage:
                 log.stream_mode,
                 log.run_order,
                 log.schedule_position,
+                log.cpu_time_ns,
             ]
         )
         self._file_handle.flush()

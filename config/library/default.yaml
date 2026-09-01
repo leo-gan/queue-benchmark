@@ -1,6 +1,6 @@
 # Run config: default (publication matrix)
 id: default
-description: "Five payload types × [100, 1000] items; SPSC + MPMC patterns"
+description: "Five payload types × [100, 1000] items; SPSC, 2P2C, 1P4C, 4P1C, 4P4C"
 data_model_version: 2
 
 types:
@@ -23,7 +23,7 @@ compression:
 execution:
   mode: full
   # bytes = SPSC; stream = MPMC (CSV ABI name; not a stream API)
-  io_modes: [bytes, stream]
+  io_modes: [bytes, stream, 1p4c, 4p1c, 4p4c]
 
 budget:
   soft_seconds_per_10_serializers: 60

@@ -5,19 +5,19 @@
       "library": "spsc-ring",
       "pattern": "bytes",
       "n": 9,
-      "median_handoff_ns": 1370.0,
-      "p50_ns": 1370.0,
-      "mean_ns": 1370.6666666666667,
+      "median_handoff_ns": 762.0,
+      "p50_ns": 762.0,
+      "mean_ns": 761.6666666666666,
       "rel_to_fastest": 1.0
     },
     {
       "library": "mutex-queue",
       "pattern": "bytes",
       "n": 9,
-      "median_handoff_ns": 3977.0,
-      "p50_ns": 3977.0,
-      "mean_ns": 3983.5555555555557,
-      "rel_to_fastest": 2.9029197080291973
+      "median_handoff_ns": 2211.0,
+      "p50_ns": 2211.0,
+      "mean_ns": 2217.0,
+      "rel_to_fastest": 2.9015748031496065
     }
   ]
 }

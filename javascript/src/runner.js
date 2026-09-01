@@ -31,13 +31,13 @@ function logDir() {
 }
 
 const HEADER =
-  "Language,StringOrStream,TestDataName,Repetitions,RepetitionIndex,SerializerName,SerializerVersion,TimeSer,TimeDeser,Size,TimeSerAndDeser,OpPerSecSer,OpPerSecDeser,OpPerSecSerAndDeser,MemoryPeakBytes,FidelityScore,DataTypeInstanceCount,TypeConfigHash,SizeGzip,SizeZstd,NativeKind,StreamMode,RunOrder,SchedulePosition";
+  "Language,StringOrStream,TestDataName,Repetitions,RepetitionIndex,SerializerName,SerializerVersion,TimeSer,TimeDeser,Size,TimeSerAndDeser,OpPerSecSer,OpPerSecDeser,OpPerSecSerAndDeser,MemoryPeakBytes,FidelityScore,DataTypeInstanceCount,TypeConfigHash,SizeGzip,SizeZstd,NativeKind,StreamMode,RunOrder,SchedulePosition,CpuTimeNs";
 
 function ops(t) {
   return t > 0n ? (1e9 / Number(t)).toFixed(6) : "0.000000";
 }
 
-function row(mode, ty, reps, idx, name, ver, enq, deq, size, n, hash, kind, order) {
+function row(mode, ty, reps, idx, name, ver, enq, deq, size, n, hash, kind, order, cpuNs) {
   const tot = enq + deq;
   return [
     "javascript",
@@ -64,7 +64,74 @@ function row(mode, ty, reps, idx, name, ver, enq, deq, size, n, hash, kind, orde
     mode === "stream" ? "native" : "",
     order,
     order,
+    (cpuNs || 0n).toString(),
   ].join(",");
+}
+
+function sleepMs(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function waitNs() {
+  const raw = Number(process.env.BENCHMARK_WAIT_NS || 1_000_000);
+  return Number.isFinite(raw) && raw > 0 ? raw : 1_000_000;
+}
+
+async function benchWakeup(n) {
+  const count = Math.max(1, n);
+  const gapMs = Math.max(0, waitNs() / 1e6);
+  const q = [];
+  let remaining = count;
+  const consumer = (async () => {
+    while (remaining > 0) {
+      if (q.length) {
+        q.shift();
+        remaining -= 1;
+        continue;
+      }
+      await new Promise((r) => setImmediate(r));
+    }
+  })();
+  await sleepMs(2);
+  const t0 = ns();
+  for (let i = 0; i < count; i++) {
+    if (gapMs > 0) await sleepMs(gapMs);
+    q.push(1);
+  }
+  await consumer;
+  const wall = ns() - t0;
+  const mid = wall / BigInt(count);
+  return [mid, wall - mid];
+}
+
+async function benchCancel(waiters) {
+  const { default: PQueue } = await import("p-queue");
+  const q = new PQueue({ concurrency: 1 });
+  const ac = new AbortController();
+  const pending = [];
+  for (let i = 0; i < Math.max(8, waiters); i++) {
+    pending.push(
+      q.add(
+        ({ signal }) =>
+          new Promise((_, reject) => {
+            const onAbort = () => reject(signal && signal.reason ? signal.reason : new Error("aborted"));
+            if (signal && signal.aborted) {
+              onAbort();
+              return;
+            }
+            if (signal) signal.addEventListener("abort", onAbort, { once: true });
+          }),
+        { signal: ac.signal }
+      )
+    );
+  }
+  await sleepMs(1);
+  const t0 = ns();
+  ac.abort();
+  // Do not clear(): pending add() promises would never settle. Abort
+  // makes each queued function throwIfAborted as it starts.
+  await Promise.allSettled(pending);
+  return [ns() - t0, 0n];
 }
 
 function benchArray(items) {
@@ -110,10 +177,6 @@ async function benchPQueue(items) {
 
 async function main() {
   const special = process.env.BENCHMARK_SPECIAL || "";
-  if (special === "wakeup" || special === "cancel" || special === "burst") {
-    console.log("skip javascript: BENCHMARK_SPECIAL=" + special + " is Python-only");
-    return;
-  }
   const reps = Number(process.argv[2] || 10);
   const qf = process.argv[3] || "";
   const df = process.argv[4] || "";
@@ -139,14 +202,30 @@ async function main() {
       if (qf && !q.name.toLowerCase().includes(qf.toLowerCase())) continue;
       const multi = cell.io_mode !== "bytes" && cell.io_mode !== "spsc";
       if (multi && (q.name === "Array" || q.name === "p-queue")) continue;
+      if (special === "cancel" && q.name !== "p-queue") continue;
       for (let i = 0; i < reps; i++) {
+        const cpu0 = process.cpuUsage();
         let enq, deq;
-        if (q.name === "Array") [enq, deq] = benchArray(items);
-        else if (q.name === "fastq") [enq, deq] = await benchFastq(items);
-        else [enq, deq] = await benchPQueue(items);
+        if (special === "wakeup") {
+          [enq, deq] = await benchWakeup(cell.n);
+        } else if (special === "burst") {
+          if (q.name === "Array") [enq, deq] = benchArray(items);
+          else if (q.name === "fastq") [enq, deq] = await benchFastq(items);
+          else [enq, deq] = await benchPQueue(items);
+        } else if (special === "cancel") {
+          [enq, deq] = await benchCancel(cell.n);
+        } else if (q.name === "Array") {
+          [enq, deq] = benchArray(items);
+        } else if (q.name === "fastq") {
+          [enq, deq] = await benchFastq(items);
+        } else {
+          [enq, deq] = await benchPQueue(items);
+        }
+        const used = process.cpuUsage(cpu0);
+        const cpuNs = BigInt(used.user + used.system) * 1000n;
         const ver = q.name === "Array" ? process.version.replace(/^v/, "") : pkg.dependencies[q.name] || "0";
         lines.push(
-          row(cell.io_mode, cell.type_id, reps, i, q.name, ver, enq, deq, size, cell.n, cell.hash, q.kind, order)
+          row(cell.io_mode, cell.type_id, reps, i, q.name, ver, enq, deq, size, cell.n, cell.hash, q.kind, order, cpuNs)
         );
         order += 1;
       }

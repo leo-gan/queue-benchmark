@@ -2,4 +2,4 @@
 
 | Library | Pattern | Median handoff (ns) | vs fastest | n |
 |---------|---------|--------------------:|-----------:|--:|
-| shared-ring | bytes | 1037379 | 1.00× | 9 |
+| shared-ring | bytes | 42125209 | 1.00× | 9 |

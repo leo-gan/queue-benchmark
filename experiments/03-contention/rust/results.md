@@ -2,9 +2,9 @@
 
 | Library | Pattern | Median handoff (ns) | vs fastest | n |
 |---------|---------|--------------------:|-----------:|--:|
-| crossbeam-channel | 1p4c | 85288 | 1.00× | 9 |
-| crossbeam-queue | 1p4c | 86020 | 1.01× | 9 |
-| crossbeam-queue | 4p1c | 86879 | 1.02× | 9 |
-| crossbeam-channel | 4p1c | 111984 | 1.31× | 9 |
-| crossbeam-queue | 4p4c | 147823 | 1.73× | 9 |
-| crossbeam-channel | 4p4c | 172917 | 2.03× | 9 |
+| crossbeam-queue | 4p1c | 85746 | 1.00× | 9 |
+| crossbeam-queue | 1p4c | 92958 | 1.08× | 9 |
+| crossbeam-channel | 4p1c | 94232 | 1.10× | 9 |
+| crossbeam-channel | 1p4c | 113390 | 1.32× | 9 |
+| crossbeam-channel | 4p4c | 121878 | 1.42× | 9 |
+| crossbeam-queue | 4p4c | 122294 | 1.43× | 9 |

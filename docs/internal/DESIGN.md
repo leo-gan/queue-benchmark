@@ -39,7 +39,8 @@ This document is the source of truth for the stacked PRs. Domain words change
 3. **Minimum libraries covering main queue types**
 
    Communication categories **T** (thread) and **A** (async) are the
-   comparison boundary. Families inside T: locked, concurrent, spsc-ring.
+   comparison boundary. Families inside T: locked, concurrent, spsc-ring,
+   work-stealing.
 
    | Type | Meaning | Implementations |
    |------|---------|-----------------|
@@ -47,6 +48,7 @@ This document is the source of truth for the stacked PRs. Domain words change
    | concurrent | Thread-safe MPMC / MPSC | Python `queue.Queue`, C# `ConcurrentQueue`, Rust `std-mpsc` + `crossbeam-channel` + `crossbeam-queue`, JS `fastq` |
    | async | Event-loop / async channel (category A) | Python `asyncio.Queue`, C# `Channel`, Rust `tokio::sync::mpsc` |
    | spsc-ring | Single-producer ring | C `spsc-ring`, Python `spsc-ring` |
+   | work-stealing | Owner-push / steal-from-top | Python `steal-deque` |
    | scheduler | Not a handoff queue | JS `p-queue` (concurrency limiter) |
 
    Category plan: [CATEGORY_BENCHMARK_PLAN.md](CATEGORY_BENCHMARK_PLAN.md).

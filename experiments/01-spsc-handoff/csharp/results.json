@@ -5,28 +5,28 @@
       "library": "ConcurrentQueue",
       "pattern": "bytes",
       "n": 9,
-      "median_handoff_ns": 2800.0,
-      "p50_ns": 2800.0,
-      "mean_ns": 6711.111111111111,
+      "median_handoff_ns": 3800.0,
+      "p50_ns": 3800.0,
+      "mean_ns": 4166.666666666667,
       "rel_to_fastest": 1.0
     },
     {
       "library": "Queue+lock",
       "pattern": "bytes",
       "n": 9,
-      "median_handoff_ns": 5800.0,
-      "p50_ns": 5800.0,
-      "mean_ns": 7677.777777777777,
-      "rel_to_fastest": 2.0714285714285716
+      "median_handoff_ns": 5500.0,
+      "p50_ns": 5500.0,
+      "mean_ns": 6577.777777777777,
+      "rel_to_fastest": 1.4473684210526316
     },
     {
       "library": "Channel",
       "pattern": "bytes",
       "n": 9,
-      "median_handoff_ns": 14300.0,
-      "p50_ns": 14300.0,
-      "mean_ns": 17722.222222222223,
-      "rel_to_fastest": 5.107142857142857
+      "median_handoff_ns": 11100.0,
+      "p50_ns": 11100.0,
+      "mean_ns": 15577.777777777777,
+      "rel_to_fastest": 2.9210526315789473
     }
   ]
 }

@@ -7,26 +7,26 @@
       "n": 9,
       "median_handoff_ns": 2700.0,
       "p50_ns": 2700.0,
-      "mean_ns": 3788.8888888888887,
+      "mean_ns": 3922.222222222222,
       "rel_to_fastest": 1.0
     },
     {
       "library": "Queue+lock",
       "pattern": "bytes",
       "n": 9,
-      "median_handoff_ns": 6300.0,
-      "p50_ns": 6300.0,
-      "mean_ns": 6700.0,
-      "rel_to_fastest": 2.3333333333333335
+      "median_handoff_ns": 5600.0,
+      "p50_ns": 5600.0,
+      "mean_ns": 6200.0,
+      "rel_to_fastest": 2.074074074074074
     },
     {
       "library": "Channel",
       "pattern": "bytes",
       "n": 9,
-      "median_handoff_ns": 11400.0,
-      "p50_ns": 11400.0,
-      "mean_ns": 15122.222222222223,
-      "rel_to_fastest": 4.222222222222222
+      "median_handoff_ns": 13900.0,
+      "p50_ns": 13900.0,
+      "mean_ns": 16700.0,
+      "rel_to_fastest": 5.148148148148148
     }
   ]
 }
