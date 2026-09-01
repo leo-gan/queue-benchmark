@@ -22,7 +22,7 @@ See `javascript/results.md`.
 
 ## csharp
 
-Similar set (within 15% of fastest on this sample): ConcurrentQueue, Channel
+Similar set (within 15% of fastest on this sample): ConcurrentQueue, BlockingCollection
 
 See `csharp/results.md`.
 

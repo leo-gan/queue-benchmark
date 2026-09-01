@@ -5,19 +5,19 @@
       "library": "asyncio.Queue",
       "pattern": "bytes",
       "n": 9,
-      "median_handoff_ns": 203419.0,
-      "p50_ns": 203419.0,
-      "mean_ns": 211189.11111111112,
+      "median_handoff_ns": 204523.0,
+      "p50_ns": 204523.0,
+      "mean_ns": 214351.88888888888,
       "rel_to_fastest": 1.0
     },
     {
       "library": "janus",
       "pattern": "bytes",
       "n": 9,
-      "median_handoff_ns": 352508.0,
-      "p50_ns": 352508.0,
-      "mean_ns": 362828.8888888889,
-      "rel_to_fastest": 1.732915804325063
+      "median_handoff_ns": 356752.0,
+      "p50_ns": 356752.0,
+      "mean_ns": 373235.3333333333,
+      "rel_to_fastest": 1.7443123756252352
     }
   ]
 }

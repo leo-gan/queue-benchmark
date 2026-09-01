@@ -65,6 +65,7 @@ nav:
           - Overview: c/index.md
       - C#:
           - Overview: c-sharp/index.md
+          - Library selection: c-sharp/library-selection.md
       - JavaScript:
           - Overview: javascript/index.md
           - Library selection: javascript/library-selection.md

@@ -5,9 +5,9 @@
       "library": "Channel",
       "pattern": "bytes",
       "n": 9,
-      "median_handoff_ns": 398300.0,
-      "p50_ns": 398300.0,
-      "mean_ns": 377211.1111111111,
+      "median_handoff_ns": 406500.0,
+      "p50_ns": 406500.0,
+      "mean_ns": 395144.44444444444,
       "rel_to_fastest": 1.0
     }
   ]

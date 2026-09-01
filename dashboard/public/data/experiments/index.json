@@ -1,6 +1,6 @@
 {
   "schema": "gld.dashboard.experiments/1",
-  "generated_at": "2026-09-01T20:08:54Z",
+  "generated_at": "2026-09-01T20:14:39Z",
   "count": 12,
   "with_results": 12,
   "experiments": [
@@ -19,7 +19,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/01-spsc-handoff.json.gz",
-      "generated_at": "2026-09-01T20:07:23Z",
+      "generated_at": "2026-09-01T20:13:08Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -43,7 +43,7 @@
         {
           "id": "csharp",
           "status": "ok",
-          "rows": 4
+          "rows": 5
         },
         {
           "id": "c",
@@ -51,7 +51,7 @@
           "rows": 3
         }
       ],
-      "source_bytes": 7286
+      "source_bytes": 7587
     },
     {
       "id": "02-payload-size",
@@ -68,7 +68,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/02-payload-size.json.gz",
-      "generated_at": "2026-09-01T20:07:27Z",
+      "generated_at": "2026-09-01T20:13:12Z",
       "sample": {
         "kind": "document",
         "n": 100
@@ -92,7 +92,7 @@
         {
           "id": "csharp",
           "status": "ok",
-          "rows": 4
+          "rows": 5
         },
         {
           "id": "c",
@@ -100,7 +100,7 @@
           "rows": 3
         }
       ],
-      "source_bytes": 7319
+      "source_bytes": 7576
     },
     {
       "id": "03-contention",
@@ -117,7 +117,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/03-contention.json.gz",
-      "generated_at": "2026-09-01T20:07:31Z",
+      "generated_at": "2026-09-01T20:13:16Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -141,7 +141,7 @@
         {
           "id": "csharp",
           "status": "ok",
-          "rows": 9
+          "rows": 12
         },
         {
           "id": "c",
@@ -149,7 +149,7 @@
           "rows": 6
         }
       ],
-      "source_bytes": 14262
+      "source_bytes": 14980
     },
     {
       "id": "04-backpressure",
@@ -166,7 +166,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/04-backpressure.json.gz",
-      "generated_at": "2026-09-01T20:07:33Z",
+      "generated_at": "2026-09-01T20:13:18Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -198,7 +198,7 @@
           "rows": 3
         }
       ],
-      "source_bytes": 4983
+      "source_bytes": 4993
     },
     {
       "id": "05-wakeup",
@@ -215,7 +215,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/05-wakeup.json.gz",
-      "generated_at": "2026-09-01T20:08:20Z",
+      "generated_at": "2026-09-01T20:14:06Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -239,7 +239,7 @@
         {
           "id": "csharp",
           "status": "ok",
-          "rows": 3
+          "rows": 4
         },
         {
           "id": "c",
@@ -247,7 +247,7 @@
           "rows": 1
         }
       ],
-      "source_bytes": 6483
+      "source_bytes": 6775
     },
     {
       "id": "06-burst",
@@ -264,7 +264,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/06-burst.json.gz",
-      "generated_at": "2026-09-01T20:08:23Z",
+      "generated_at": "2026-09-01T20:14:10Z",
       "sample": {
         "kind": "message",
         "n": 1000
@@ -288,7 +288,7 @@
         {
           "id": "csharp",
           "status": "ok",
-          "rows": 4
+          "rows": 5
         },
         {
           "id": "c",
@@ -296,7 +296,7 @@
           "rows": 3
         }
       ],
-      "source_bytes": 7095
+      "source_bytes": 7382
     },
     {
       "id": "07-async-waiters",
@@ -313,7 +313,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/07-async-waiters.json.gz",
-      "generated_at": "2026-09-01T20:08:26Z",
+      "generated_at": "2026-09-01T20:14:13Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -337,7 +337,7 @@
         {
           "id": "csharp",
           "status": "ok",
-          "rows": 3
+          "rows": 4
         },
         {
           "id": "c",
@@ -345,7 +345,7 @@
           "rows": 1
         }
       ],
-      "source_bytes": 4517
+      "source_bytes": 4796
     },
     {
       "id": "08-async-backpressure",
@@ -362,7 +362,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/08-async-backpressure.json.gz",
-      "generated_at": "2026-09-01T20:08:30Z",
+      "generated_at": "2026-09-01T20:14:16Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -386,7 +386,7 @@
         {
           "id": "csharp",
           "status": "ok",
-          "rows": 4
+          "rows": 5
         },
         {
           "id": "c",
@@ -394,7 +394,7 @@
           "rows": 2
         }
       ],
-      "source_bytes": 5781
+      "source_bytes": 6034
     },
     {
       "id": "09-async-cancel",
@@ -411,7 +411,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/09-async-cancel.json.gz",
-      "generated_at": "2026-09-01T20:08:34Z",
+      "generated_at": "2026-09-01T20:14:20Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -443,7 +443,7 @@
           "rows": 2
         }
       ],
-      "source_bytes": 2397
+      "source_bytes": 2402
     },
     {
       "id": "10-process-ipc",
@@ -460,7 +460,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/10-process-ipc.json.gz",
-      "generated_at": "2026-09-01T20:08:39Z",
+      "generated_at": "2026-09-01T20:14:25Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -484,7 +484,7 @@
         {
           "id": "csharp",
           "status": "ok",
-          "rows": 5
+          "rows": 6
         },
         {
           "id": "c",
@@ -492,7 +492,7 @@
           "rows": 4
         }
       ],
-      "source_bytes": 8910
+      "source_bytes": 9151
     },
     {
       "id": "11-shared-memory",
@@ -509,7 +509,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/11-shared-memory.json.gz",
-      "generated_at": "2026-09-01T20:08:44Z",
+      "generated_at": "2026-09-01T20:14:30Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -541,7 +541,7 @@
           "rows": 1
         }
       ],
-      "source_bytes": 1655
+      "source_bytes": 1646
     },
     {
       "id": "12-durable-local",
@@ -558,7 +558,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/12-durable-local.json.gz",
-      "generated_at": "2026-09-01T20:08:53Z",
+      "generated_at": "2026-09-01T20:14:38Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -590,7 +590,7 @@
           "rows": 1
         }
       ],
-      "source_bytes": 1665
+      "source_bytes": 1662
     }
   ]
 }

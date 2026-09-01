@@ -6,6 +6,7 @@
 export const QUEUE_CATALOG = {
   'Queue+lock': { communication: 'thread', family: 'locked' },
   ConcurrentQueue: { communication: 'thread', family: 'concurrent' },
+  BlockingCollection: { communication: 'thread', family: 'concurrent' },
   Channel: { communication: 'async', family: 'async' },
   'deque-lock': { communication: 'thread', family: 'locked' },
   'queue.Queue': { communication: 'thread', family: 'concurrent' },

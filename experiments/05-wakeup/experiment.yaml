@@ -50,6 +50,7 @@ languages:
     libraries:
       - {name: Queue+lock, role: locked baseline}
       - {name: ConcurrentQueue, role: concurrent}
+      - {name: BlockingCollection, role: blocking MPMC}
   - id: rust
     enabled: true
     libraries:

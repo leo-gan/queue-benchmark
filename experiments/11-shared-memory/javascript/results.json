@@ -5,9 +5,9 @@
       "library": "shared-ring",
       "pattern": "bytes",
       "n": 9,
-      "median_handoff_ns": 19743922.0,
-      "p50_ns": 19743922.0,
-      "mean_ns": 19780607.555555556,
+      "median_handoff_ns": 19091770.0,
+      "p50_ns": 19091770.0,
+      "mean_ns": 19017284.777777776,
       "rel_to_fastest": 1.0
     }
   ]

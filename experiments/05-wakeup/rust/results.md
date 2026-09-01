@@ -2,10 +2,10 @@
 
 | Library | Pattern | Median handoff (ns) | vs fastest | n |
 |---------|---------|--------------------:|-----------:|--:|
-| flume | bytes | 108275696 | 1.00× | 9 |
-| crossbeam-channel | bytes | 110878229 | 1.02× | 9 |
-| std-mpsc | bytes | 112953182 | 1.04× | 9 |
-| crossbeam-queue | bytes | 113121761 | 1.04× | 9 |
-| tokio-mpsc | bytes | 115180605 | 1.06× | 9 |
-| async-channel | bytes | 116934849 | 1.08× | 9 |
-| steal-deque | bytes | 119233013 | 1.10× | 9 |
+| async-channel | bytes | 114435033 | 1.00× | 9 |
+| steal-deque | bytes | 115223085 | 1.01× | 9 |
+| crossbeam-queue | bytes | 115340522 | 1.01× | 9 |
+| flume | bytes | 115552494 | 1.01× | 9 |
+| tokio-mpsc | bytes | 115868803 | 1.01× | 9 |
+| std-mpsc | bytes | 116126463 | 1.01× | 9 |
+| crossbeam-channel | bytes | 116398662 | 1.02× | 9 |

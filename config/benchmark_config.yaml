@@ -261,6 +261,11 @@ languages:
         communication: thread
         package: stdlib
         rationale: "Lock-free-ish MPMC concurrent queue"
+      - name: BlockingCollection
+        category: concurrent
+        communication: thread
+        package: stdlib
+        rationale: "Blocking MPMC wrapper (Add/Take); analog of queue.Queue"
       - name: Channel
         category: async
         communication: async
