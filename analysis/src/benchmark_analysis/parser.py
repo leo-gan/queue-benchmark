@@ -80,6 +80,8 @@ def parse_csv_file(filepath: str, language_hint: Optional[str] = None) -> Tuple[
                 }
                 if "MemoryPeakBytes" in row and row["MemoryPeakBytes"] not in (None, ""):
                     record["MemoryPeakBytes"] = int(float(row["MemoryPeakBytes"]))
+                if "CpuTimeNs" in row and row["CpuTimeNs"] not in (None, ""):
+                    record["CpuTimeNs"] = int(float(row["CpuTimeNs"]))
                 if "FidelityScore" in row and row["FidelityScore"] not in (None, ""):
                     record["FidelityScore"] = float(row["FidelityScore"])
                 if "SerializerVersion" in row and row["SerializerVersion"]:

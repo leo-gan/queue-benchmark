@@ -4,7 +4,7 @@ Times are not comparable across languages.
 
 ## python
 
-Similar set (within 15% of fastest on this sample): queue.Queue
+Similar set (within 15% of fastest on this sample): queue.Queue, asyncio.Queue
 
 See `python/results.md`.
 

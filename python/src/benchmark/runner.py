@@ -185,7 +185,8 @@ def _run_wakeup(adapter: QueueAdapter, n: int, wait_ns: int) -> tuple[int, int, 
     th.join()
     wall = _now_ns() - t0
     mid = sorted(latencies)[len(latencies) // 2] if latencies else 0
-    return mid, wall - mid, 1.0 if len(latencies) == n else 0.0
+    # Consumer wait can include the pre-produce park; do not emit negative deq.
+    return mid, max(0, wall - mid), 1.0 if len(latencies) == n else 0.0
 
 
 def _run_burst(adapter: QueueAdapter, items: list[bytes], capacity: int | None) -> tuple[int, int, float]:
@@ -195,6 +196,42 @@ def _run_burst(adapter: QueueAdapter, items: list[bytes], capacity: int | None) 
         adapter.enqueue(q, item)
     t1 = _now_ns()
     got = [adapter.dequeue(q) for _ in items]
+    t2 = _now_ns()
+    return t1 - t0, t2 - t1, 1.0 if got == items else 0.0
+
+
+async def _run_wakeup_async(adapter: QueueAdapter, n: int, wait_ns: int) -> tuple[int, int, float]:
+    q = adapter.create(capacity=2)
+    latencies: list[int] = []
+    item = b"x"
+
+    async def consumer() -> None:
+        for _ in range(n):
+            t_wait = _now_ns()
+            await adapter.dequeue_async(q)  # type: ignore[attr-defined]
+            latencies.append(_now_ns() - t_wait)
+
+    task = asyncio.create_task(consumer())
+    await asyncio.sleep(0.002)
+    t0 = _now_ns()
+    for _ in range(n):
+        await asyncio.sleep(wait_ns / 1e9)
+        await adapter.enqueue_async(q, item)  # type: ignore[attr-defined]
+    await task
+    wall = _now_ns() - t0
+    mid = sorted(latencies)[len(latencies) // 2] if latencies else 0
+    return mid, max(0, wall - mid), 1.0 if len(latencies) == n else 0.0
+
+
+async def _run_burst_async(
+    adapter: QueueAdapter, items: list[bytes], capacity: int | None
+) -> tuple[int, int, float]:
+    q = adapter.create(capacity=capacity or len(items))
+    t0 = _now_ns()
+    for item in items:
+        await adapter.enqueue_async(q, item)  # type: ignore[attr-defined]
+    t1 = _now_ns()
+    got = [await adapter.dequeue_async(q) for _ in items]  # type: ignore[attr-defined]
     t2 = _now_ns()
     return t1 - t0, t2 - t1, 1.0 if got == items else 0.0
 
@@ -224,13 +261,27 @@ def _measure(adapter: QueueAdapter, items: list[bytes], io_mode: str) -> tuple[i
     slow_ns = env_slow_consumer_ns()
     special = env_special()
     if special == "wakeup":
+        if adapter.is_async:
+            return asyncio.run(_run_wakeup_async(adapter, max(1, len(items)), env_wait_ns()))
         return _run_wakeup(adapter, max(1, len(items)), env_wait_ns())
     if special == "burst":
+        if adapter.is_async:
+            return asyncio.run(_run_burst_async(adapter, items, capacity))
         return _run_burst(adapter, items, capacity)
     if special == "cancel":
         if not adapter.is_async:
             return 0, 0, 0.0
         return asyncio.run(_run_cancel(adapter, max(8, len(items))))
+    if getattr(adapter, "cross_process", False):
+        runner = getattr(adapter, "run_cross_process", None)
+        if runner is None:
+            from .queues import process_queue, shared_ring
+
+            if adapter.communication == "process":
+                runner = process_queue.run_cross_process
+            else:
+                runner = shared_ring.run_cross_process
+        return runner(items, producers, consumers, capacity)
     if adapter.is_async:
         return asyncio.run(_run_async(adapter, items, producers, consumers, capacity, slow_ns))
     return _run_sync(adapter, items, producers, consumers, capacity, slow_ns)
@@ -282,7 +333,9 @@ def run(reps: int, queue_filter: str = "", data_filter: str = "") -> Path:
             if adapter.supports_spsc_only and (env_special() or env_slow_consumer_ns()):
                 continue
             for i in range(reps):
+                cpu0 = time.process_time_ns()
                 enq, deq, fid = _measure(adapter, items, io_mode)
+                cpu_ns = time.process_time_ns() - cpu0
                 storage.write(
                     BenchmarkLog(
                         string_or_stream=io_mode,
@@ -301,6 +354,7 @@ def run(reps: int, queue_filter: str = "", data_filter: str = "") -> Path:
                         stream_mode="native" if (producers, consumers) != (1, 1) else "",
                         run_order=run_order,
                         schedule_position=run_order,
+                        cpu_time_ns=cpu_ns,
                     )
                 )
                 run_order += 1
@@ -310,6 +364,9 @@ def run(reps: int, queue_filter: str = "", data_filter: str = "") -> Path:
 
 
 def main() -> None:
+    from multiprocessing import freeze_support
+
+    freeze_support()
     args = sys.argv[1:]
     reps = int(args[0]) if args else 10
     qf = args[1] if len(args) > 1 else ""

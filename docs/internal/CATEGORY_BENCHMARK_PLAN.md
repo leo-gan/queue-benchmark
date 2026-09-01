@@ -6,7 +6,10 @@ matrix. Source notes: `docs/temp/methodology.review.md`,
 
 **Do not compare libraries across communication categories.**
 **Do not crown a global “fastest queue.”**
-Experiments 3–12 and Python P/S/D runners are in this pass.
+Experiments 1–12, Python P/S/D runners, P×C harness, work-stealing
+family, and wakeup/burst/cancel in every language are in this pass.
+See [IMPLEMENTATION_RUN.md](IMPLEMENTATION_RUN.md) for the 2026-08-31
+gap-close. Category **N** stays unpublished.
 
 ## Rule
 
@@ -29,9 +32,9 @@ The dashboard and methodology must say **SPSC / MPMC**, never “stream API.”
 |----|----------|------------------------|----------------|
 | **T** | Thread / in-process | Same process, OS threads | Yes |
 | **A** | Async / event-loop | Same process, tasks on a loop | Yes |
-| **P** | Process / IPC | Processes via pipe/socket + serialize | No (needs a runner) |
-| **S** | Shared memory | Processes, bytes in a mapped region | No (needs a runner) |
-| **D** | Durable / local disk | Process + fsync / WAL / sqlite | No (needs a runner) |
+| **P** | Process / IPC | Processes via pipe/socket + serialize | Yes (Python opt-in; exp. 10) |
+| **S** | Shared memory | Processes, bytes in a mapped region | Yes (Python opt-in; exp. 11) |
+| **D** | Durable / local disk | Process + fsync / WAL / sqlite | Yes (Python opt-in; exp. 12) |
 | **N** | Local broker | Client + localhost server | Later, separate **system** report |
 
 Remote multi-node brokers stay out of this lab.
@@ -46,18 +49,20 @@ priority, blocking vs spin vs yield, SPSC / MPSC / SPMC / MPMC.
 | locked | Mutex baseline | `deque-lock`, `Queue+lock`, `Array`, `mutex-queue` |
 | concurrent | Thread-safe MPSC/MPMC | `queue.Queue`, `ConcurrentQueue`, `crossbeam-channel`, `fastq` |
 | spsc-ring | No mutex on the happy path | C `spsc-ring`, Python `spsc-ring` |
-| work-stealing | Steal from the other end | none yet |
+| work-stealing | Steal from the other end | Python `steal-deque` |
 
 Async channels (`asyncio.Queue`, `Channel`, `tokio::mpsc`) live in **A**.
 
-## Tests (design; experiments 3–4 not shipped yet)
+## Tests
 
-Always-on axes: language, category, family, pattern (1P1C today; 1P4C /
-4P1C / 4P4C planned), bound, payload, mode (smoke / all-single / full).
+Always-on axes: language, category, family, pattern (`bytes` SPSC,
+`stream` 2P2C, plus `1p4c` / `4p1c` / `4p4c` on the default matrix),
+bound, payload, mode (smoke / all-single / full).
 
 Primary metrics: completed handoffs/s, enqueue ns, dequeue ns, end-to-end
-handoff, p50/p99 (p99.9 in `full`), peak RSS, messages per CPU-second,
-fidelity (no loss, no dup; FIFO only if the API promises it).
+handoff, p50/p99/`total_p999_ns`, peak RSS, `msgs_per_cpu_sec` when
+`CpuTimeNs` is present, fidelity (no loss, no dup; FIFO only if the API
+promises it).
 
 ### T — thread / in-process
 
@@ -84,8 +89,9 @@ it (do not rank it against `asyncio.Queue`).
 
 ### P / S / D
 
-Only when a real runner exists. Each gets its own experiment folder and
-dashboard filter. No shared violin with T.
+Python opt-in runners exist (true two-process P and S; SQLite D). Each
+has its own experiment folder (10–12) and dashboard filter. No shared
+violin with T. Other languages do not have P/S/D adapters yet.
 
 ### Never
 

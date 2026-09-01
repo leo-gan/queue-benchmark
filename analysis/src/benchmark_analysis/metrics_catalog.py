@@ -25,6 +25,8 @@ _DEFAULT_IMPORTANCE: Dict[str, str] = {
     "total_ci_high_ns": "medium",
     "total_p95_ns": "medium",
     "total_p99_ns": "medium",
+    "total_p999_ns": "high",
+    "msgs_per_cpu_sec": "high",
     "total_cv": "medium",
     "effect_vs_fastest_cliffs_delta": "medium",
     "effect_vs_fastest_cliffs_label": "medium",

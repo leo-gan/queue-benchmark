@@ -84,7 +84,7 @@ _DEFAULT_STATS_CFG: Dict[str, Any] = {
     "iqr_k": 1.5,
     "min_samples_for_outlier_filter": 10,
     "min_samples_for_inference": 5,
-    "report_percentiles": [5, 25, 50, 75, 95, 99],
+    "report_percentiles": [5, 25, 50, 75, 95, 99, 99.9],
     # NOTE: report_* flags (mean/median/std/...) are declared in config for
     # documentation but are currently always computed (rich output is the
     # design goal). Changing them has no effect yet.
@@ -856,8 +856,9 @@ def _summarize_series(
     out[f"{prefix}_min_ns"] = float(np.min(arr))
     out[f"{prefix}_max_ns"] = float(np.max(arr))
 
-    for p in cfg.get("report_percentiles", [5, 25, 50, 75, 95, 99]):
-        out[f"{prefix}_p{int(p)}_ns"] = float(np.percentile(arr, p))
+    for p in cfg.get("report_percentiles", [5, 25, 50, 75, 95, 99, 99.9]):
+        label = str(int(p)) if float(p) == int(p) else str(p).replace(".", "")
+        out[f"{prefix}_p{label}_ns"] = float(np.percentile(arr, p))
 
     boot_cfg = cfg.get("bootstrap") or {}
     if boot_cfg.get("enabled", True) and len(arr) >= cfg.get("min_samples_for_inference", 5):
@@ -916,6 +917,7 @@ def compute_statistics(
         "sizes": [],
         "fidelity": [],
         "memory_peak": [],
+        "cpu_time_ns": [],
         "stream_modes": [],
         "language": None,
         "serializer_version": None,
@@ -944,6 +946,11 @@ def compute_statistics(
         if "MemoryPeakBytes" in r and r["MemoryPeakBytes"] is not None:
             try:
                 stats[key]["memory_peak"].append(float(r["MemoryPeakBytes"]))
+            except (TypeError, ValueError):
+                pass
+        if "CpuTimeNs" in r and r["CpuTimeNs"] is not None:
+            try:
+                stats[key]["cpu_time_ns"].append(float(r["CpuTimeNs"]))
             except (TypeError, ValueError):
                 pass
 
@@ -1005,6 +1012,11 @@ def compute_statistics(
             **total_stats,
             "mean_fidelity": float(np.mean(data["fidelity"])) if data["fidelity"] else None,
             "mean_memory_peak_bytes": float(np.mean(data["memory_peak"])) if data["memory_peak"] else None,
+            "msgs_per_cpu_sec": (
+                (float(key[3]) / (float(np.mean(data["cpu_time_ns"])) / 1e9))
+                if data.get("cpu_time_ns") and key[3] not in ("", None) and float(np.mean(data["cpu_time_ns"])) > 0
+                else None
+            ),
             # Retain filtered series for effect-size / A-B (not serialized by default consumers)
             "_times_total_filtered": times_total,
         }

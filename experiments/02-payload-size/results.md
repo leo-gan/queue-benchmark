@@ -10,7 +10,7 @@ See `python/results.md`.
 
 ## rust
 
-Similar set (within 15% of fastest on this sample): crossbeam-queue, crossbeam-channel, std-mpsc, tokio-mpsc
+Similar set (within 15% of fastest on this sample): crossbeam-channel, std-mpsc, crossbeam-queue, tokio-mpsc
 
 See `rust/results.md`.
 

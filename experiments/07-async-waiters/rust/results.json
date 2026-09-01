@@ -2,22 +2,22 @@
   "status": "ok",
   "rows": [
     {
-      "library": "crossbeam-queue",
-      "pattern": "1p32c",
-      "n": 9,
-      "median_handoff_ns": 695142.0,
-      "p50_ns": 695142.0,
-      "mean_ns": 676540.4444444445,
-      "rel_to_fastest": 1.0
-    },
-    {
       "library": "crossbeam-channel",
       "pattern": "1p32c",
       "n": 9,
-      "median_handoff_ns": 738101.0,
-      "p50_ns": 738101.0,
-      "mean_ns": 734516.4444444445,
-      "rel_to_fastest": 1.0617988842567418
+      "median_handoff_ns": 590265.0,
+      "p50_ns": 590265.0,
+      "mean_ns": 622927.7777777778,
+      "rel_to_fastest": 1.0
+    },
+    {
+      "library": "crossbeam-queue",
+      "pattern": "1p32c",
+      "n": 9,
+      "median_handoff_ns": 776538.0,
+      "p50_ns": 776538.0,
+      "mean_ns": 786531.6666666666,
+      "rel_to_fastest": 1.3155752077456735
     }
   ]
 }

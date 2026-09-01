@@ -4,13 +4,13 @@ Times are not comparable across languages.
 
 ## python
 
-Similar set (within 15% of fastest on this sample): asyncio.Queue, asyncio.Queue
+Similar set (within 15% of fastest on this sample): asyncio.Queue, asyncio.Queue, asyncio.Queue
 
 See `python/results.md`.
 
 ## rust
 
-Similar set (within 15% of fastest on this sample): crossbeam-channel, crossbeam-queue, crossbeam-queue
+Similar set (within 15% of fastest on this sample): crossbeam-queue, crossbeam-queue, crossbeam-channel
 
 See `rust/results.md`.
 

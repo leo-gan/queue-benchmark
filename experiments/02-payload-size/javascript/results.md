@@ -2,6 +2,6 @@
 
 | Library | Pattern | Median handoff (ns) | vs fastest | n |
 |---------|---------|--------------------:|-----------:|--:|
-| fastq | bytes | 9166 | 1.00× | 9 |
-| Array | bytes | 9847 | 1.07× | 9 |
-| p-queue | bytes | 141230 | 15.41× | 9 |
+| fastq | bytes | 9145 | 1.00× | 9 |
+| Array | bytes | 9599 | 1.05× | 9 |
+| p-queue | bytes | 138651 | 15.16× | 9 |

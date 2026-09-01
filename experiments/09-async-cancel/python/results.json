@@ -5,9 +5,9 @@
       "library": "asyncio.Queue",
       "pattern": "bytes",
       "n": 9,
-      "median_handoff_ns": 203496.0,
-      "p50_ns": 203496.0,
-      "mean_ns": 208161.55555555556,
+      "median_handoff_ns": 199713.0,
+      "p50_ns": 199713.0,
+      "mean_ns": 206107.0,
       "rel_to_fastest": 1.0
     }
   ]

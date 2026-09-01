@@ -14,17 +14,18 @@ Compare queues **inside one language and one communication category**.
 |----|----------|------------------------|-----------|
 | **T** | Thread / in-process | OS threads in one process | Yes |
 | **A** | Async / event-loop | Tasks on one event loop | Yes |
-| **P** | Process / IPC | Processes + serialization | When a runner exists |
-| **S** | Shared memory | Processes + mapped bytes | When a runner exists |
-| **D** | Durable / local disk | Process + fsync / WAL | When a runner exists |
+| **P** | Process / IPC | Processes + serialization | Python opt-in (exp. 10) |
+| **S** | Shared memory | Processes + mapped bytes | Python opt-in (exp. 11) |
+| **D** | Durable / local disk | Process + fsync / WAL | Python opt-in (exp. 12) |
 | **N** | Local broker | Client + localhost server | Separate system report |
 
 A locked deque and an async channel answer different questions. A
 localhost Redis row is a **system** measurement, not a data-structure
 measurement. Do not put it on the same chart as `deque-lock`.
 
-Implementation family (`locked`, `concurrent`, `spsc`, `scheduler`) is a
-**label** inside a category. It is not a license to mix T with A.
+Implementation family (`locked`, `concurrent`, `spsc`, `work-stealing`,
+`scheduler`) is a **label** inside a category. It is not a license to
+mix T with A.
 
 Properties that are **not** categories: bounded vs unbounded, FIFO vs
 priority, blocking vs spin vs yield, SPSC vs MPMC.
@@ -37,12 +38,11 @@ The CSV still uses serializer-benchmark names so analysis stays reusable.
 |-----------|----------|-------------------|
 | `bytes` | **SPSC** | One producer, one consumer |
 | `stream` | **MPMC** | Two producers, two consumers |
+| `1p4c` / `4p1c` / `4p4c` | Named P×C | Default full matrix + experiment 3 |
 
 There is no stream I/O in this suite. In-process queues move already-built
 payloads. If a library cannot do MPMC, **skip the cell** — do not fake it
 with a mutex around an SPSC structure.
-
-Planned (not shipped): 1P4C, 4P1C, 4P4C as their own experiment questions.
 
 ## What we time
 
@@ -60,9 +60,9 @@ See [Timing honesty](TIMING_HONESTY.md) and [Architecture](architecture.md).
 | Enqueue ns (`TimeSer`) | Produce cost |
 | Dequeue ns (`TimeDeser`) | Consume cost |
 | Handoff ns (`TimeSerAndDeser`) | End-to-end; default rank |
-| p50 / p99 (p99.9 in `full`) | Tail matters more than the mean |
+| p50 / p99 / p99.9 (`total_p999_ns`) | Tail matters more than the mean |
 | Peak RSS | Retention after drain |
-| Messages / CPU-second | Spin can “win” latency and burn cores |
+| Messages / CPU-second (`msgs_per_cpu_sec`) | Spin can “win” latency and burn cores; needs `CpuTimeNs` |
 | Fidelity | Lost or duplicated items are errors, not speed |
 
 ## Published matrix (now)
@@ -72,12 +72,12 @@ Same run modes as [Modes](modes.md): smoke / all-single / full / research.
 | Axis | Now |
 |------|-----|
 | Languages | C, C#, JavaScript, Python, Rust |
-| Categories | T and A (see [categories](queue_categories.md)) |
-| Pattern | SPSC required; MPMC if the library supports it |
+| Categories | T and A on the default matrix; P/S/D opt-in (see [categories](queue_categories.md)) |
+| Pattern | SPSC, 2P2C, 1P4C, 4P1C, 4P4C (skip if the library cannot) |
 | Payloads | `message`, `document`, `telemetry`, `strings`, `event` |
-| Experiments | [01 SPSC handoff](../experiments/01-spsc-handoff/), [02 payload size](../experiments/02-payload-size/) |
+| Experiments | [01](../experiments/01-spsc-handoff/)–[12](../experiments/12-durable-local/) |
 
-## Designed tests (not all shipped)
+## Designed tests
 
 ### Category T
 
@@ -106,9 +106,10 @@ Python runners exist (opt-in, not in the default matrix):
 
 They never share a violin with T.
 
-The dashboard **Category** filter is Thread / Async / Other. P, S, and D
-will join that control when a runner exists. Until then Other is only
-schedulers (JavaScript `p-queue`).
+The dashboard **Category** filter is Thread / Async / Process / Shared /
+Durable / Other. P, S, and D series come from the Python opt-in runners
+and never share a violin with T. Other is schedulers (JavaScript
+`p-queue`).
 
 ## What a single computer can measure
 
