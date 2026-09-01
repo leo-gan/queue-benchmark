@@ -29,7 +29,7 @@ Compare in-process queue libraries across **Python, Rust, JavaScript, C#, and C*
 
 ## Supported languages
 
-- [C](https://leo-gan.github.io/queue-benchmark/c/) — mutex queue, SPSC ring
+- [C](https://leo-gan.github.io/queue-benchmark/c/) — `mutex-queue`, `lfqueue`, `spsc-ring`
 - [C# (.NET)](https://leo-gan.github.io/queue-benchmark/c-sharp/) — `Queue+lock`, `ConcurrentQueue`, `BlockingCollection`, `Channel`
 - [JavaScript](https://leo-gan.github.io/queue-benchmark/javascript/) — `Array`, `denque`, `yocto-queue`, `fastq`, `p-queue` (scheduler)
 - [Python](https://leo-gan.github.io/queue-benchmark/python/) — `deque-lock`, `queue.Queue`, `queue.SimpleQueue`, `asyncio.Queue`, `janus`, `spsc-ring`

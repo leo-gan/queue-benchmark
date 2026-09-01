@@ -60,6 +60,7 @@ languages:
     enabled: true
     libraries:
       - {name: mutex-queue, role: locked ring}
+      - {name: lfqueue, role: lock-free MPMC}
   - id: javascript
     enabled: true
     libraries:

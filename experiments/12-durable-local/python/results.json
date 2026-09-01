@@ -5,9 +5,9 @@
       "library": "sqlite-queue",
       "pattern": "bytes",
       "n": 9,
-      "median_handoff_ns": 154783229.0,
-      "p50_ns": 154783229.0,
-      "mean_ns": 153369179.8888889,
+      "median_handoff_ns": 157390568.0,
+      "p50_ns": 157390568.0,
+      "mean_ns": 150716568.0,
       "rel_to_fastest": 1.0
     }
   ]

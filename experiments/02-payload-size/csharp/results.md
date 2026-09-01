@@ -2,8 +2,8 @@
 
 | Library | Pattern | Median handoff (ns) | vs fastest | n |
 |---------|---------|--------------------:|-----------:|--:|
-| ConcurrentQueue | bytes | 2900 | 1.00× | 9 |
-| Queue+lock | bytes | 10200 | 3.52× | 9 |
-| BlockingCollection | bytes | 10300 | 3.55× | 9 |
-| steal-deque | bytes | 11200 | 3.86× | 9 |
-| Channel | bytes | 15800 | 5.45× | 9 |
+| ConcurrentQueue | bytes | 4700 | 1.00× | 9 |
+| Queue+lock | bytes | 5600 | 1.19× | 9 |
+| steal-deque | bytes | 9700 | 2.06× | 9 |
+| BlockingCollection | bytes | 10600 | 2.26× | 9 |
+| Channel | bytes | 13800 | 2.94× | 9 |

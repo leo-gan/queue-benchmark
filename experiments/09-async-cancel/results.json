@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-01T20:14:20Z",
+  "generated_at": "2026-09-01T20:19:53Z",
   "languages": {
     "python": {
       "status": "ok",
@@ -8,19 +8,19 @@
           "library": "asyncio.Queue",
           "pattern": "bytes",
           "n": 9,
-          "median_handoff_ns": 204523.0,
-          "p50_ns": 204523.0,
-          "mean_ns": 214351.88888888888,
+          "median_handoff_ns": 217655.0,
+          "p50_ns": 217655.0,
+          "mean_ns": 230433.11111111112,
           "rel_to_fastest": 1.0
         },
         {
           "library": "janus",
           "pattern": "bytes",
           "n": 9,
-          "median_handoff_ns": 356752.0,
-          "p50_ns": 356752.0,
-          "mean_ns": 373235.3333333333,
-          "rel_to_fastest": 1.7443123756252352
+          "median_handoff_ns": 388262.0,
+          "p50_ns": 388262.0,
+          "mean_ns": 405013.8888888889,
+          "rel_to_fastest": 1.7838414003813374
         }
       ]
     },
@@ -31,19 +31,19 @@
           "library": "tokio-mpsc",
           "pattern": "bytes",
           "n": 9,
-          "median_handoff_ns": 216378.0,
-          "p50_ns": 216378.0,
-          "mean_ns": 186344.77777777778,
+          "median_handoff_ns": 154746.0,
+          "p50_ns": 154746.0,
+          "mean_ns": 147864.77777777778,
           "rel_to_fastest": 1.0
         },
         {
           "library": "async-channel",
           "pattern": "bytes",
           "n": 9,
-          "median_handoff_ns": 260918.0,
-          "p50_ns": 260918.0,
-          "mean_ns": 252797.44444444444,
-          "rel_to_fastest": 1.2058434776178724
+          "median_handoff_ns": 302132.0,
+          "p50_ns": 302132.0,
+          "mean_ns": 293903.44444444444,
+          "rel_to_fastest": 1.95243818903235
         }
       ]
     },
@@ -54,9 +54,9 @@
           "library": "p-queue",
           "pattern": "bytes",
           "n": 9,
-          "median_handoff_ns": 214728.0,
-          "p50_ns": 214728.0,
-          "mean_ns": 221900.33333333334,
+          "median_handoff_ns": 157024.0,
+          "p50_ns": 157024.0,
+          "mean_ns": 149602.77777777778,
           "rel_to_fastest": 1.0
         }
       ]
@@ -68,9 +68,9 @@
           "library": "Channel",
           "pattern": "bytes",
           "n": 9,
-          "median_handoff_ns": 406500.0,
-          "p50_ns": 406500.0,
-          "mean_ns": 395144.44444444444,
+          "median_handoff_ns": 389900.0,
+          "p50_ns": 389900.0,
+          "mean_ns": 395233.3333333333,
           "rel_to_fastest": 1.0
         }
       ]

@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <sqlite3.h>
+#include "lfqueue.h"
 
 static uint64_t now_ns(void) {
     struct timespec ts;
@@ -286,6 +287,28 @@ static void parse_pattern(const char *mode, int *p, int *c) {
 }
 
 typedef struct {
+    lfqueue_t *q;
+    void **items;
+    int a, b, take;
+} LfJob;
+
+static void *lf_prod(void *arg) {
+    LfJob *j = arg;
+    for (int i = j->a; i < j->b; i++)
+        while (lfqueue_enq(j->q, j->items[i]) == -1) {
+        }
+    return NULL;
+}
+
+static void *lf_cons(void *arg) {
+    LfJob *j = arg;
+    for (int i = 0; i < j->take; i++)
+        while (lfqueue_deq(j->q) == NULL) {
+        }
+    return NULL;
+}
+
+typedef struct {
     MutexQ *q;
     void **items;
     int start, end;
@@ -379,11 +402,11 @@ int main(int argc, char **argv) {
         void **items = calloc((size_t)n, sizeof(void *));
         for (int i = 0; i < n; i++) items[i] = item;
         size_t size = (size_t)payload * (size_t)n;
-        const char *names[] = {"mutex-queue", "spsc-ring", "steal-deque", "pipe-ipc", "shared-ring", "sqlite-queue"};
-        const char *kinds[] = {"locked", "spsc", "work-stealing", "concurrent", "spsc", "durable"};
-        const int opt_in[] = {0, 0, 0, 1, 1, 1};
-        const int spsc_only[] = {0, 1, 0, 1, 1, 1};
-        for (int qi = 0; qi < 6; qi++) {
+        const char *names[] = {"mutex-queue", "lfqueue", "spsc-ring", "steal-deque", "pipe-ipc", "shared-ring", "sqlite-queue"};
+        const char *kinds[] = {"locked", "concurrent", "spsc", "work-stealing", "concurrent", "spsc", "durable"};
+        const int opt_in[] = {0, 0, 0, 0, 1, 1, 1};
+        const int spsc_only[] = {0, 0, 1, 0, 1, 1, 1};
+        for (int qi = 0; qi < 7; qi++) {
             if (!name_wanted(names[qi], qf, opt_in[qi], include_psd, psd_names))
                 continue;
             int producers = 1, consumers = 1;
@@ -396,7 +419,7 @@ int main(int argc, char **argv) {
                 continue;
             if (strcmp(special, "wakeup") == 0 &&
                 (strcmp(names[qi], "spsc-ring") == 0 || strcmp(names[qi], "steal-deque") == 0 ||
-                 strcmp(names[qi], "shared-ring") == 0))
+                 strcmp(names[qi], "shared-ring") == 0 || strcmp(names[qi], "lfqueue") == 0))
                 continue;
             for (int i = 0; i < reps; i++) {
                 uint64_t enq = 0, deq = 0;
@@ -419,7 +442,21 @@ int main(int argc, char **argv) {
                     deq = wall - enq;
                     mq_free(&q);
                 } else if (strcmp(special, "burst") == 0) {
-                    if (strcmp(names[qi], "spsc-ring") == 0) {
+                    if (strcmp(names[qi], "lfqueue") == 0) {
+                        lfqueue_t q;
+                        lfqueue_init(&q);
+                        uint64_t t0 = now_ns();
+                        for (int k = 0; k < n; k++)
+                            while (lfqueue_enq(&q, items[k]) == -1) {
+                            }
+                        enq = now_ns() - t0;
+                        t0 = now_ns();
+                        for (int k = 0; k < n; k++)
+                            while (lfqueue_deq(&q) == NULL) {
+                            }
+                        deq = now_ns() - t0;
+                        lfqueue_destroy(&q);
+                    } else if (strcmp(names[qi], "spsc-ring") == 0) {
                         Spsc q;
                         spsc_init(&q, (size_t)n + 2);
                         uint64_t t0 = now_ns();
@@ -446,6 +483,42 @@ int main(int argc, char **argv) {
                     bench_shared(items, n, payload, &enq, &deq);
                 } else if (strcmp(names[qi], "sqlite-queue") == 0) {
                     bench_sqlite(items, n, payload, &enq, &deq);
+                } else if (strcmp(names[qi], "lfqueue") == 0) {
+                    lfqueue_t q;
+                    lfqueue_init(&q);
+                    if (producers == 1 && consumers == 1) {
+                        uint64_t t0 = now_ns();
+                        for (int k = 0; k < n; k++)
+                            while (lfqueue_enq(&q, items[k]) == -1) {
+                            }
+                        enq = now_ns() - t0;
+                        t0 = now_ns();
+                        for (int k = 0; k < n; k++)
+                            while (lfqueue_deq(&q) == NULL) {
+                            }
+                        deq = now_ns() - t0;
+                    } else {
+                        pthread_t th[16];
+                        LfJob jobs[16];
+                        int nt = 0;
+                        uint64_t t0 = now_ns();
+                        for (int p = 0; p < producers && nt < 16; p++) {
+                            jobs[nt] = (LfJob){&q, items, n * p / producers, n * (p + 1) / producers, 0};
+                            pthread_create(&th[nt], NULL, lf_prod, &jobs[nt]);
+                            nt++;
+                        }
+                        int per = n / consumers, extra = n % consumers;
+                        for (int c = 0; c < consumers && nt < 16; c++) {
+                            jobs[nt] = (LfJob){&q, items, 0, 0, per + (c == 0 ? extra : 0)};
+                            pthread_create(&th[nt], NULL, lf_cons, &jobs[nt]);
+                            nt++;
+                        }
+                        for (int t = 0; t < nt; t++) pthread_join(th[t], NULL);
+                        uint64_t wall = now_ns() - t0;
+                        enq = wall / 2;
+                        deq = wall - enq;
+                    }
+                    lfqueue_destroy(&q);
                 } else if (strcmp(names[qi], "mutex-queue") == 0 || strcmp(names[qi], "steal-deque") == 0) {
                     MutexQ q;
                     mq_init(&q, (size_t)n + 1);

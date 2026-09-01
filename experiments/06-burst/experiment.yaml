@@ -60,6 +60,7 @@ languages:
     enabled: true
     libraries:
       - {name: mutex-queue, role: locked baseline}
+      - {name: lfqueue, role: lock-free MPMC}
       - {name: spsc-ring, role: spsc}
   - id: javascript
     enabled: true

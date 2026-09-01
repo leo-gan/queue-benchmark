@@ -2,15 +2,15 @@
 
 | Library | Pattern | Median handoff (ns) | vs fastest | n |
 |---------|---------|--------------------:|-----------:|--:|
-| ConcurrentQueue | 4p1c | 10000 | 1.00× | 9 |
-| ConcurrentQueue | 4p4c | 16200 | 1.62× | 9 |
-| Channel | 4p1c | 20500 | 2.05× | 9 |
-| steal-deque | 4p1c | 22100 | 2.21× | 9 |
-| BlockingCollection | 4p4c | 22500 | 2.25× | 9 |
-| BlockingCollection | 4p1c | 24400 | 2.44× | 9 |
-| steal-deque | 4p4c | 25700 | 2.57× | 9 |
-| steal-deque | 1p4c | 28500 | 2.85× | 9 |
-| BlockingCollection | 1p4c | 33900 | 3.39× | 9 |
-| ConcurrentQueue | 1p4c | 67600 | 6.76× | 9 |
-| Channel | 1p4c | 82600 | 8.26× | 9 |
-| Channel | 4p4c | 105900 | 10.59× | 9 |
+| ConcurrentQueue | 4p1c | 9800 | 1.00× | 9 |
+| ConcurrentQueue | 4p4c | 13200 | 1.35× | 9 |
+| steal-deque | 4p1c | 17600 | 1.80× | 9 |
+| Channel | 4p1c | 18100 | 1.85× | 9 |
+| steal-deque | 4p4c | 23400 | 2.39× | 9 |
+| BlockingCollection | 4p1c | 24300 | 2.48× | 9 |
+| steal-deque | 1p4c | 27000 | 2.76× | 9 |
+| ConcurrentQueue | 1p4c | 28100 | 2.87× | 9 |
+| Channel | 4p4c | 28600 | 2.92× | 9 |
+| BlockingCollection | 4p4c | 30700 | 3.13× | 9 |
+| BlockingCollection | 1p4c | 33600 | 3.43× | 9 |
+| Channel | 1p4c | 34400 | 3.51× | 9 |

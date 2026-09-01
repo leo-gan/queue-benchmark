@@ -75,4 +75,5 @@ languages:
     enabled: true
     libraries:
       - {name: mutex-queue, role: locked ring}
+      - {name: lfqueue, role: lock-free MPMC}
       - {name: spsc-ring, role: SPSC ring}

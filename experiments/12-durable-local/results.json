@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-01T20:14:38Z",
+  "generated_at": "2026-09-01T20:20:13Z",
   "languages": {
     "python": {
       "status": "ok",
@@ -8,9 +8,9 @@
           "library": "sqlite-queue",
           "pattern": "bytes",
           "n": 9,
-          "median_handoff_ns": 154783229.0,
-          "p50_ns": 154783229.0,
-          "mean_ns": 153369179.8888889,
+          "median_handoff_ns": 157390568.0,
+          "p50_ns": 157390568.0,
+          "mean_ns": 150716568.0,
           "rel_to_fastest": 1.0
         }
       ]
@@ -22,9 +22,9 @@
           "library": "sqlite-queue",
           "pattern": "bytes",
           "n": 9,
-          "median_handoff_ns": 68671619.0,
-          "p50_ns": 68671619.0,
-          "mean_ns": 67553986.0,
+          "median_handoff_ns": 86559188.0,
+          "p50_ns": 86559188.0,
+          "mean_ns": 93277350.55555555,
           "rel_to_fastest": 1.0
         }
       ]
@@ -36,9 +36,9 @@
           "library": "sqlite-queue",
           "pattern": "bytes",
           "n": 9,
-          "median_handoff_ns": 67236241.0,
-          "p50_ns": 67236241.0,
-          "mean_ns": 69411884.33333333,
+          "median_handoff_ns": 100119122.0,
+          "p50_ns": 100119122.0,
+          "mean_ns": 111965022.55555555,
           "rel_to_fastest": 1.0
         }
       ]
@@ -50,9 +50,9 @@
           "library": "sqlite-queue",
           "pattern": "bytes",
           "n": 9,
-          "median_handoff_ns": 60424200.0,
-          "p50_ns": 60424200.0,
-          "mean_ns": 59603011.11111111,
+          "median_handoff_ns": 63754600.0,
+          "p50_ns": 63754600.0,
+          "mean_ns": 60334866.666666664,
           "rel_to_fastest": 1.0
         }
       ]
@@ -64,9 +64,9 @@
           "library": "sqlite-queue",
           "pattern": "bytes",
           "n": 9,
-          "median_handoff_ns": 68014898.0,
-          "p50_ns": 68014898.0,
-          "mean_ns": 68649678.66666667,
+          "median_handoff_ns": 78734619.0,
+          "p50_ns": 78734619.0,
+          "mean_ns": 86041504.55555555,
           "rel_to_fastest": 1.0
         }
       ]

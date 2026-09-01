@@ -433,6 +433,11 @@ languages:
         communication: thread
         library: harness
         rationale: "pthread mutex + ring as locked baseline"
+      - name: lfqueue
+        category: concurrent
+        communication: thread
+        library: lfqueue
+        rationale: "Vendored lock-free MPMC FIFO (Taymindis/lfqueue)"
       - name: spsc-ring
         category: spsc
         communication: thread

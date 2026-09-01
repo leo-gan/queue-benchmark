@@ -5,46 +5,46 @@
       "library": "async-channel",
       "pattern": "1p32c",
       "n": 9,
-      "median_handoff_ns": 46115.0,
-      "p50_ns": 46115.0,
-      "mean_ns": 63648.555555555555,
+      "median_handoff_ns": 54825.0,
+      "p50_ns": 54825.0,
+      "mean_ns": 55419.444444444445,
       "rel_to_fastest": 1.0
-    },
-    {
-      "library": "crossbeam-queue",
-      "pattern": "1p32c",
-      "n": 9,
-      "median_handoff_ns": 574440.0,
-      "p50_ns": 574440.0,
-      "mean_ns": 580971.2222222222,
-      "rel_to_fastest": 12.456684376016481
-    },
-    {
-      "library": "flume",
-      "pattern": "1p32c",
-      "n": 9,
-      "median_handoff_ns": 579843.0,
-      "p50_ns": 579843.0,
-      "mean_ns": 574706.1111111111,
-      "rel_to_fastest": 12.573847988723843
-    },
-    {
-      "library": "steal-deque",
-      "pattern": "1p32c",
-      "n": 9,
-      "median_handoff_ns": 598787.0,
-      "p50_ns": 598787.0,
-      "mean_ns": 616752.5555555555,
-      "rel_to_fastest": 12.98464707795728
     },
     {
       "library": "crossbeam-channel",
       "pattern": "1p32c",
       "n": 9,
-      "median_handoff_ns": 638125.0,
-      "p50_ns": 638125.0,
-      "mean_ns": 660453.5555555555,
-      "rel_to_fastest": 13.837688387726336
+      "median_handoff_ns": 623469.0,
+      "p50_ns": 623469.0,
+      "mean_ns": 677214.5555555555,
+      "rel_to_fastest": 11.371983584131327
+    },
+    {
+      "library": "flume",
+      "pattern": "1p32c",
+      "n": 9,
+      "median_handoff_ns": 654390.0,
+      "p50_ns": 654390.0,
+      "mean_ns": 655979.1111111111,
+      "rel_to_fastest": 11.935978112175103
+    },
+    {
+      "library": "crossbeam-queue",
+      "pattern": "1p32c",
+      "n": 9,
+      "median_handoff_ns": 690555.0,
+      "p50_ns": 690555.0,
+      "mean_ns": 721160.5555555555,
+      "rel_to_fastest": 12.59562243502052
+    },
+    {
+      "library": "steal-deque",
+      "pattern": "1p32c",
+      "n": 9,
+      "median_handoff_ns": 753233.0,
+      "p50_ns": 753233.0,
+      "mean_ns": 789761.8888888889,
+      "rel_to_fastest": 13.738860009119927
     }
   ]
 }

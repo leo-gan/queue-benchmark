@@ -1,6 +1,6 @@
 {
   "schema": "gld.dashboard.experiments/1",
-  "generated_at": "2026-09-01T20:14:39Z",
+  "generated_at": "2026-09-01T20:20:14Z",
   "count": 12,
   "with_results": 12,
   "experiments": [
@@ -19,7 +19,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/01-spsc-handoff.json.gz",
-      "generated_at": "2026-09-01T20:13:08Z",
+      "generated_at": "2026-09-01T20:18:42Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -48,10 +48,10 @@
         {
           "id": "c",
           "status": "ok",
-          "rows": 3
+          "rows": 4
         }
       ],
-      "source_bytes": 7587
+      "source_bytes": 7818
     },
     {
       "id": "02-payload-size",
@@ -68,7 +68,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/02-payload-size.json.gz",
-      "generated_at": "2026-09-01T20:13:12Z",
+      "generated_at": "2026-09-01T20:18:46Z",
       "sample": {
         "kind": "document",
         "n": 100
@@ -97,10 +97,10 @@
         {
           "id": "c",
           "status": "ok",
-          "rows": 3
+          "rows": 4
         }
       ],
-      "source_bytes": 7576
+      "source_bytes": 7848
     },
     {
       "id": "03-contention",
@@ -117,7 +117,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/03-contention.json.gz",
-      "generated_at": "2026-09-01T20:13:16Z",
+      "generated_at": "2026-09-01T20:18:50Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -146,10 +146,10 @@
         {
           "id": "c",
           "status": "ok",
-          "rows": 6
+          "rows": 9
         }
       ],
-      "source_bytes": 14980
+      "source_bytes": 15902
     },
     {
       "id": "04-backpressure",
@@ -166,7 +166,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/04-backpressure.json.gz",
-      "generated_at": "2026-09-01T20:13:18Z",
+      "generated_at": "2026-09-01T20:18:52Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -195,10 +195,10 @@
         {
           "id": "c",
           "status": "ok",
-          "rows": 3
+          "rows": 4
         }
       ],
-      "source_bytes": 4993
+      "source_bytes": 5234
     },
     {
       "id": "05-wakeup",
@@ -215,7 +215,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/05-wakeup.json.gz",
-      "generated_at": "2026-09-01T20:14:06Z",
+      "generated_at": "2026-09-01T20:19:40Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -247,7 +247,7 @@
           "rows": 1
         }
       ],
-      "source_bytes": 6775
+      "source_bytes": 6762
     },
     {
       "id": "06-burst",
@@ -264,7 +264,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/06-burst.json.gz",
-      "generated_at": "2026-09-01T20:14:10Z",
+      "generated_at": "2026-09-01T20:19:43Z",
       "sample": {
         "kind": "message",
         "n": 1000
@@ -293,10 +293,10 @@
         {
           "id": "c",
           "status": "ok",
-          "rows": 3
+          "rows": 4
         }
       ],
-      "source_bytes": 7382
+      "source_bytes": 7622
     },
     {
       "id": "07-async-waiters",
@@ -313,7 +313,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/07-async-waiters.json.gz",
-      "generated_at": "2026-09-01T20:14:13Z",
+      "generated_at": "2026-09-01T20:19:46Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -345,7 +345,7 @@
           "rows": 1
         }
       ],
-      "source_bytes": 4796
+      "source_bytes": 4786
     },
     {
       "id": "08-async-backpressure",
@@ -362,7 +362,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/08-async-backpressure.json.gz",
-      "generated_at": "2026-09-01T20:14:16Z",
+      "generated_at": "2026-09-01T20:19:50Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -394,7 +394,7 @@
           "rows": 2
         }
       ],
-      "source_bytes": 6034
+      "source_bytes": 6018
     },
     {
       "id": "09-async-cancel",
@@ -411,7 +411,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/09-async-cancel.json.gz",
-      "generated_at": "2026-09-01T20:14:20Z",
+      "generated_at": "2026-09-01T20:19:53Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -443,7 +443,7 @@
           "rows": 2
         }
       ],
-      "source_bytes": 2402
+      "source_bytes": 2399
     },
     {
       "id": "10-process-ipc",
@@ -460,7 +460,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/10-process-ipc.json.gz",
-      "generated_at": "2026-09-01T20:14:25Z",
+      "generated_at": "2026-09-01T20:19:59Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -489,10 +489,10 @@
         {
           "id": "c",
           "status": "ok",
-          "rows": 4
+          "rows": 5
         }
       ],
-      "source_bytes": 9151
+      "source_bytes": 9429
     },
     {
       "id": "11-shared-memory",
@@ -509,7 +509,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/11-shared-memory.json.gz",
-      "generated_at": "2026-09-01T20:14:30Z",
+      "generated_at": "2026-09-01T20:20:04Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -541,7 +541,7 @@
           "rows": 1
         }
       ],
-      "source_bytes": 1646
+      "source_bytes": 1647
     },
     {
       "id": "12-durable-local",
@@ -558,7 +558,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/12-durable-local.json.gz",
-      "generated_at": "2026-09-01T20:14:38Z",
+      "generated_at": "2026-09-01T20:20:13Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -590,7 +590,7 @@
           "rows": 1
         }
       ],
-      "source_bytes": 1662
+      "source_bytes": 1667
     }
   ]
 }
