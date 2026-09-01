@@ -86,8 +86,8 @@ export const LATENCY_US = { unit: 'µs', divisor: 1e3, header: 'µs' };
 /**
  * Choose latency display unit from a set of ns values.
  *
- * Prefer **microseconds** for table columns. Serializer encode/decode times
- * usually sit in the µs–ms band: ms collapses fast codecs to awkward decimals
+ * Prefer **microseconds** for table columns. Queue handoff times
+ * usually sit in the µs–ms band: ms collapses fast queues to awkward decimals
  * (e.g. 0.012 ms vs 12.3 µs), while a fixed µs scale keeps 3-sig values
  * comparable across total / ser / deser without unit hopping when one slow
  * row would otherwise force the whole column into milliseconds.

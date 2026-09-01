@@ -194,7 +194,7 @@ function updateScatterChart(groups, paretoNames, metric) {
               const p = context.raw;
               if (!p?.label) return '';
               return [
-                `Serializer: ${p.label}`,
+                `Queue: ${p.label}`,
                 `Throughput: ${formatOpsCompact(p.ops)}`,
                 `Latency: ${formatTimeCompact(p.time)}`,
                 `Size: ${formatIntGrouped(p.y)} bytes`,
