@@ -4,10 +4,18 @@
     {
       "library": "mutex-queue",
       "pattern": "1p32c",
+      "io": "1p32c",
       "n": 9,
+      "runs": 9,
       "median_handoff_ns": 208209.0,
+      "total_median_ns": 208209.0,
       "p50_ns": 208209.0,
       "mean_ns": 234096.0,
+      "enq_median_ns": 104104.0,
+      "write_median_ns": 104104.0,
+      "deq_median_ns": 104105.0,
+      "read_median_ns": 104105.0,
+      "size_bytes": 25600.0,
       "rel_to_fastest": 1.0
     }
   ]

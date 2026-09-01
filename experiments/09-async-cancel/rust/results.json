@@ -4,19 +4,35 @@
     {
       "library": "tokio-mpsc",
       "pattern": "bytes",
+      "io": "bytes",
       "n": 9,
+      "runs": 9,
       "median_handoff_ns": 154746.0,
+      "total_median_ns": 154746.0,
       "p50_ns": 154746.0,
       "mean_ns": 147864.77777777778,
+      "enq_median_ns": 154746.0,
+      "write_median_ns": 154746.0,
+      "deq_median_ns": 0.0,
+      "read_median_ns": 0.0,
+      "size_bytes": 25600.0,
       "rel_to_fastest": 1.0
     },
     {
       "library": "async-channel",
       "pattern": "bytes",
+      "io": "bytes",
       "n": 9,
+      "runs": 9,
       "median_handoff_ns": 302132.0,
+      "total_median_ns": 302132.0,
       "p50_ns": 302132.0,
       "mean_ns": 293903.44444444444,
+      "enq_median_ns": 302132.0,
+      "write_median_ns": 302132.0,
+      "deq_median_ns": 0.0,
+      "read_median_ns": 0.0,
+      "size_bytes": 25600.0,
       "rel_to_fastest": 1.95243818903235
     }
   ]

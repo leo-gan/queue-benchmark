@@ -23,40 +23,66 @@ def latest_csv(exp_dir: Path, lang: str) -> Path | None:
     return max(files, key=lambda p: p.stat().st_mtime)
 
 
+def _f(row: dict, *keys: str) -> float | None:
+    for key in keys:
+        raw = row.get(key)
+        if raw in (None, ""):
+            continue
+        try:
+            return float(raw)
+        except (TypeError, ValueError):
+            continue
+    return None
+
+
 def summarize_csv(path: Path) -> list[dict]:
     rows = list(csv.DictReader(path.open(encoding="utf-8")))
-    groups: dict[tuple[str, str], list[float]] = {}
+    groups: dict[tuple[str, str], dict[str, list[float]]] = {}
     for r in rows:
         if r.get("RepetitionIndex") == "0":
             continue
         name = r.get("LibraryName") or r.get("SerializerName") or ""
         pattern = r.get("Pattern") or r.get("StringOrStream") or "bytes"
-        key = (name, pattern)
-        raw = r.get("TimeHandoff")
-        if raw in (None, ""):
-            raw = r.get("TimeSerAndDeser")
-        try:
-            groups.setdefault(key, []).append(float(raw))
-        except (TypeError, ValueError):
+        handoff = _f(r, "TimeHandoff", "TimeSerAndDeser")
+        if handoff is None:
             continue
+        bucket = groups.setdefault((name, pattern), {"handoff": [], "enq": [], "deq": [], "size": []})
+        bucket["handoff"].append(handoff)
+        enq = _f(r, "TimeEnq", "TimeSer")
+        deq = _f(r, "TimeDeq", "TimeDeser")
+        size = _f(r, "Size")
+        if enq is not None:
+            bucket["enq"].append(enq)
+        if deq is not None:
+            bucket["deq"].append(deq)
+        if size is not None:
+            bucket["size"].append(size)
     out = []
-    for (name, mode), vals in sorted(groups.items()):
+    for (name, mode), series in sorted(groups.items()):
+        vals = series["handoff"]
         if not vals:
             continue
         med = statistics.median(vals)
-        out.append(
-            {
-                "library": name,
-                "pattern": mode,
-                "io": mode,
-                "n": len(vals),
-                "runs": len(vals),
-                "median_handoff_ns": med,
-                "total_median_ns": med,
-                "p50_ns": med,
-                "mean_ns": statistics.fmean(vals),
-            }
-        )
+        row = {
+            "library": name,
+            "pattern": mode,
+            "io": mode,
+            "n": len(vals),
+            "runs": len(vals),
+            "median_handoff_ns": med,
+            "total_median_ns": med,
+            "p50_ns": med,
+            "mean_ns": statistics.fmean(vals),
+        }
+        if series["enq"]:
+            row["enq_median_ns"] = statistics.median(series["enq"])
+            row["write_median_ns"] = row["enq_median_ns"]
+        if series["deq"]:
+            row["deq_median_ns"] = statistics.median(series["deq"])
+            row["read_median_ns"] = row["deq_median_ns"]
+        if series["size"]:
+            row["size_bytes"] = statistics.median(series["size"])
+        out.append(row)
     out.sort(key=lambda r: r["median_handoff_ns"])
     if out:
         best = out[0]["median_handoff_ns"]

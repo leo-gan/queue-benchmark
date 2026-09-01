@@ -1,6 +1,6 @@
 {
   "schema": "gld.dashboard.experiments/1",
-  "generated_at": "2026-09-01T20:20:14Z",
+  "generated_at": "2026-09-01T20:57:42Z",
   "count": 12,
   "with_results": 12,
   "experiments": [
@@ -19,7 +19,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/01-spsc-handoff.json.gz",
-      "generated_at": "2026-09-01T20:18:42Z",
+      "generated_at": "2026-09-01T20:57:41Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -51,7 +51,7 @@
           "rows": 4
         }
       ],
-      "source_bytes": 7818
+      "source_bytes": 15352
     },
     {
       "id": "02-payload-size",
@@ -68,7 +68,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/02-payload-size.json.gz",
-      "generated_at": "2026-09-01T20:18:46Z",
+      "generated_at": "2026-09-01T20:57:41Z",
       "sample": {
         "kind": "document",
         "n": 100
@@ -100,7 +100,7 @@
           "rows": 4
         }
       ],
-      "source_bytes": 7848
+      "source_bytes": 15438
     },
     {
       "id": "03-contention",
@@ -117,7 +117,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/03-contention.json.gz",
-      "generated_at": "2026-09-01T20:18:50Z",
+      "generated_at": "2026-09-01T20:57:41Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -149,7 +149,7 @@
           "rows": 9
         }
       ],
-      "source_bytes": 15902
+      "source_bytes": 31690
     },
     {
       "id": "04-backpressure",
@@ -166,7 +166,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/04-backpressure.json.gz",
-      "generated_at": "2026-09-01T20:18:52Z",
+      "generated_at": "2026-09-01T20:57:41Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -198,7 +198,7 @@
           "rows": 4
         }
       ],
-      "source_bytes": 5234
+      "source_bytes": 10226
     },
     {
       "id": "05-wakeup",
@@ -215,7 +215,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/05-wakeup.json.gz",
-      "generated_at": "2026-09-01T20:19:40Z",
+      "generated_at": "2026-09-01T20:57:41Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -247,7 +247,7 @@
           "rows": 1
         }
       ],
-      "source_bytes": 6762
+      "source_bytes": 13474
     },
     {
       "id": "06-burst",
@@ -264,7 +264,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/06-burst.json.gz",
-      "generated_at": "2026-09-01T20:19:43Z",
+      "generated_at": "2026-09-01T20:57:41Z",
       "sample": {
         "kind": "message",
         "n": 1000
@@ -296,7 +296,7 @@
           "rows": 4
         }
       ],
-      "source_bytes": 7622
+      "source_bytes": 15051
     },
     {
       "id": "07-async-waiters",
@@ -313,7 +313,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/07-async-waiters.json.gz",
-      "generated_at": "2026-09-01T20:19:46Z",
+      "generated_at": "2026-09-01T20:57:41Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -345,7 +345,7 @@
           "rows": 1
         }
       ],
-      "source_bytes": 4786
+      "source_bytes": 9319
     },
     {
       "id": "08-async-backpressure",
@@ -362,7 +362,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/08-async-backpressure.json.gz",
-      "generated_at": "2026-09-01T20:19:50Z",
+      "generated_at": "2026-09-01T20:57:41Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -394,7 +394,7 @@
           "rows": 2
         }
       ],
-      "source_bytes": 6018
+      "source_bytes": 11792
     },
     {
       "id": "09-async-cancel",
@@ -411,7 +411,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/09-async-cancel.json.gz",
-      "generated_at": "2026-09-01T20:19:53Z",
+      "generated_at": "2026-09-01T20:57:41Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -443,7 +443,7 @@
           "rows": 2
         }
       ],
-      "source_bytes": 2399
+      "source_bytes": 4462
     },
     {
       "id": "10-process-ipc",
@@ -460,7 +460,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/10-process-ipc.json.gz",
-      "generated_at": "2026-09-01T20:19:59Z",
+      "generated_at": "2026-09-01T20:57:41Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -492,7 +492,7 @@
           "rows": 5
         }
       ],
-      "source_bytes": 9429
+      "source_bytes": 18612
     },
     {
       "id": "11-shared-memory",
@@ -509,7 +509,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/11-shared-memory.json.gz",
-      "generated_at": "2026-09-01T20:20:04Z",
+      "generated_at": "2026-09-01T20:57:41Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -541,7 +541,7 @@
           "rows": 1
         }
       ],
-      "source_bytes": 1647
+      "source_bytes": 3013
     },
     {
       "id": "12-durable-local",
@@ -558,7 +558,7 @@
       "sample_preview": [],
       "has_results": true,
       "payload": "experiments/12-durable-local.json.gz",
-      "generated_at": "2026-09-01T20:20:13Z",
+      "generated_at": "2026-09-01T20:57:41Z",
       "sample": {
         "kind": "message",
         "n": 100
@@ -590,7 +590,7 @@
           "rows": 1
         }
       ],
-      "source_bytes": 1667
+      "source_bytes": 3046
     }
   ]
 }

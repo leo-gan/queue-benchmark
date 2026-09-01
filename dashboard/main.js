@@ -44,7 +44,7 @@ const GROUP_META_KEYS = new Set([
   'filter',
   'variants',
   'library_version',
-  'library_version',
+  'queue_version',
   'serializer_version',
   'type_config_hash',
   'StreamMode',
@@ -56,7 +56,7 @@ const GROUP_META_KEYS = new Set([
 const STATS_FIELD_ALIASES = [
   ['library', 'queue'],
   ['library', 'serializer'],
-  ['library_version', 'library_version'],
+  ['library_version', 'queue_version'],
   ['library_version', 'serializer_version'],
   ['avg_time_enq_ns', 'avg_time_ser_ns'],
   ['avg_time_deq_ns', 'avg_time_deser_ns'],
@@ -1768,7 +1768,7 @@ function updateFilterPolicyMeta() {
   }
   if (f.fence_handoff_low_ns != null && f.fence_handoff_high_ns != null && sample) {
     criteriaBits.push(
-      `e.g. total fences [${formatTimeCompact(f.fence_handoff_low_ns)}, ${formatTimeCompact(f.fence_handoff_high_ns)}] on ${sample.queue}`
+      `e.g. total fences [${formatTimeCompact(f.fence_handoff_low_ns)}, ${formatTimeCompact(f.fence_handoff_high_ns)}] on ${sample.library || sample.queue || sample.serializer}`
     );
   }
 
@@ -2066,7 +2066,7 @@ function buildCompoundedFixtureGroups(allGroups, base, nA, nB, mode) {
       })
     );
   }
-  return out.sort((a, b) => a.queue.localeCompare(b.queue));
+  return out.sort((a, b) => String(a.library || '').localeCompare(String(b.library || '')));
 }
 
 /**
@@ -2123,7 +2123,7 @@ function buildAllTypesAtNGroups(allGroups, n, mode) {
       })
     );
   }
-  return out.sort((a, b) => a.queue.localeCompare(b.queue));
+  return out.sort((a, b) => String(a.library || '').localeCompare(String(b.library || '')));
 }
 
 /**
@@ -2178,7 +2178,7 @@ function buildAllAllGroups(allGroups, mode) {
       })
     );
   }
-  return out.sort((a, b) => a.queue.localeCompare(b.queue));
+  return out.sort((a, b) => String(a.library || '').localeCompare(String(b.library || '')));
 }
 
 /** Natural + synthetic data-type keys for the Test Data dropdown. */
@@ -3441,7 +3441,7 @@ function renderTable() {
 
   rows.forEach((r) => {
     const tr = document.createElement('tr');
-    const isBaseline = baselineGroup && r.library === baselineGroup.queue;
+    const isBaseline = baselineGroup && r.library === baselineGroup.library;
     const isOptimal = state.paretoQueueNames.includes(r.library);
     if (isBaseline) tr.classList.add('roster-baseline-row');
     if (isOptimal) tr.classList.add('roster-pareto-row');
@@ -3686,7 +3686,7 @@ function copyRosterMarkdown() {
   const metricSpecs = rosterMetricKeys();
   const rows = state.filteredGroups
     .map(withOpsDerivedStats)
-    .sort((a, b) => a.queue.localeCompare(b.queue));
+    .sort((a, b) => String(a.library || '').localeCompare(String(b.library || '')));
   const latVals = [];
   const opsVals = [];
   for (const g of rows) {
@@ -3742,7 +3742,7 @@ function copyRosterMarkdown() {
   ];
   rows.forEach((r) => {
     const opt = state.paretoQueueNames.includes(r.library) ? 'yes' : '';
-    const isBaseline = baselineGroup && r.library === baselineGroup.queue;
+    const isBaseline = baselineGroup && r.library === baselineGroup.library;
     const cells = metricSpecs.map(({ key, higherIsBetter }) => {
       const cell = formatRosterRelativeCell(
         r,

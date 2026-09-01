@@ -14,6 +14,7 @@ export const QUEUE_CATALOG = {
   'asyncio.Queue': { communication: 'async', family: 'async' },
   janus: { communication: 'async', family: 'async' },
   'spsc-ring': { communication: 'thread', family: 'spsc' },
+  'steal-deque': { communication: 'thread', family: 'concurrent' },
   'mutex-queue': { communication: 'thread', family: 'locked' },
   lfqueue: { communication: 'thread', family: 'concurrent' },
   'std-mpsc': { communication: 'thread', family: 'concurrent' },
@@ -29,6 +30,7 @@ export const QUEUE_CATALOG = {
   'p-queue': { communication: 'scheduler', family: 'scheduler' },
   'multiprocessing.Queue': { communication: 'process', family: 'concurrent' },
   'multiprocessing.SimpleQueue': { communication: 'process', family: 'concurrent' },
+  'pipe-ipc': { communication: 'process', family: 'concurrent' },
   'shared-ring': { communication: 'shared', family: 'spsc' },
   'sqlite-queue': { communication: 'durable', family: 'durable' },
 };

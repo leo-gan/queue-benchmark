@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-01T20:20:13Z",
+  "generated_at": "2026-09-01T20:57:41Z",
   "languages": {
     "python": {
       "status": "ok",
@@ -7,10 +7,18 @@
         {
           "library": "sqlite-queue",
           "pattern": "bytes",
+          "io": "bytes",
           "n": 9,
+          "runs": 9,
           "median_handoff_ns": 157390568.0,
+          "total_median_ns": 157390568.0,
           "p50_ns": 157390568.0,
           "mean_ns": 150716568.0,
+          "enq_median_ns": 72844724.0,
+          "write_median_ns": 72844724.0,
+          "deq_median_ns": 77265458.0,
+          "read_median_ns": 77265458.0,
+          "size_bytes": 25600.0,
           "rel_to_fastest": 1.0
         }
       ]
@@ -21,10 +29,18 @@
         {
           "library": "sqlite-queue",
           "pattern": "bytes",
+          "io": "bytes",
           "n": 9,
+          "runs": 9,
           "median_handoff_ns": 86559188.0,
+          "total_median_ns": 86559188.0,
           "p50_ns": 86559188.0,
           "mean_ns": 93277350.55555555,
+          "enq_median_ns": 86503434.0,
+          "write_median_ns": 86503434.0,
+          "deq_median_ns": 111975.0,
+          "read_median_ns": 111975.0,
+          "size_bytes": 25600.0,
           "rel_to_fastest": 1.0
         }
       ]
@@ -35,10 +51,18 @@
         {
           "library": "sqlite-queue",
           "pattern": "bytes",
+          "io": "bytes",
           "n": 9,
+          "runs": 9,
           "median_handoff_ns": 100119122.0,
+          "total_median_ns": 100119122.0,
           "p50_ns": 100119122.0,
           "mean_ns": 111965022.55555555,
+          "enq_median_ns": 99658636.0,
+          "write_median_ns": 99658636.0,
+          "deq_median_ns": 452337.0,
+          "read_median_ns": 452337.0,
+          "size_bytes": 25600.0,
           "rel_to_fastest": 1.0
         }
       ]
@@ -49,10 +73,18 @@
         {
           "library": "sqlite-queue",
           "pattern": "bytes",
+          "io": "bytes",
           "n": 9,
+          "runs": 9,
           "median_handoff_ns": 63754600.0,
+          "total_median_ns": 63754600.0,
           "p50_ns": 63754600.0,
           "mean_ns": 60334866.666666664,
+          "enq_median_ns": 63581200.0,
+          "write_median_ns": 63581200.0,
+          "deq_median_ns": 173400.0,
+          "read_median_ns": 173400.0,
+          "size_bytes": 25600.0,
           "rel_to_fastest": 1.0
         }
       ]
@@ -63,10 +95,18 @@
         {
           "library": "sqlite-queue",
           "pattern": "bytes",
+          "io": "bytes",
           "n": 9,
+          "runs": 9,
           "median_handoff_ns": 78734619.0,
+          "total_median_ns": 78734619.0,
           "p50_ns": 78734619.0,
           "mean_ns": 86041504.55555555,
+          "enq_median_ns": 78685330.0,
+          "write_median_ns": 78685330.0,
+          "deq_median_ns": 48986.0,
+          "read_median_ns": 48986.0,
+          "size_bytes": 25600.0,
           "rel_to_fastest": 1.0
         }
       ]
