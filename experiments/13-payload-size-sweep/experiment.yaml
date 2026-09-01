@@ -1,0 +1,92 @@
+schema: gld.experiment.config/1
+id: 13-payload-size-sweep
+title: Which payload sizes change the ranking?
+question: >
+  Same SPSC handoff, five payload sizes (1 B, 64 B, 256 B, 4 KiB, 64 KiB).
+  Which sizes produce a different ranking, and which are just more of the
+  same?
+story:
+  why: >
+    The default suite names five data types, but every runner builds an
+    opaque byte string of a chosen length. If ranking only moves at a
+    couple of lengths, the published matrix should keep those lengths and
+    drop the rest.
+  example: >
+    A ticket is a few hundred bytes. An HTTP body is a few kilobytes. A
+    file chunk can be tens of kilobytes. We need to know which of those
+    worlds actually changes which queue wins.
+  tradeoff: >
+    Extra sizes cost machine time and make the dashboard harder to read.
+    One size is enough if copy cost never changes the order. Two sizes
+    are enough if a small payload and a large payload tell different
+    stories.
+
+sample:
+  kind: size_256
+  records_per_write: 100
+  seed: 42
+  settings:
+    sweep_bytes: [1, 64, 256, 4096, 65536]
+  saved_as: sample.json
+
+run:
+  mode: full
+  io_modes: [bytes]
+  compression: none
+  soft_seconds_per_10_serializers: 60
+  hard_cap_seconds: 600
+  reps_fallback: 100
+
+analysis:
+  drop_first_trial: true
+  filter_id: iqr_1.5
+  main_io: bytes
+  baseline_bytes: 256
+  top_group:
+    method: cliffs_delta_vs_fastest
+    similar_max: 0.147
+    close_max: 0.33
+
+paths:
+  results: results.json
+  summary: results.md
+
+languages:
+  - id: python
+    enabled: true
+    libraries:
+      - {name: deque-lock, role: locked baseline}
+      - {name: queue.Queue, role: threading MPMC used as SPSC}
+      - {name: queue.SimpleQueue, role: unbounded threading MPMC used as SPSC}
+      - {name: asyncio.Queue, role: event-loop queue}
+      - {name: janus, role: third-party async queue}
+  - id: rust
+    enabled: true
+    libraries:
+      - {name: std-mpsc, role: standard MPSC}
+      - {name: crossbeam-channel, role: MPMC channel}
+      - {name: flume, role: third-party MPMC}
+      - {name: crossbeam-queue, role: lock-free MPMC}
+      - {name: tokio-mpsc, role: async MPSC}
+      - {name: async-channel, role: async MPMC}
+  - id: javascript
+    enabled: true
+    libraries:
+      - {name: Array, role: push/shift baseline}
+      - {name: denque, role: O(1) circular FIFO}
+      - {name: yocto-queue, role: O(1) linked-list FIFO}
+      - {name: fastq, role: job queue}
+      - {name: p-queue, role: scheduler (not ranked as a queue)}
+  - id: csharp
+    enabled: true
+    libraries:
+      - {name: Queue+lock, role: locked baseline}
+      - {name: ConcurrentQueue, role: concurrent MPMC}
+      - {name: BlockingCollection, role: blocking MPMC}
+      - {name: Channel, role: async channel}
+  - id: c
+    enabled: true
+    libraries:
+      - {name: mutex-queue, role: locked ring}
+      - {name: lfqueue, role: lock-free MPMC}
+      - {name: spsc-ring, role: SPSC ring}

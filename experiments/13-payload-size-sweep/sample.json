@@ -1,0 +1,7 @@
+{
+  "kind": "size_sweep",
+  "note": "Runners build an opaque byte string of each length. There is no object graph.",
+  "records_per_write": 100,
+  "sizes_bytes": [1, 64, 256, 4096, 65536],
+  "type_ids": ["size_1", "size_64", "size_256", "size_4096", "size_65536"]
+}

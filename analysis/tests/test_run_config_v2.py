@@ -21,10 +21,28 @@ _LIBRARY = _REPO / "config" / "library"
 _CATALOG = _REPO / "schemas" / "data_catalog_v2.yaml"
 
 
+_CORE_TYPES = {"message", "document", "telemetry", "strings", "event"}
+_SIZE_SWEEP_TYPES = {
+    "size_1": 1,
+    "size_64": 64,
+    "size_256": 256,
+    "size_4096": 4096,
+    "size_65536": 65536,
+}
+
+
 def test_catalog_loads_five_types():
     cat = load_catalog(_CATALOG)
     assert cat["data_model_version"] == 2
-    assert set(cat["types"]) == {"message", "document", "telemetry", "strings", "event"}
+    assert _CORE_TYPES <= set(cat["types"])
+
+
+def test_catalog_size_sweep_types():
+    cat = load_catalog(_CATALOG)
+    assert set(_SIZE_SWEEP_TYPES) <= set(cat["types"])
+    for type_id, nbytes in _SIZE_SWEEP_TYPES.items():
+        resolved = resolve_type_config(type_id, {}, cat)
+        assert resolved["payload_bytes"] == nbytes
 
 
 def test_resolve_empty_type_config_fills_defaults():

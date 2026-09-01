@@ -1,0 +1,20 @@
+id: 13-payload-size-sweep
+description: "SPSC handoff size sweep: 1, 64, 256, 4096, 65536 bytes; 100 items"
+data_model_version: 2
+types:
+  - type_id: size_1
+    type_config: {}
+  - type_id: size_64
+    type_config: {}
+  - type_id: size_256
+    type_config: {}
+  - type_id: size_4096
+    type_config: {}
+  - type_id: size_65536
+    type_config: {}
+data_type_instance_count: [100]
+compression:
+  mode: none
+execution:
+  mode: full
+  io_modes: [bytes]

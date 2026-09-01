@@ -81,3 +81,36 @@ types:
         min: 3
         max: 12
       include_payload_bytes: 0
+
+  # Explicit size labels for the payload-size sweep (experiment 13).
+  # Runners still build an opaque byte string; these ids exist so results
+  # can name the size instead of overloading message/document/event.
+  size_1:
+    description: "1-byte payload (pointer / handle bound)"
+    category: opaque_bytes
+    default_type_config:
+      payload_bytes: 1
+
+  size_64:
+    description: "64-byte payload (one cache line)"
+    category: opaque_bytes
+    default_type_config:
+      payload_bytes: 64
+
+  size_256:
+    description: "256-byte payload (same size as message)"
+    category: opaque_bytes
+    default_type_config:
+      payload_bytes: 256
+
+  size_4096:
+    description: "4 KiB payload (same size as document)"
+    category: opaque_bytes
+    default_type_config:
+      payload_bytes: 4096
+
+  size_65536:
+    description: "64 KiB payload (larger than typical L1)"
+    category: opaque_bytes
+    default_type_config:
+      payload_bytes: 65536
