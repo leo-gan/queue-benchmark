@@ -10,7 +10,7 @@ See `python/results.md`.
 
 ## rust
 
-Similar set (within 15% of fastest on this sample): crossbeam-queue, steal-deque
+Similar set (within 15% of fastest on this sample): steal-deque, crossbeam-queue
 
 See `rust/results.md`.
 

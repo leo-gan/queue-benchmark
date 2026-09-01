@@ -2,6 +2,6 @@
 
 | Library | Pattern | Median handoff (ns) | vs fastest | n |
 |---------|---------|--------------------:|-----------:|--:|
-| ConcurrentQueue | 1p32c | 30500 | 1.00× | 9 |
-| Channel | 1p32c | 38600 | 1.27× | 9 |
-| steal-deque | 1p32c | 60700 | 1.99× | 9 |
+| steal-deque | 1p32c | 30800 | 1.00× | 9 |
+| ConcurrentQueue | 1p32c | 33400 | 1.08× | 9 |
+| Channel | 1p32c | 71400 | 2.32× | 9 |

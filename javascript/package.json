@@ -10,7 +10,9 @@
     "node": ">=18"
   },
   "dependencies": {
+    "denque": "^2.1.0",
     "fastq": "^1.17.1",
-    "p-queue": "^8.0.1"
+    "p-queue": "^8.0.1",
+    "yocto-queue": "^1.2.1"
   }
 }
