@@ -83,14 +83,6 @@ function ratioCell(valueNs, bestNs, key) {
   return `<td class="${className}">${escapeHtml(text)}</td>`;
 }
 
-function sizeCell(value, best) {
-  if (value == null || best == null) {
-    return `<td class="num">${value == null ? '—' : formatIntGrouped(value)}</td>`;
-  }
-  const { text, className } = formatRelativeCell(value, best, false, {}, 'size_bytes');
-  return `<td class="${className}">${escapeHtml(text)}</td>`;
-}
-
 async function fetchJson(url) {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`${url}: ${res.status}`);
@@ -451,10 +443,7 @@ function renderTable(rows) {
   const flags = experimentTableFlags(rows);
   const showWrite = flags.write;
   const showRead = flags.read;
-  const showSize = flags.size;
   const showSpread = flags.spread;
-  const showGzip = rows.some((r) => r.size_gzip_bytes != null);
-  const showZstd = rows.some((r) => r.size_zstd_bytes != null);
   const sorted = [...rows].sort((a, b) => {
     if (showLang && a.language !== b.language) {
       const langs = unique(rows, 'language').map(String);
@@ -477,9 +466,6 @@ function renderTable(rows) {
       ${showRead ? '<th class="num">Read (µs)</th>' : ''}
       <th class="num">Total (µs)</th>
       ${showSpread ? '<th class="num">Spread (std)</th>' : ''}
-      ${showSize ? '<th class="num">Size</th>' : ''}
-      ${showGzip ? '<th class="num">After gzip</th>' : ''}
-      ${showZstd ? '<th class="num">After zstd</th>' : ''}
       <th class="num">Trials</th>
       <th class="str" title="Fastest, about the same, a bit slower, or clearly slower — vs that language’s fastest on this sample. Not simply Winner / Loser.">Vs fastest</th>
     </tr>`;
@@ -494,14 +480,6 @@ function renderTable(rows) {
       const bestWrite = bestAmong(row, sorted, 'write_median_ns');
       const bestRead = bestAmong(row, sorted, 'read_median_ns');
       const bestTotal = bestAmong(row, sorted, 'total_median_ns');
-      const sizePool = showLang ? competingRows(sorted) : competingRows(peerRows(row, sorted));
-      const minSize = (key) => {
-        const nums = sizePool.map((r) => Number(r[key])).filter(Number.isFinite);
-        return nums.length ? Math.min(...nums) : null;
-      };
-      const bestSize = minSize('size_bytes');
-      const bestGzip = minSize('size_gzip_bytes');
-      const bestZstd = minSize('size_zstd_bytes');
       return `
         <tr class="${compareClass(row, sorted)}">
           ${showLang ? `<td class="str">${escapeHtml(langLabel(row.language))}</td>` : ''}
@@ -513,9 +491,6 @@ function renderTable(rows) {
           ${showRead ? (skipped ? `<td class="num">${formatSig(Number(row.read_median_ns) / 1000)}</td>` : ratioCell(row.read_median_ns, bestRead, 'read_median_ns')) : ''}
           ${skipped ? `<td class="num">${formatSig(Number(row.total_median_ns) / 1000)}</td>` : ratioCell(row.total_median_ns, bestTotal, 'total_median_ns')}
           ${showSpread ? `<td class="num">${std == null ? '—' : formatSig(std)}</td>` : ''}
-          ${showSize ? (skipped ? `<td class="num">${formatIntGrouped(row.size_bytes)}</td>` : sizeCell(row.size_bytes, bestSize)) : ''}
-          ${showGzip ? (skipped ? `<td class="num">${formatIntGrouped(row.size_gzip_bytes)}</td>` : sizeCell(row.size_gzip_bytes, bestGzip)) : ''}
-          ${showZstd ? (skipped ? `<td class="num">${formatIntGrouped(row.size_zstd_bytes)}</td>` : sizeCell(row.size_zstd_bytes, bestZstd)) : ''}
           <td class="num">${trials}</td>
           <td class="str">${escapeHtml(compareLabel(row, sorted))}</td>
         </tr>`;

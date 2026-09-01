@@ -1,7 +1,6 @@
 /**
  * Dashboard UI terminology: always say **data type** (test_data control label).
- * Never use "fixture" in user-visible copy, notifications, KPIs, or export notes.
- * Internal helpers may still say fixture* in identifiers until renamed.
+ * Never use "fixture" anywhere — copy, comments, or identifiers.
  */
 import {
   initCharts,
@@ -144,7 +143,7 @@ const FILTER_POLICY_FALLBACK = {
 const DEFAULT_FILTER_POLICY = 'iqr_1.5';
 const FILTER_POLICY_ORDER = ['all', 'iqr_1.5', 'iqr_3', 'winsorize_5_95'];
 
-function fixtureKey(g) {
+function dataTypeKey(g) {
   const raw = String(g?.test_data ?? '');
   const base = raw.replace(/(@n=\d+)+$/i, '') || raw;
   let n = g?.data_type_instance_count;
@@ -164,7 +163,7 @@ function baseTypeId(key) {
   return i >= 0 ? String(key).slice(0, i) : String(key);
 }
 
-function pickPreferredFixture(options) {
+function pickPreferredDataType(options) {
   if (!options || !options.length) return '';
   const preferred = [];
   for (const id of SUITE_TYPE_IDS) {
@@ -192,9 +191,9 @@ const CROSS_LANG_METRICS = [
   { key: 'avg_time_deq_ns', label: 'Dequeue latency', higherIsBetter: false },
   { key: 'handoff_median_ns', label: 'Median handoff', higherIsBetter: false },
   { key: 'handoff_p95_ns', label: 'Handoff p95', higherIsBetter: false },
-  { key: 'median_size_bytes', label: 'Median size', higherIsBetter: false },
-  { key: 'mean_fidelity', label: 'Fidelity', higherIsBetter: true },
-  { key: 'mean_memory_peak_bytes', label: 'Peak memory', higherIsBetter: false },
+  { key: 'msgs_per_cpu_sec', label: 'Msgs / CPU-s', higherIsBetter: true },
+  { key: 'handoff_p99_ns', label: 'Handoff p99', higherIsBetter: false },
+  { key: 'mean_memory_peak_bytes', label: 'Peak memory (RSS)', higherIsBetter: false },
   { key: 'runs', label: 'Samples', higherIsBetter: null },
   { key: 'handoff_cv', label: 'Handoff CV', higherIsBetter: false },
 ];
@@ -208,8 +207,8 @@ const DEFAULT_SELECTED_METRICS = [
   'handoff_p95_ns',
   'handoff_ci_low_ns',
   'handoff_ci_high_ns',
-  'median_size_bytes',
-  'mean_fidelity',
+  'msgs_per_cpu_sec',
+  'handoff_p99_ns',
   'mean_memory_peak_bytes',
   'runs',
   'library_version',
@@ -235,7 +234,7 @@ const METRIC_PRESETS = {
     'enq_median_ns',
     'deq_median_ns',
   ],
-  size: ['median_size_bytes', 'mean_memory_peak_bytes', 'mean_fidelity', 'runs'],
+  cpu: ['msgs_per_cpu_sec', 'mean_memory_peak_bytes', 'runs'],
 };
 
 /** Open metric accordion groups (name -> bool). */
@@ -249,7 +248,7 @@ let state = {
   displayMetric: 'ops', // charts / ranking toolbar
   /** Detailed Analytics only: 'ops' | 'time' (independent of displayMetric). */
   rosterMetric: 'ops',
-  rankSort: 'speed', // 'speed' | 'size' for ranking chart
+  rankSort: 'speed', // 'speed' | 'cpu' for ranking chart
   searchQuery: '',
   sortKey: 'library',
   sortDirection: 'asc',
@@ -328,7 +327,7 @@ function syncLanguageSelects() {
   });
 }
 
-function syncFixtureModeSelects() {
+function syncDataTypeModeSelects() {
   ['data-select', 'same-data-select'].forEach((id) => {
     const el = document.getElementById(id);
     if (el && [...el.options].some((o) => o.value === state.currentTestData)) {
@@ -452,8 +451,8 @@ function applySavedSettings(saved) {
   if (saved.rosterMetric === 'ops' || saved.rosterMetric === 'time') {
     state.rosterMetric = saved.rosterMetric;
   }
-  if (saved.rankSort === 'speed' || saved.rankSort === 'size') {
-    state.rankSort = saved.rankSort;
+  if (saved.rankSort === 'speed' || saved.rankSort === 'cpu' || saved.rankSort === 'size') {
+    state.rankSort = saved.rankSort === 'size' ? 'cpu' : saved.rankSort;
     setRankSort(state.rankSort);
   }
   if (typeof saved.searchQuery === 'string') state.searchQuery = saved.searchQuery;
@@ -513,8 +512,8 @@ function applyUrlParams() {
   if (p.get('scope') === 'cross' || p.get('scope') === 'same') state.compareScope = p.get('scope');
   if (p.has('baseline')) state.compareBaseline = p.get('baseline');
   if (p.has('log')) state.chartLogScale = p.get('log') === '1';
-  if (p.get('rank') === 'size' || p.get('rank') === 'speed') {
-    state.rankSort = p.get('rank');
+  if (p.get('rank') === 'cpu' || p.get('rank') === 'size' || p.get('rank') === 'speed') {
+    state.rankSort = p.get('rank') === 'size' ? 'cpu' : p.get('rank');
     setRankSort(state.rankSort);
   }
   if (p.has('policy')) state.filterPolicy = p.get('policy');
@@ -537,7 +536,7 @@ function syncUrlFromState() {
     if (state.compareScope === 'cross') p.set('scope', 'cross');
     if (state.compareBaseline) p.set('baseline', state.compareBaseline);
     if (state.chartLogScale) p.set('log', '1');
-    if (state.rankSort === 'size') p.set('rank', 'size');
+    if (state.rankSort === 'cpu') p.set('rank', 'cpu');
     if (state.filterPolicy && state.filterPolicy !== DEFAULT_FILTER_POLICY) {
       p.set('policy', state.filterPolicy);
     }
@@ -562,8 +561,8 @@ function applyUiFromState() {
   document.getElementById('btn-roster-ops')?.classList.toggle('active', state.rosterMetric === 'ops');
   document.getElementById('btn-roster-latency')?.classList.toggle('active', state.rosterMetric === 'time');
   document.getElementById('btn-chart-log')?.classList.toggle('active', state.chartLogScale);
-  document.getElementById('btn-rank-sort-speed')?.classList.toggle('active', state.rankSort !== 'size');
-  document.getElementById('btn-rank-sort-size')?.classList.toggle('active', state.rankSort === 'size');
+  document.getElementById('btn-rank-sort-speed')?.classList.toggle('active', state.rankSort !== 'cpu');
+  document.getElementById('btn-rank-sort-cpu')?.classList.toggle('active', state.rankSort === 'cpu');
   setRankSort(state.rankSort);
   updateRankSortPrimaryLabel();
 
@@ -602,7 +601,7 @@ function updateSortIndicators() {
     handoff_std_ns: 'th-lat-std',
     handoff_p95_ns: 'th-lat-p95',
     handoff_p99_ns: 'th-lat-p99',
-    median_size_bytes: 'th-size',
+    msgs_per_cpu_sec: 'th-cpu',
   };
   const sortTh = document.getElementById(sortHeaderMap[state.sortKey]);
   if (sortTh) {
@@ -695,7 +694,7 @@ function setupEventListeners() {
 
   const onDataChange = (e) => {
     state.currentTestData = e.target.value;
-    syncFixtureModeSelects();
+    syncDataTypeModeSelects();
     saveSettings();
     filterAndRefresh();
   };
@@ -704,7 +703,7 @@ function setupEventListeners() {
 
   const onModeChange = (e) => {
     state.currentMode = e.target.value;
-    syncFixtureModeSelects();
+    syncDataTypeModeSelects();
     saveSettings();
     filterAndRefresh();
   };
@@ -732,16 +731,16 @@ function setupEventListeners() {
   });
 
   const setRankingSort = (sort) => {
-    state.rankSort = sort === 'size' ? 'size' : 'speed';
+    state.rankSort = sort === 'cpu' || sort === 'size' ? 'cpu' : 'speed';
     setRankSort(state.rankSort);
     document.getElementById('btn-rank-sort-speed')?.classList.toggle('active', state.rankSort === 'speed');
-    document.getElementById('btn-rank-sort-size')?.classList.toggle('active', state.rankSort === 'size');
+    document.getElementById('btn-rank-sort-cpu')?.classList.toggle('active', state.rankSort === 'cpu');
     updateRankSortPrimaryLabel();
     saveSettings();
     updateCharts(state.filteredGroups, state.paretoQueueNames, state.displayMetric);
   };
   document.getElementById('btn-rank-sort-speed')?.addEventListener('click', () => setRankingSort('speed'));
-  document.getElementById('btn-rank-sort-size')?.addEventListener('click', () => setRankingSort('size'));
+  document.getElementById('btn-rank-sort-cpu')?.addEventListener('click', () => setRankingSort('cpu'));
 
   document.getElementById('btn-export-scatter')?.addEventListener('click', () => {
     const url = exportScatterPng();
@@ -768,7 +767,7 @@ function setupEventListeners() {
     { id: 'th-lat-std', key: 'handoff_std_ns' },
     { id: 'th-lat-p95', key: 'handoff_p95_ns' },
     { id: 'th-lat-p99', key: 'handoff_p99_ns' },
-    { id: 'th-size', key: 'median_size_bytes' },
+    { id: 'th-cpu', key: 'msgs_per_cpu_sec' },
   ];
   headers.forEach((h) => {
     const el = document.getElementById(h.id);
@@ -900,8 +899,8 @@ function setupEventListeners() {
   document.getElementById('metrics-preset-latency')?.addEventListener('click', () => {
     applyMetricPreset('latency');
   });
-  document.getElementById('metrics-preset-size')?.addEventListener('click', () => {
-    applyMetricPreset('size');
+  document.getElementById('metrics-preset-cpu')?.addEventListener('click', () => {
+    applyMetricPreset('cpu');
   });
   document.getElementById('metrics-edit-toggle')?.addEventListener('click', () => {
     const body = document.getElementById('metrics-panel-body');
@@ -1423,8 +1422,12 @@ function updateRunConfigPanel() {
     appendConfigRow(dl, 'metrics_profile', run.metrics_profile);
   }
 
-  const fixtures = Array.isArray(dataset.fixtures) ? dataset.fixtures : [];
-  const typeNames = fixtures
+  const typeList = Array.isArray(dataset.data_types)
+    ? dataset.data_types
+    : Array.isArray(dataset.fixtures)
+      ? dataset.fixtures
+      : [];
+  const typeNames = typeList
     .filter((f) => f && typeof f === 'object' && f.name)
     .map((f) => f.name);
   if (typeNames.length) {
@@ -1553,7 +1556,7 @@ function expandVariantGroups(slimGroups, catalog) {
         ...identity,
         ...metrics,
         filter,
-        test_data: fixtureKey({ ...identity, ...metrics }),
+        test_data: dataTypeKey({ ...identity, ...metrics }),
       });
       if (row.library == null) {
         row.library = row.queue || row.serializer || '';
@@ -1586,7 +1589,7 @@ function normalizeStatsPayload(statsObj) {
   const mapGroups = (list) =>
     (Array.isArray(list) ? list : []).map((g) => {
       const n = normalizeStatsGroup(g);
-      return { ...n, test_data: fixtureKey(n) };
+      return { ...n, test_data: dataTypeKey(n) };
     });
 
   /** @type {Record<string, object[]>} */
@@ -1634,7 +1637,7 @@ function processStatsData(statsObj) {
   applyFilterPolicyToAllGroups({ refreshSelectors: true });
   populateFilterPolicySelect();
   syncLanguageSelects();
-  syncFixtureModeSelects();
+  syncDataTypeModeSelects();
   discoverMetricKeys(state.allGroups);
   filterAndRefresh();
 }
@@ -1650,14 +1653,14 @@ function applyFilterPolicyToAllGroups({ refreshSelectors = false } = {}) {
   state.allGroups = groups;
 
   if (refreshSelectors) {
-    const discovered = discoverFixtureOptions(state.allGroups);
+    const discovered = discoverDataTypeOptions(state.allGroups);
     const testDataOptions = discovered.all;
     const modeOptions = [
       ...new Set(state.allGroups.map((g) => normalizeMode(g.mode)).filter(Boolean)),
     ];
 
-    populateFixtureSelect(testDataOptions);
-    populateFixtureSelect(testDataOptions, {
+    populateDataTypeSelect(testDataOptions);
+    populateDataTypeSelect(testDataOptions, {
       selectId: 'same-data-select',
       previous: state.currentTestData,
     });
@@ -1666,7 +1669,7 @@ function applyFilterPolicyToAllGroups({ refreshSelectors = false } = {}) {
 
     if (!testDataOptions.includes(state.currentTestData)) {
       state.currentTestData =
-        pickPreferredFixture(discovered.natural) || testDataOptions[0] || '';
+        pickPreferredDataType(discovered.natural) || testDataOptions[0] || '';
     }
     const wantMode = normalizeMode(state.currentMode) || state.currentMode;
     if (modeOptions.includes(wantMode)) {
@@ -1828,22 +1831,22 @@ function populateSelect(id, options, labelFn) {
  * @param {string[]} options
  * @param {{ selectId?: string, previous?: string }} [cfg]
  */
-function populateFixtureSelect(options, cfg = {}) {
+function populateDataTypeSelect(options, cfg = {}) {
   const selectId = cfg.selectId || 'data-select';
   const sel = document.getElementById(selectId);
   if (!sel) return;
   const prev = cfg.previous != null ? cfg.previous : sel.value || state.currentTestData;
   sel.innerHTML = '';
 
-  const natural = options.filter((o) => parseFixtureSelection(o).kind === 'natural');
-  const batchCompound = options.filter((o) => parseFixtureSelection(o).kind === 'batch_compound');
-  const allTypes = options.filter((o) => parseFixtureSelection(o).kind === 'all_n');
-  const allAll = options.filter((o) => parseFixtureSelection(o).kind === 'all_all');
+  const natural = options.filter((o) => parseDataTypeSelection(o).kind === 'natural');
+  const batchCompound = options.filter((o) => parseDataTypeSelection(o).kind === 'batch_compound');
+  const allTypes = options.filter((o) => parseDataTypeSelection(o).kind === 'all_n');
+  const allAll = options.filter((o) => parseDataTypeSelection(o).kind === 'all_all');
 
   const addOpt = (o) => {
     const opt = document.createElement('option');
     opt.value = o;
-    opt.textContent = fixtureOptionLabel(o);
+    opt.textContent = dataTypeOptionLabel(o);
     sel.appendChild(opt);
   };
   const addSep = (label) => {
@@ -1902,7 +1905,7 @@ function instanceCount(g) {
  * - all_n: all@1 / all@100 (all suite types at fixed n)
  * - all_all: all@all (all suite types × all n)
  */
-function parseFixtureSelection(key) {
+function parseDataTypeSelection(key) {
   const s = String(key || '').trim();
   if (!s) return { kind: 'natural', key: s };
   if (s === 'all@all') return { kind: 'all_all', key: s };
@@ -1921,26 +1924,26 @@ function parseFixtureSelection(key) {
   return { kind: 'natural', key: s };
 }
 
-/** @deprecated use parseFixtureSelection; kept for call sites that only need batch compound */
-function parseCompoundFixture(key) {
-  const p = parseFixtureSelection(key);
+/** @deprecated use parseDataTypeSelection; kept for call sites that only need batch compound */
+function parseCompoundDataType(key) {
+  const p = parseDataTypeSelection(key);
   if (p.kind === 'batch_compound') return { base: p.base, nA: p.nA, nB: p.nB };
   return null;
 }
 
-function compoundFixtureKey(base, nA, nB) {
+function compoundDataTypeKey(base, nA, nB) {
   const a = Math.min(nA, nB);
   const b = Math.max(nA, nB);
   return `${base}@n=${a}+${b}`;
 }
 
-function isSyntheticFixture(key) {
-  const k = parseFixtureSelection(key).kind;
+function isSyntheticDataType(key) {
+  const k = parseDataTypeSelection(key).kind;
   return k === 'batch_compound' || k === 'all_n' || k === 'all_all';
 }
 
-function isCompoundFixture(key) {
-  return isSyntheticFixture(key);
+function isCompoundDataType(key) {
+  return isSyntheticDataType(key);
 }
 
 /**
@@ -2014,7 +2017,7 @@ function averageGroupsForQueue(library, entries, meta) {
  * Build compounded rows: for each queue, mean of n=A and n=B groups
  * for the same base type + mode.
  */
-function buildCompoundedFixtureGroups(allGroups, base, nA, nB, mode) {
+function buildCompoundedDataTypeGroups(allGroups, base, nA, nB, mode) {
   const want = new Set([nA, nB]);
   const matched = (allGroups || []).filter((g) => {
     if (baseTypeId(g.test_data) !== base) return false;
@@ -2029,7 +2032,7 @@ function buildCompoundedFixtureGroups(allGroups, base, nA, nB, mode) {
     bySer.get(g.library).push(g);
   }
 
-  const test_data = compoundFixtureKey(base, nA, nB);
+  const test_data = compoundDataTypeKey(base, nA, nB);
   const out = [];
   for (const [library, entries] of bySer) {
     // Prefer queues that have both batch sizes
@@ -2182,7 +2185,7 @@ function buildAllAllGroups(allGroups, mode) {
 }
 
 /** Natural + synthetic data-type keys for the Test Data dropdown. */
-function discoverFixtureOptions(allGroups) {
+function discoverDataTypeOptions(allGroups) {
   const natural = [
     ...new Set(
       (allGroups || [])
@@ -2207,7 +2210,7 @@ function discoverFixtureOptions(allGroups) {
   const batchCompound = [];
   for (const [base, ns] of byBase) {
     if (ns.has(1) && ns.has(100)) {
-      batchCompound.push(compoundFixtureKey(base, 1, 100));
+      batchCompound.push(compoundDataTypeKey(base, 1, 100));
     }
   }
   batchCompound.sort();
@@ -2229,8 +2232,8 @@ function discoverFixtureOptions(allGroups) {
   };
 }
 
-function fixtureOptionLabel(key) {
-  const p = parseFixtureSelection(key);
+function dataTypeOptionLabel(key) {
+  const p = parseDataTypeSelection(key);
   if (p.kind === 'batch_compound') {
     return `${p.base}@n=${p.nA}+${p.nB} (compounded batch)`;
   }
@@ -2243,11 +2246,11 @@ function fixtureOptionLabel(key) {
   return key;
 }
 
-function resolveFixtureGroups() {
-  const sel = parseFixtureSelection(state.currentTestData);
+function resolveDataTypeGroups() {
+  const sel = parseDataTypeSelection(state.currentTestData);
   const mode = state.currentMode;
   if (sel.kind === 'batch_compound') {
-    return buildCompoundedFixtureGroups(
+    return buildCompoundedDataTypeGroups(
       state.allGroups,
       sel.base,
       sel.nA,
@@ -2269,7 +2272,7 @@ function resolveFixtureGroups() {
 }
 
 function filterAndRefresh() {
-  const resolved = resolveFixtureGroups();
+  const resolved = resolveDataTypeGroups();
   const cat = state.currentCategory || 'all';
   state.filteredGroups =
     cat === 'all'
@@ -2392,7 +2395,7 @@ function rosterMetricKeys() {
       { key: 'handoff_std_ns', higherIsBetter: false, label: 'Std' },
       { key: 'handoff_p95_ns', higherIsBetter: false, label: 'P95' },
       { key: 'handoff_p99_ns', higherIsBetter: false, label: 'P99' },
-      { key: 'median_size_bytes', higherIsBetter: false, label: 'Median size' },
+      { key: 'msgs_per_cpu_sec', higherIsBetter: true, label: 'Msgs / CPU-s' },
     ];
   }
   return [
@@ -2400,7 +2403,7 @@ function rosterMetricKeys() {
     { key: 'ops_std', higherIsBetter: false, label: 'Std' },
     { key: 'ops_p95', higherIsBetter: true, label: 'P95' },
     { key: 'ops_p99', higherIsBetter: true, label: 'P99' },
-    { key: 'median_size_bytes', higherIsBetter: false, label: 'Median size' },
+    { key: 'msgs_per_cpu_sec', higherIsBetter: true, label: 'Msgs / CPU-s' },
   ];
 }
 
@@ -2480,17 +2483,18 @@ function formatRosterRelativeCell(row, key, higherIsBetter, scales, baselineGrou
 
 function isParetoDominated(g, groups) {
   const gOps = g.avg_ops_per_sec;
-  const gSize = g.median_size_bytes;
-  if (gOps == null || gSize == null) return true;
+  const gCpu = g.msgs_per_cpu_sec;
+  if (gOps == null) return true;
   return groups.some((other) => {
     if (other === g) return false;
     const oOps = other.avg_ops_per_sec;
-    const oSize = other.median_size_bytes;
-    if (oOps == null || oSize == null) return false;
+    const oCpu = other.msgs_per_cpu_sec;
+    if (oOps == null) return false;
+    if (gCpu == null || oCpu == null) return oOps > gOps;
     const betterOrEqualOps = oOps >= gOps;
-    const betterOrEqualSize = oSize <= gSize;
-    const strictlyBetter = oOps > gOps || oSize < gSize;
-    return betterOrEqualOps && betterOrEqualSize && strictlyBetter;
+    const betterOrEqualCpu = oCpu >= gCpu;
+    const strictlyBetter = oOps > gOps || oCpu > gCpu;
+    return betterOrEqualOps && betterOrEqualCpu && strictlyBetter;
   });
 }
 
@@ -2556,32 +2560,10 @@ function summarizeStreamHonesty(groups) {
 function updateStreamHonestyChip() {
   const chip = document.getElementById('stream-honesty-chip');
   if (!chip) return;
-  const { streamRows, counts } = summarizeStreamHonesty(state.allGroups);
-  if (streamRows <= 0) {
-    chip.hidden = true;
-    chip.textContent = '';
-    chip.removeAttribute('title');
-    return;
-  }
-  const { native, text_on_stream, adapted, unlabeled } = counts;
-  const allAdapted = adapted === streamRows && unlabeled === 0;
-  const allUnlabeled = unlabeled === streamRows;
-  let text;
-  if (allUnlabeled) {
-    text = 'MPMC rows unlabeled';
-  } else if (allAdapted) {
-    text = 'MPMC: adapted (not I/O)';
-  } else {
-    const parts = [];
-    if (native) parts.push(`${native} native`);
-    if (text_on_stream) parts.push(`${text_on_stream} text`);
-    if (adapted) parts.push(`${adapted} adapted`);
-    if (unlabeled) parts.push(`${unlabeled} unlabeled`);
-    text = `MPMC: ${parts.join(' · ')}`;
-  }
-  chip.textContent = text;
-  chip.title = text;
-  chip.hidden = false;
+  // Pattern=stream means MPMC, not stream I/O. Do not show serializer honesty.
+  chip.hidden = true;
+  chip.textContent = '';
+  chip.removeAttribute('title');
 }
 
 /**
@@ -2610,14 +2592,14 @@ async function fetchStatsGroupsByPolicy(langId) {
         stamped[pid] = list.map((g) => ({
           ...g,
           language: g.language || langId,
-          test_data: fixtureKey(g),
+          test_data: dataTypeKey(g),
         }));
       }
       if (!stamped[defaultPolicy] && Array.isArray(statsObj.groups) && !statsObj.groups[0]?.variants) {
         stamped[defaultPolicy] = (statsObj.groups || []).map((g) => ({
           ...g,
           language: g.language || langId,
-          test_data: fixtureKey(g),
+          test_data: dataTypeKey(g),
         }));
       }
       return stamped;
@@ -2677,12 +2659,12 @@ function allCrossLangGroups() {
 
 function initCrossLangControls() {
   const all = allCrossLangGroups();
-  const discovered = discoverFixtureOptions(all);
+  const discovered = discoverDataTypeOptions(all);
   const dataTypes = discovered.all;
   const modes = [...new Set(all.map((g) => normalizeMode(g.mode)).filter(Boolean))].sort();
 
   // Same grouped options as top toolbar Test Data (natural + compounds)
-  populateFixtureSelect(dataTypes, {
+  populateDataTypeSelect(dataTypes, {
     selectId: 'xl-data-select',
     previous: state.xlTestData,
   });
@@ -2700,7 +2682,7 @@ function initCrossLangControls() {
 
   if (!dataTypes.includes(state.xlTestData)) {
     state.xlTestData =
-      pickPreferredFixture(discovered.natural) || dataTypes[0] || '';
+      pickPreferredDataType(discovered.natural) || dataTypes[0] || '';
   }
   if (!modes.includes(state.xlMode)) {
     state.xlMode = modes.includes('bytes') ? 'bytes' : modes[0] || '';
@@ -2743,9 +2725,9 @@ function filterGroupsForCrossLang(groups) {
   // Normalize mode field so builders can match with exact equality
   const normalized = modeGroups.map((g) => ({ ...g, mode: modeNorm }));
 
-  const sel = parseFixtureSelection(state.xlTestData);
+  const sel = parseDataTypeSelection(state.xlTestData);
   if (sel.kind === 'batch_compound') {
-    return buildCompoundedFixtureGroups(
+    return buildCompoundedDataTypeGroups(
       normalized,
       sel.base,
       sel.nA,
@@ -3078,15 +3060,18 @@ function updateKPIs() {
       `${formatTimeCompact(lat)} · ${formatOpsCompact(fastest.avg_ops_per_sec)}${suffix}`;
   }
 
-  const compact = [...state.filteredGroups]
-    .filter((g) => g.median_size_bytes != null)
-    .sort((a, b) => a.median_size_bytes - b.median_size_bytes)[0];
-  if (compact) {
+  const lean = [...state.filteredGroups]
+    .filter((g) => g.msgs_per_cpu_sec != null && Number.isFinite(g.msgs_per_cpu_sec))
+    .sort((a, b) => b.msgs_per_cpu_sec - a.msgs_per_cpu_sec)[0];
+  if (lean) {
     document.getElementById('kpi-compact').textContent =
-      compact.library || compact.queue || compact.serializer || '—';
-    const suffix = compact.compounded ? ` · ${state.currentTestData}` : '';
+      lean.library || lean.queue || lean.serializer || '—';
+    const suffix = lean.compounded ? ` · ${state.currentTestData}` : '';
     document.getElementById('kpi-compact-val').textContent =
-      `${formatIntGrouped(compact.median_size_bytes)} bytes${suffix}`;
+      `${formatSig(lean.msgs_per_cpu_sec)} msgs / CPU-s${suffix}`;
+  } else {
+    document.getElementById('kpi-compact').textContent = '—';
+    document.getElementById('kpi-compact-val').textContent = 'No CPU samples in this run';
   }
 
   document.getElementById('kpi-pareto').textContent =
@@ -3333,11 +3318,10 @@ function renderTable() {
   tbody.innerHTML = '';
 
   const isOps = state.rosterMetric === 'ops';
-  const showHonesty = normalizeMode(state.currentMode) === 'stream';
   if (table) {
     table.classList.toggle('view-ops', isOps);
     table.classList.toggle('view-latency', !isOps);
-    table.classList.toggle('view-stream', showHonesty);
+    table.classList.toggle('view-stream', false);
   }
 
   // Enrich with derived ops stats for sort + cells
@@ -3401,7 +3385,7 @@ function renderTable() {
 
   const help = document.getElementById('detailed-analytics-help');
   if (help) {
-    const scope = parseFixtureSelection(state.currentTestData);
+    const scope = parseDataTypeSelection(state.currentTestData);
     let scopeNote = ' Full roster for the current language, data type, and mode.';
     if (scope.kind === 'batch_compound') {
       scopeNote =
@@ -3458,16 +3442,6 @@ function renderTable() {
       ? `${r.library} @ ${r.library_version}`
       : r.library;
     tr.appendChild(tdName);
-
-    const tdHonesty = document.createElement('td');
-    tdHonesty.className = 'str roster-col-honesty';
-    const honestyLabel = honestyDisplayLabel(r.StreamMode);
-    tdHonesty.textContent = honestyLabel;
-    if (honestyLabel === 'adapted') {
-      tdHonesty.title =
-        'Adapted stream: in-memory encode/decode then dump to a stream. Do not treat as incremental I/O.';
-    }
-    tr.appendChild(tdHonesty);
 
     metricKeys.forEach(({ key, higherIsBetter }) => {
       const td = document.createElement('td');
@@ -3709,22 +3683,20 @@ function copyRosterMarkdown() {
     : state.compareBaseline || '—';
   const u = scales.latency.header;
   const oHdr = scales.ops.header;
-  const showHonesty = normalizeMode(state.currentMode) === 'stream';
   const headers = ['Queue'];
-  if (showHonesty) headers.push('Honesty');
   metricSpecs.forEach(({ key, label }) => {
     if (key.startsWith('ops_')) headers.push(`${label} (${oHdr})`);
     else if (key.endsWith('_ns')) headers.push(`${label} (${u})`);
-    else if (key === 'median_size_bytes') headers.push('Size (bytes)');
+    else if (key === 'msgs_per_cpu_sec') headers.push('Msgs / CPU-s');
     else headers.push(label || key);
   });
   headers.push('Pareto');
   const lines = [
     `Baseline: ${baseLabel}`,
-    `View: ${state.rosterMetric === 'ops' ? 'Ops/s stats' : 'Latency stats'} + size`,
-    `Ratios: median/size use ×base; Std/P95/P99 use ×med (own median)`,
+    `View: ${state.rosterMetric === 'ops' ? 'Ops/s stats' : 'Latency stats'} + CPU`,
+    `Ratios: median/CPU use ×base; Std/P95/P99 use ×med (own median)`,
     (() => {
-      const s = parseFixtureSelection(state.currentTestData);
+      const s = parseDataTypeSelection(state.currentTestData);
       if (s.kind === 'batch_compound') {
         return `Scope: compounded batch ${state.currentTestData} · mode ${state.currentMode}`;
       }
@@ -3738,7 +3710,7 @@ function copyRosterMarkdown() {
     })(),
     ``,
     `| ${headers.join(' | ')} |`,
-    `|${headers.map((h, i) => (i === 0 || h === 'Pareto' || h === 'Honesty' ? '---' : '---:')).join('|')}|`,
+    `|${headers.map((h, i) => (i === 0 || h === 'Pareto' ? '---' : '---:')).join('|')}|`,
   ];
   rows.forEach((r) => {
     const opt = state.paretoQueueNames.includes(r.library) ? 'yes' : '';
@@ -3756,8 +3728,7 @@ function copyRosterMarkdown() {
     });
     const name =
       queueLabelFromGroup(r) + (isBaseline ? ' (baseline)' : '');
-    const honestyCell = showHonesty ? ` ${honestyDisplayLabel(r.StreamMode)} |` : '';
-    lines.push(`| ${name} |${honestyCell} ${cells.join(' | ')} | ${opt} |`);
+    lines.push(`| ${name} | ${cells.join(' | ')} | ${opt} |`);
   });
   copyText(lines.join('\n'), 'Roster Markdown copied');
 }
@@ -3877,7 +3848,6 @@ function aggregateCSVRecords(records) {
         times: [],
         enq: [],
         deq: [],
-        sizes: [],
         ops: [],
         fidelities: [],
       });
@@ -3888,13 +3858,11 @@ function aggregateCSVRecords(records) {
     );
     const enq = Number(r.TimeEnq || r.TimeSer || r.SerTimeNs || r.ser_time_ns);
     const deq = Number(r.TimeDeq || r.TimeDeser || r.DeserTimeNs || r.deser_time_ns);
-    const size = Number(r.Size || r.SizeBytes || r.size_bytes || r.PayloadSize);
     const ops = Number(r.OpPerSecHandoff || r.OpPerSecSerAndDeser || r.OpsPerSec || r.ops_per_sec);
     const fid = Number(r.FidelityScore || r.fidelity);
     if (Number.isFinite(total)) g.times.push(total);
     if (Number.isFinite(enq)) g.enq.push(enq);
     if (Number.isFinite(deq)) g.deq.push(deq);
-    if (Number.isFinite(size)) g.sizes.push(size);
     if (Number.isFinite(ops)) g.ops.push(ops);
     if (Number.isFinite(fid)) g.fidelities.push(fid);
   }
@@ -3913,7 +3881,6 @@ function aggregateCSVRecords(records) {
       avg_time_enq_ns: mean(g.enq),
       avg_time_deq_ns: mean(g.deq),
       avg_ops_per_sec,
-      median_size_bytes: median(g.sizes),
       mean_fidelity: g.fidelities.length ? mean(g.fidelities) : null,
       runs: Math.max(g.times.length, g.ops.length),
     });

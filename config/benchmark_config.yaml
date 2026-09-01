@@ -114,7 +114,6 @@ csv_schema:
     - SerializerVersion
     - TimeSer
     - TimeDeser
-    - Size
     - TimeSerAndDeser
     - OpPerSecSer
     - OpPerSecDeser
@@ -190,7 +189,7 @@ metrics:
   multi_way:
     include_importance: [high]
     rank_by: handoff_median_ns
-    secondary_rank_by: median_size_bytes
+    secondary_rank_by: msgs_per_cpu_sec
   pairwise:
     include_importance: [high, medium, low]
   importance:
@@ -204,8 +203,7 @@ metrics:
     enq_mean_ns: medium
     deq_mean_ns: medium
     avg_ops_per_sec: high
-    median_size_bytes: high
-    mean_fidelity: high
+    mean_fidelity: medium
     library_version: high
     runs: high
     runs_raw: medium

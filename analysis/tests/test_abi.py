@@ -24,6 +24,9 @@ def test_csv_header_uses_library_and_enq():
     assert "Pattern" in CSV_HEADER
     assert "SerializerName" not in CSV_HEADER
     assert "QueueName" not in CSV_HEADER
+    assert "Size" not in CSV_HEADER
+    assert "SizeGzip" not in CSV_HEADER
+    assert "SizeZstd" not in CSV_HEADER
 
 
 def test_pick_accepts_leftover_serializer_columns():

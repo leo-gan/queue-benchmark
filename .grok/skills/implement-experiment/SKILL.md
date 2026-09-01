@@ -40,7 +40,7 @@ export PATH="${HOME}/.local/go/bin:${HOME}/.cargo/bin:${HOME}/.dotnet:${HOME}/.l
 2. **One question per folder.** Number it `NN-short-kebab` (next free `NN` after existing dirs).
 3. **Edit `experiment.yaml` only** for sample, languages, libraries, run mode, grouping cut-offs. `run.yaml` is generated. Do not keep a second library list.
 4. **Shared sample** at the experiment root (`sample.json`). Language folders hold **results** only (`results.md`, `results.json`). **Do not commit experiment logs** (CSVs under `<lang>/logs/`). Those stay on the machine that ran the timing. Saved results are enough.
-5. **Do not compare write times across languages.** Size is the only roughly fair cross-language number, and only when both sides write the same field description.
+5. **Do not compare times across languages.** Different runtimes. Directional only. Do not invent a size contest — payload bytes are the **data type**, not a library score.
 6. **Do not crown a single winner.** Use `top_group` (similar / close / slower via Cliff’s delta vs the fastest library in the comparison set). Not “top 5%.”
 7. **Textbook language** in `experiment.yaml` (`story.example`, `story.tradeoff`, `story.why`), `README.md`, `results.md`, the Dashboard, and the PLAN update. Write for a high-school student: complete sentences, no slang, no telegraphic fragments, no unexplained jargon. The Dashboard copies `story` from `experiment.yaml`.
 8. **Do not overwrite** published site tables (`docs/<lang>/results.md`) or dashboard `*_latest.json.gz` unless the user asked to publish suite numbers.

@@ -2,8 +2,8 @@
 
 | Library | Pattern | Median handoff (ns) | vs fastest | n |
 |---------|---------|--------------------:|-----------:|--:|
-| deque-lock | bytes | 6142108 | 1.00× | 9 |
-| steal-deque | bytes | 7475761 | 1.22× | 9 |
-| queue.Queue | bytes | 7713169 | 1.26× | 9 |
-| asyncio.Queue | bytes | 16547237 | 2.69× | 9 |
-| janus | bytes | 18691503 | 3.04× | 9 |
+| deque-lock | bytes | 6548909 | 1.00× | 9 |
+| steal-deque | bytes | 7322991 | 1.12× | 9 |
+| queue.Queue | bytes | 8240904 | 1.26× | 9 |
+| asyncio.Queue | bytes | 16344784 | 2.50× | 9 |
+| janus | bytes | 18992528 | 2.90× | 9 |

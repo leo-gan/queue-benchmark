@@ -28,6 +28,6 @@ See `csharp/results.md`.
 
 ## c
 
-Similar set (within 15% of fastest on this sample): steal-deque
+Similar set (within 15% of fastest on this sample): steal-deque, lfqueue, mutex-queue
 
 See `c/results.md`.

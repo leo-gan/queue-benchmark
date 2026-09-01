@@ -78,13 +78,13 @@ function logDir() {
 }
 
 const HEADER =
-  "Language,Pattern,TestDataName,Repetitions,RepetitionIndex,LibraryName,LibraryVersion,TimeEnq,TimeDeq,Size,TimeHandoff,OpPerSecEnq,OpPerSecDeq,OpPerSecHandoff,MemoryPeakBytes,FidelityScore,DataTypeInstanceCount,TypeConfigHash,SizeGzip,SizeZstd,NativeKind,StreamMode,RunOrder,SchedulePosition,CpuTimeNs";
+  "Language,Pattern,TestDataName,Repetitions,RepetitionIndex,LibraryName,LibraryVersion,TimeEnq,TimeDeq,TimeHandoff,OpPerSecEnq,OpPerSecDeq,OpPerSecHandoff,MemoryPeakBytes,FidelityScore,DataTypeInstanceCount,TypeConfigHash,NativeKind,StreamMode,RunOrder,SchedulePosition,CpuTimeNs";
 
 function ops(t) {
   return t > 0n ? (1e9 / Number(t)).toFixed(6) : "0.000000";
 }
 
-function row(mode, ty, reps, idx, name, ver, enq, deq, size, n, hash, kind, order, cpuNs, rss) {
+function row(mode, ty, reps, idx, name, ver, enq, deq, n, hash, kind, order, cpuNs, rss) {
   const tot = enq + deq;
   return [
     "javascript",
@@ -96,7 +96,6 @@ function row(mode, ty, reps, idx, name, ver, enq, deq, size, n, hash, kind, orde
     ver,
     enq.toString(),
     deq.toString(),
-    size,
     tot.toString(),
     ops(enq),
     ops(deq),
@@ -105,8 +104,6 @@ function row(mode, ty, reps, idx, name, ver, enq, deq, size, n, hash, kind, orde
     "1.0000",
     n,
     hash,
-    0,
-    0,
     kind,
     mode === "stream" ? "native" : "",
     order,
@@ -369,7 +366,7 @@ async function main() {
     if (df && !cell.type_id.includes(df)) continue;
     const item = Buffer.alloc(cell.payload_bytes, 0x61);
     const items = Array.from({ length: cell.n }, () => item);
-    const size = cell.payload_bytes * cell.n;
+
     const multi = cell.io_mode !== "bytes" && cell.io_mode !== "spsc";
     for (const q of queues) {
       if (qf && !q.name.toLowerCase().includes(qf.toLowerCase())) continue;
@@ -425,7 +422,6 @@ async function main() {
             ver,
             enq,
             deq,
-            size,
             cell.n,
             cell.hash,
             q.kind,

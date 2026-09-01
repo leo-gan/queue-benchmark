@@ -125,5 +125,8 @@ def test_parse_size_gzip_zstd():
         path = f.name
     recs, skipped = parse_csv_file(path)
     assert skipped == 0
-    assert recs[0]["SizeGzip"] == 229
-    assert recs[0]["SizeZstd"] == 180
+    assert recs[0]["LibraryName"] == "encoding/json"
+    assert recs[0]["TimeHandoff"] == 300
+    assert "SizeGzip" not in recs[0]
+    assert "SizeZstd" not in recs[0]
+    assert "Size" not in recs[0]

@@ -10,13 +10,13 @@ See `python/results.md`.
 
 ## rust
 
-Similar set (within 15% of fastest on this sample): steal-deque, crossbeam-queue, std-mpsc, crossbeam-channel, flume
+Similar set (within 15% of fastest on this sample): crossbeam-queue, steal-deque
 
 See `rust/results.md`.
 
 ## javascript
 
-Similar set (within 15% of fastest on this sample): fastq
+Similar set (within 15% of fastest on this sample): fastq, Array, steal-deque
 
 See `javascript/results.md`.
 

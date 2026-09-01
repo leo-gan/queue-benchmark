@@ -187,7 +187,7 @@ test('rowsToDelimited includes skipped rows and empty gzip', () => {
   const lines = csv.trim().split('\n');
   assert.equal(
     lines[0],
-    'library,version,io,write_us,read_us,total_us,spread_std_us,size_bytes,size_gzip_bytes,trials,trials_raw,vs_fastest,in_comparison'
+    'library,version,io,write_us,read_us,total_us,spread_std_us,trials,trials_raw,vs_fastest,in_comparison'
   );
   assert.match(lines[1], /^orjson,3\.11\.9,memory,/);
   assert.match(lines[1], /,true$/);
@@ -196,8 +196,7 @@ test('rowsToDelimited includes skipped rows and empty gzip', () => {
   assert.match(skip, /By design — JSON list/);
   assert.match(skip, /,false$/);
   const skipCols = skip.split(',');
-  const gzipIdx = lines[0].split(',').indexOf('size_gzip_bytes');
-  assert.equal(skipCols[gzipIdx], '');
+  assert.ok(skipCols.length >= 8);
 });
 
 test('wrapYTick keeps short names on one line', () => {
@@ -311,35 +310,6 @@ test('figureTypesFor All tab uses the same microsecond figures as a language tab
   assert.ok(figureTypesFor('10-one-vs-hundred', timed, timed, { crossLang: true }).includes('L1'));
 });
 
-test('experimentTableFlags hides empty write/read/size/spread columns', () => {
-  const handoffOnly = [
-    { library: 'deque-lock', total_median_ns: 18000, runs: 9 },
-    { library: 'spsc-ring', total_median_ns: 8000, runs: 9 },
-  ];
-  assert.deepEqual(experimentTableFlags(handoffOnly), {
-    write: false,
-    read: false,
-    size: false,
-    spread: false,
-  });
-  const full = [
-    {
-      library: 'deque-lock',
-      write_median_ns: 8000,
-      read_median_ns: 9000,
-      total_median_ns: 17000,
-      size_bytes: 25600,
-      total_std_ns: 400,
-    },
-  ];
-  assert.deepEqual(experimentTableFlags(full), {
-    write: true,
-    read: true,
-    size: true,
-    spread: true,
-  });
-});
-
 test('steal-deque and pipe-ipc sit in the published category filters', () => {
   assert.equal(communicationBucket('steal-deque'), 'thread');
   assert.equal(communicationBucket('pipe-ipc'), 'process');
@@ -363,4 +333,37 @@ test('figureTypesFor picks a story-specific hero', () => {
   assert.ok(def.includes('L1'));
   assert.ok(def.includes('W1'));
   assert.ok(def.includes('S1'));
+});
+
+test('experimentTableFlags hides empty write/read and never ranks size', () => {
+  const handoff = [
+    { library: 'a', total_median_ns: 1000, runs: 9 },
+    { library: 'b', total_median_ns: 2000, runs: 9 },
+  ];
+  assert.deepEqual(experimentTableFlags(handoff), {
+    write: false,
+    read: false,
+    spread: false,
+  });
+  const split = [
+    {
+      library: 'a',
+      write_median_ns: 400,
+      read_median_ns: 600,
+      total_median_ns: 1000,
+      total_std_ns: 50,
+    },
+    {
+      library: 'b',
+      write_median_ns: 800,
+      read_median_ns: 900,
+      total_median_ns: 1700,
+      total_std_ns: 80,
+    },
+  ];
+  assert.deepEqual(experimentTableFlags(split), {
+    write: true,
+    read: true,
+    spread: true,
+  });
 });

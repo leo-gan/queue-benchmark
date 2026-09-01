@@ -59,9 +59,13 @@ See [Timing honesty](TIMING_HONESTY.md) and [Architecture](architecture.md).
 | Dequeue ns (`TimeDeq`) | Consume cost |
 | Handoff ns (`TimeHandoff`) | End-to-end; default rank |
 | p50 / p99 / p99.9 (`handoff_p999_ns`) | Tail matters more than the mean |
-| Peak RSS | Retention after drain |
 | Messages / CPU-second (`msgs_per_cpu_sec`) | Spin can “win” latency and burn cores; needs `CpuTimeNs` |
-| Fidelity | Lost or duplicated items are errors, not speed |
+| Fidelity | Gate: lost or duplicated items invalidate the row |
+
+Payload shape is a **data type** (`message` vs `document`), not a library
+score. Every queue in a cell moves the same bytes. We do not record or rank
+payload size. Peak RSS is process-wide and is not a compactness contest.
+See [Metrics](METRICS.md).
 
 ## Published matrix (now)
 

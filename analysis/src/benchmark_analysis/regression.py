@@ -210,7 +210,6 @@ def save_baseline(
                 pick_stats(stat, "handoff_ci_high_ns") or handoff
             ),
             "avg_ops_per_sec": float(stat.get("avg_ops_per_sec") or 0.0),
-            "median_size_bytes": float(stat.get("median_size_bytes") or 0.0),
             "runs": int(stat.get("runs") or 0),
         }
         if store_samples:

@@ -923,7 +923,6 @@ def compute_statistics(
         "times_enq": [],
         "times_deq": [],
         "times_handoff": [],
-        "sizes": [],
         "fidelity": [],
         "memory_peak": [],
         "cpu_time_ns": [],
@@ -942,7 +941,6 @@ def compute_statistics(
         if handoff in (None, ""):
             handoff = (pick(r, "TimeEnq", 0) or 0) + (pick(r, "TimeDeq", 0) or 0)
         stats[key]["times_handoff"].append(float(handoff))
-        stats[key]["sizes"].append(float(r["Size"]))
         stats[key]["language"] = lang
         qv = pick(r, "LibraryVersion")
         if qv not in (None, ""):
@@ -994,7 +992,6 @@ def compute_statistics(
         min_ops = 1e9 / handoff_stats["handoff_max_ns"] if handoff_stats["handoff_max_ns"] > 0 else 0.0
         max_ops = 1e9 / handoff_stats["handoff_min_ns"] if handoff_stats["handoff_min_ns"] > 0 else 0.0
 
-        sizes = data["sizes"]
         # key: (queue, test_data, type_config_hash, instance_count, mode, language)
         entry = {
             "library": key[0],
@@ -1007,7 +1004,6 @@ def compute_statistics(
             "avg_time_enq_ns": enq_stats["enq_mean_ns"],
             "avg_time_deq_ns": deq_stats["deq_mean_ns"],
             "avg_time_handoff_ns": avg_time_handoff_ns,
-            "median_size_bytes": float(np.median(sizes)) if sizes else 0.0,
             "avg_ops_per_sec": avg_ops_per_sec,
             "min_ops_per_sec": min_ops,
             "max_ops_per_sec": max_ops,
@@ -1201,7 +1197,11 @@ def public_stats_entry(entry: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def compute_pareto_front(groups: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """Classical 2D Pareto: minimize avg_time_handoff_ns and median_size_bytes."""
+    """2D Pareto: minimize handoff time, maximize msgs_per_cpu_sec.
+
+    Payload size is not an axis. When CPU is missing, the front is the
+    fastest handoff only.
+    """
     front: List[Dict[str, Any]] = []
     workloads: Dict[Tuple[Any, Any], List[Dict[str, Any]]] = {}
     for g in groups:
@@ -1210,18 +1210,26 @@ def compute_pareto_front(groups: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     for items in workloads.values():
         for item in items:
             t = pick_stats(item, "avg_time_handoff_ns")
-            s = item.get("median_size_bytes")
-            if t is None or s is None:
+            cpu = item.get("msgs_per_cpu_sec")
+            if t is None:
                 continue
             dominated = False
             for other in items:
                 if other is item:
                     continue
                 ot = pick_stats(other, "avg_time_handoff_ns")
-                os_ = other.get("median_size_bytes")
-                if ot is None or os_ is None:
+                ocpu = other.get("msgs_per_cpu_sec")
+                if ot is None:
                     continue
-                if (ot <= t and os_ < s) or (ot < t and os_ <= s):
+                if cpu is None or ocpu is None:
+                    if ot < t:
+                        dominated = True
+                        break
+                    continue
+                better_or_eq_time = ot <= t
+                better_or_eq_cpu = ocpu >= cpu
+                strictly = ot < t or ocpu > cpu
+                if better_or_eq_time and better_or_eq_cpu and strictly:
                     dominated = True
                     break
             if not dominated:
@@ -1231,7 +1239,7 @@ def compute_pareto_front(groups: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
                         "test_data": item.get("test_data"),
                         "mode": item.get("mode"),
                         "time": t,
-                        "size": s,
+                        "msgs_per_cpu_sec": cpu,
                         "filter_policy": (item.get("filter") or {}).get("policy"),
                     }
                 )

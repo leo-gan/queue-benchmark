@@ -41,7 +41,7 @@ Directory.CreateDirectory(logDir);
 var stamp = Environment.GetEnvironmentVariable("BENCHMARK_TS") ?? "run";
 var csv = Path.Combine(logDir, stamp + ".csv");
 var sb = new StringBuilder();
-sb.AppendLine("Language,Pattern,TestDataName,Repetitions,RepetitionIndex,LibraryName,LibraryVersion,TimeEnq,TimeDeq,Size,TimeHandoff,OpPerSecEnq,OpPerSecDeq,OpPerSecHandoff,MemoryPeakBytes,FidelityScore,DataTypeInstanceCount,TypeConfigHash,SizeGzip,SizeZstd,NativeKind,StreamMode,RunOrder,SchedulePosition,CpuTimeNs");
+sb.AppendLine("Language,Pattern,TestDataName,Repetitions,RepetitionIndex,LibraryName,LibraryVersion,TimeEnq,TimeDeq,TimeHandoff,OpPerSecEnq,OpPerSecDeq,OpPerSecHandoff,MemoryPeakBytes,FidelityScore,DataTypeInstanceCount,TypeConfigHash,NativeKind,StreamMode,RunOrder,SchedulePosition,CpuTimeNs");
 
 string Ver = Environment.Version.ToString();
 double Ops(long ns) => ns > 0 ? 1_000_000_000.0 / ns : 0;
@@ -76,7 +76,7 @@ foreach (var cell in cells)
     var item = new byte[cell.Payload];
     for (int i = 0; i < item.Length; i++) item[i] = (byte)(i % 251);
     var items = Enumerable.Repeat(item, cell.N).ToArray();
-    var size = cell.Payload * cell.N;
+
     foreach (var q in queues)
     {
         if (qf.Length > 0 && !q.name.Contains(qf, StringComparison.OrdinalIgnoreCase))
@@ -126,9 +126,9 @@ foreach (var cell in cells)
             var tot = enq + deq;
             sb.AppendLine(string.Join(",",
                 "csharp", cell.Mode, cell.Type, reps, i, q.name, Ver,
-                enq, deq, size, tot,
+                enq, deq, tot,
                 Ops(enq).ToString("F6"), Ops(deq).ToString("F6"), Ops(tot).ToString("F6"),
-                rss, "1.0000", cell.N, cell.Hash, 0, 0, q.kind,
+                rss, "1.0000", cell.N, cell.Hash, q.kind,
                 cell.Mode == "stream" ? "native" : "", order, order, cpuNs));
             order++;
         }
