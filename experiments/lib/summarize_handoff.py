@@ -48,8 +48,11 @@ def summarize_csv(path: Path) -> list[dict]:
             {
                 "library": name,
                 "pattern": mode,
+                "io": mode,
                 "n": len(vals),
+                "runs": len(vals),
                 "median_handoff_ns": med,
+                "total_median_ns": med,
                 "p50_ns": med,
                 "mean_ns": statistics.fmean(vals),
             }

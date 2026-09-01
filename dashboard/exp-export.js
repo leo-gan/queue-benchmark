@@ -14,6 +14,24 @@ const COMPARE_LABEL = {
 
 export const ALL_LANG = 'all';
 
+/** Map queue-benchmark experiment rows onto the dashboard table/chart fields. */
+export function normalizeExperimentRow(row) {
+  if (!row || typeof row !== 'object') return row;
+  const out = { ...row };
+  if (out.library == null) out.library = out.queue || out.serializer || '';
+  const total = out.total_median_ns ?? out.median_handoff_ns ?? out.p50_ns;
+  if (out.total_median_ns == null && total != null) out.total_median_ns = total;
+  if (out.write_median_ns == null && out.enq_median_ns != null) {
+    out.write_median_ns = out.enq_median_ns;
+  }
+  if (out.read_median_ns == null && out.deq_median_ns != null) {
+    out.read_median_ns = out.deq_median_ns;
+  }
+  if (out.io == null && out.pattern != null) out.io = out.pattern;
+  if (out.runs == null && out.n != null) out.runs = out.n;
+  return out;
+}
+
 const CSV_COLUMNS = [
   'library',
   'version',
@@ -64,7 +82,7 @@ export function flattenLanguageRows(languages, langIds) {
     const block = languages?.[id];
     if (!block || (block.status && block.status !== 'ok')) continue;
     for (const row of block.rows || []) {
-      rows.push({ ...row, language: id });
+      rows.push({ ...normalizeExperimentRow(row), language: id });
     }
   }
   return rows;

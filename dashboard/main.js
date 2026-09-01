@@ -1488,13 +1488,17 @@ async function loadHistoricalRunIntoDashboard(runId) {
 }
 
 const GROUP_IDENTITY_KEYS = new Set([
+  'library',
   'queue',
+  'serializer',
   'test_data',
   'type_config_hash',
   'data_type_instance_count',
   'mode',
   'language',
   'library_version',
+  'queue_version',
+  'serializer_version',
   'StreamMode',
   'variants',
 ]);
@@ -1519,15 +1523,22 @@ function expandVariantGroups(slimGroups, catalog) {
     }
     // Always copy known identity fields even if null
     for (const k of [
+      'library',
       'queue',
+      'serializer',
       'test_data',
       'type_config_hash',
       'data_type_instance_count',
       'mode',
       'language',
       'library_version',
+      'queue_version',
+      'serializer_version',
     ]) {
       if (k in g) identity[k] = g[k];
+    }
+    if (identity.library == null) {
+      identity.library = identity.queue || identity.serializer || '';
     }
     if (g.StreamMode != null) identity.StreamMode = g.StreamMode;
 
@@ -1538,12 +1549,15 @@ function expandVariantGroups(slimGroups, catalog) {
       if (filter.label == null && cat.label) filter.label = cat.label;
       if (filter.description == null && cat.description) filter.description = cat.description;
       if (filter.policy == null) filter.policy = pid;
-      const row = {
+      const row = normalizeStatsGroup({
         ...identity,
         ...metrics,
         filter,
         test_data: fixtureKey({ ...identity, ...metrics }),
-      };
+      });
+      if (row.library == null) {
+        row.library = row.queue || row.serializer || '';
+      }
       if (!byPolicy[pid]) byPolicy[pid] = [];
       byPolicy[pid].push(row);
     }
@@ -3056,7 +3070,8 @@ function updateKPIs() {
     .filter((g) => latencyKey(g) != null && Number.isFinite(latencyKey(g)))
     .sort((a, b) => latencyKey(a) - latencyKey(b))[0];
   if (fastest) {
-    document.getElementById('kpi-fastest').textContent = fastest.queue;
+    document.getElementById('kpi-fastest').textContent =
+      fastest.library || fastest.queue || fastest.serializer || '—';
     const lat = latencyKey(fastest);
     const suffix = fastest.compounded ? ` · ${state.currentTestData}` : '';
     document.getElementById('kpi-fastest-val').textContent =
@@ -3067,7 +3082,8 @@ function updateKPIs() {
     .filter((g) => g.median_size_bytes != null)
     .sort((a, b) => a.median_size_bytes - b.median_size_bytes)[0];
   if (compact) {
-    document.getElementById('kpi-compact').textContent = compact.queue;
+    document.getElementById('kpi-compact').textContent =
+      compact.library || compact.queue || compact.serializer || '—';
     const suffix = compact.compounded ? ` · ${state.currentTestData}` : '';
     document.getElementById('kpi-compact-val').textContent =
       `${formatIntGrouped(compact.median_size_bytes)} bytes${suffix}`;
