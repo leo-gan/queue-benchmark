@@ -13,12 +13,12 @@ def _stat(lang: str, serializer: str = "json") -> dict:
     return {
         f"{lang}|{serializer}|document|bytes|1": {
             "language": lang,
-            "serializer": serializer,
+            "library": serializer,
             "test_data": "document",
             "mode": "bytes",
             "data_type_instance_count": 1,
             "avg_ops_per_sec": 1000.0,
-            "avg_time_total_ns": 2000.0,
+            "avg_time_handoff_ns": 2000.0,
             "mean_ser_ns": 1000.0,
             "mean_deser_ns": 1000.0,
         }

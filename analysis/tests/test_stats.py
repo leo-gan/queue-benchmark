@@ -157,7 +157,7 @@ def test_bootstrap_seeds_differ_for_two_serializers():
         "min_samples_for_inference": 5,
     })
     for entry in stats.values():
-        assert entry["total_ci_low_ns"] <= entry["total_mean_ns"] <= entry["total_ci_high_ns"]
+        assert entry["handoff_ci_low_ns"] <= entry["handoff_mean_ns"] <= entry["handoff_ci_high_ns"]
 
 
 def test_cliffs_delta_identical_is_zero():
@@ -246,10 +246,10 @@ def test_compute_statistics_has_ci_fields():
     recs = _make_records(30)
     stats = compute_statistics(recs)
     entry = next(iter(stats.values()))
-    assert "total_mean_ns" in entry
-    assert "total_ci_low_ns" in entry
-    assert "total_ci_high_ns" in entry
-    assert entry["total_ci_low_ns"] <= entry["total_mean_ns"] <= entry["total_ci_high_ns"]
+    assert "handoff_mean_ns" in entry
+    assert "handoff_ci_low_ns" in entry
+    assert "handoff_ci_high_ns" in entry
+    assert entry["handoff_ci_low_ns"] <= entry["handoff_mean_ns"] <= entry["handoff_ci_high_ns"]
     assert entry["avg_ops_per_sec"] > 0
 
 
@@ -269,8 +269,8 @@ def test_p999_label_and_msgs_per_cpu_sec():
         },
     )
     entry = next(iter(stats.values()))
-    assert "total_p999_ns" in entry
-    assert entry["total_p999_ns"] >= entry["total_p99_ns"]
+    assert "handoff_p999_ns" in entry
+    assert entry["handoff_p999_ns"] >= entry["handoff_p99_ns"]
     assert entry["msgs_per_cpu_sec"] is not None
     assert entry["msgs_per_cpu_sec"] > 0
 
@@ -283,8 +283,8 @@ def test_effect_sizes_attached():
         "bootstrap": {"enabled": False},
         "effect_sizes": {"enabled": True, "cliffs_delta_thresholds": {"negligible": 0.147, "small": 0.33, "medium": 0.474}},
     })
-    slow_entry = [v for v in stats.values() if v["serializer"] == "slow"][0]
-    fast_entry = [v for v in stats.values() if v["serializer"] == "fast"][0]
+    slow_entry = [v for v in stats.values() if v["library"] == "slow"][0]
+    fast_entry = [v for v in stats.values() if v["library"] == "fast"][0]
     assert fast_entry["effect_vs_fastest_cliffs_label"] == "reference"
     assert slow_entry["effect_vs_fastest_cliffs_delta"] > 0
 
@@ -313,7 +313,7 @@ def test_effect_vs_fastest_mwu_holm_and_reference():
             "hypothesis_tests": {"enabled": True, "alpha": 0.05},
         },
     )
-    by = {v["serializer"]: v for v in stats.values()}
+    by = {v["library"]: v for v in stats.values()}
     assert by["fast"]["effect_vs_fastest_cliffs_label"] == "reference"
     assert by["fast"]["effect_vs_fastest_p_value"] is None
     assert by["fast"]["effect_vs_fastest_significant_holm"] is None
@@ -372,10 +372,10 @@ def test_effect_vs_fastest_reference_prefers_median():
             "hypothesis_tests": {"enabled": False},
         },
     )
-    by = {v["serializer"]: v for v in stats.values()}
+    by = {v["library"]: v for v in stats.values()}
     # Sanity: mean prefers mean_fast; median prefers median_fast
-    assert by["mean_fast"]["total_mean_ns"] < by["median_fast"]["total_mean_ns"]
-    assert by["mean_fast"]["total_median_ns"] > by["median_fast"]["total_median_ns"]
+    assert by["mean_fast"]["handoff_mean_ns"] < by["median_fast"]["handoff_mean_ns"]
+    assert by["mean_fast"]["handoff_median_ns"] > by["median_fast"]["handoff_median_ns"]
     assert by["median_fast"]["effect_vs_fastest_cliffs_label"] == "reference"
     assert by["mean_fast"]["fastest_in_group"] == "median_fast"
 
@@ -419,7 +419,7 @@ def test_paired_n_equal_across_metrics_after_stats():
     })
     entry = next(iter(stats.values()))
     # Internal filtered series length must match runs for all three
-    assert len(entry["_times_total_filtered"]) == entry["runs"]
+    assert len(entry["_times_handoff_filtered"]) == entry["runs"]
     # Means computed from same n
     assert entry["runs"] < entry["runs_raw"] - entry["warmup_skipped"] or entry["outliers_removed"] >= 0
 
@@ -456,10 +456,10 @@ def test_multi_policy_all_four_and_export_payload():
     # strict IQR removes the spike; mean is lower than unfiltered
     assert iqr15["outliers_removed"] >= 1
     assert iqr15["runs"] < all_e["runs"]
-    assert iqr15["avg_time_total_ns"] < all_e["avg_time_total_ns"]
+    assert iqr15["avg_time_handoff_ns"] < all_e["avg_time_handoff_ns"]
     assert iqr15["filter"]["policy"] == "iqr_1.5"
     assert iqr15["filter"]["iqr_k"] == 1.5
-    assert iqr15["filter"]["fence_total_high_ns"] is not None
+    assert iqr15["filter"]["fence_handoff_high_ns"] is not None
 
     # loose IQR removes fewer or equal vs strict
     assert iqr3["outliers_removed"] <= iqr15["outliers_removed"]
@@ -472,7 +472,7 @@ def test_multi_policy_all_four_and_export_payload():
     assert win["filter"]["method"] == "winsorize"
     assert win["filter"]["winsorize_percentiles"] == [5.0, 95.0]
     # clipped mean should not be as extreme as raw all
-    assert win["avg_time_total_ns"] < all_e["avg_time_total_ns"]
+    assert win["avg_time_handoff_ns"] < all_e["avg_time_handoff_ns"]
 
     payload = build_stats_export_payload(by_policy, language="python")
     assert payload["schema_version"] == "2.2"
@@ -484,7 +484,7 @@ def test_multi_policy_all_four_and_export_payload():
     sample = payload["groups"][0]
     assert "variants" in sample
     assert set(sample["variants"]) == set(FILTER_POLICY_IDS)
-    assert "serializer" in sample and "avg_ops_per_sec" not in sample
+    assert "library" in sample and "avg_ops_per_sec" not in sample
     assert "avg_ops_per_sec" in sample["variants"][DEFAULT_FILTER_POLICY]
     # D: catalog text not repeated per group
     fb = sample["variants"][DEFAULT_FILTER_POLICY].get("filter") or {}
@@ -502,13 +502,13 @@ def test_save_baseline_skipped_when_regression(tmp_path):
     good = {
         ("orjson", "message", "bytes", "python"): {
             "language": "python",
-            "serializer": "orjson",
+            "library": "orjson",
             "test_data": "message",
             "mode": "bytes",
-            "avg_time_total_ns": 1000.0,
+            "avg_time_handoff_ns": 1000.0,
             "avg_ops_per_sec": 1e6,
             "median_size_bytes": 100,
-            "total_ci_low_ns": 900.0,
+            "handoff_ci_low_ns": 900.0,
         }
     }
     save_baseline(good, str(baseline))
@@ -517,13 +517,13 @@ def test_save_baseline_skipped_when_regression(tmp_path):
     bad = {
         ("orjson", "message", "bytes", "python"): {
             "language": "python",
-            "serializer": "orjson",
+            "library": "orjson",
             "test_data": "message",
             "mode": "bytes",
-            "avg_time_total_ns": 5000.0,
+            "avg_time_handoff_ns": 5000.0,
             "avg_ops_per_sec": 2e5,
             "median_size_bytes": 100,
-            "total_ci_low_ns": 4500.0,
+            "handoff_ci_low_ns": 4500.0,
         }
     }
     has_reg, regs = check_regression(bad, str(baseline), threshold_percent=10.0)
@@ -541,4 +541,4 @@ def test_save_baseline_skipped_when_regression(tmp_path):
     entries = stored.get("entries") if isinstance(stored.get("entries"), dict) else stored
     # Keys now include instance count + type hash when present
     match = [v for k, v in entries.items() if "orjson" in k and isinstance(v, dict)]
-    assert match and match[0]["avg_time_total_ns"] == 1000.0
+    assert match and match[0]["avg_time_handoff_ns"] == 1000.0

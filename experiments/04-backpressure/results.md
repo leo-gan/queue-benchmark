@@ -4,7 +4,7 @@ Times are not comparable across languages.
 
 ## python
 
-Similar set (within 15% of fastest on this sample): deque-lock, steal-deque
+Similar set (within 15% of fastest on this sample): deque-lock, queue.Queue, steal-deque
 
 See `python/results.md`.
 

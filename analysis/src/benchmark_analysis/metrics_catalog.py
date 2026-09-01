@@ -9,25 +9,25 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence, Set
 
 # Defaults if master config is missing
 _DEFAULT_IMPORTANCE: Dict[str, str] = {
-    "total_median_ns": "high",
-    "ser_median_ns": "high",
-    "deser_median_ns": "high",
-    "avg_time_total_ns": "medium",
-    "avg_time_ser_ns": "medium",
-    "avg_time_deser_ns": "medium",
-    "total_mean_ns": "medium",
+    "handoff_median_ns": "high",
+    "enq_median_ns": "high",
+    "deq_median_ns": "high",
+    "avg_time_handoff_ns": "medium",
+    "avg_time_enq_ns": "medium",
+    "avg_time_deq_ns": "medium",
+    "handoff_mean_ns": "medium",
     "avg_ops_per_sec": "high",
     "median_size_bytes": "high",
     "mean_fidelity": "high",
-    "serializer_version": "high",
+    "library_version": "high",
     "runs": "high",
-    "total_ci_low_ns": "medium",
-    "total_ci_high_ns": "medium",
-    "total_p95_ns": "medium",
-    "total_p99_ns": "medium",
-    "total_p999_ns": "high",
+    "handoff_ci_low_ns": "medium",
+    "handoff_ci_high_ns": "medium",
+    "handoff_p95_ns": "medium",
+    "handoff_p99_ns": "medium",
+    "handoff_p999_ns": "high",
     "msgs_per_cpu_sec": "high",
-    "total_cv": "medium",
+    "handoff_cv": "medium",
     "effect_vs_fastest_cliffs_delta": "medium",
     "effect_vs_fastest_cliffs_label": "medium",
     "effect_vs_fastest_hedges_g": "low",
@@ -43,7 +43,7 @@ _DEFAULT_PAIRWISE = ["high", "medium", "low"]
 def load_metrics_config(config_path: Optional[str] = None) -> Dict[str, Any]:
     out: Dict[str, Any] = {
         "catalog_version": "1",
-        "multi_way": {"include_importance": list(_DEFAULT_MULTI_WAY), "rank_by": "total_median_ns"},
+        "multi_way": {"include_importance": list(_DEFAULT_MULTI_WAY), "rank_by": "handoff_median_ns"},
         "pairwise": {"include_importance": list(_DEFAULT_PAIRWISE)},
         "importance": dict(_DEFAULT_IMPORTANCE),
     }
@@ -100,18 +100,18 @@ def filter_field_ids(
 
 def rank_by_field(metrics_cfg: Optional[Dict[str, Any]] = None) -> str:
     cfg = metrics_cfg or load_metrics_config()
-    return str((cfg.get("multi_way") or {}).get("rank_by") or "total_median_ns")
+    return str((cfg.get("multi_way") or {}).get("rank_by") or "handoff_median_ns")
 
 
 # Columns for multi-way scientific summary (order matters for display)
 MULTI_WAY_SUMMARY_FIELDS: Sequence[tuple] = (
     # (field_id, display title, is_time_ns, higher_is_better)
-    ("total_median_ns", "Median total (µs)", True, False),
-    ("ser_median_ns", "Median ser (µs)", True, False),
-    ("deser_median_ns", "Median deser (µs)", True, False),
+    ("handoff_median_ns", "Median handoff (µs)", True, False),
+    ("enq_median_ns", "Median enqueue (µs)", True, False),
+    ("deq_median_ns", "Median dequeue (µs)", True, False),
     ("avg_ops_per_sec", "Ops/s (from mean)", False, True),
     ("median_size_bytes", "Median size (B)", False, False),
     # runs / mean_fidelity intentionally omitted from multi-way Summary.
-    ("serializer_version", "Version", False, None),
+    ("library_version", "Version", False, None),
     ("effect_vs_fastest_cliffs_label", "δ vs fastest", False, None),
 )

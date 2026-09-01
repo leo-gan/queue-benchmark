@@ -26,27 +26,94 @@ import {
   formatOpsCell,
   chooseLatencyUnit,
   chooseOpsUnit,
-  serializerLabelFromGroup,
+  queueLabelFromGroup,
 } from './format.js';
 import { communicationBucket } from './queue-catalog.js';
 
-const SETTINGS_KEY = 'serializer-dashboard-settings-v2';
+const SETTINGS_KEY = 'queue-dashboard-settings-v3';
 /** localStorage: hide first-visit orientation banner when set to "1". */
-const ORIENTATION_KEY = 'serializer-dashboard-orientation-dismissed-v1';
+const ORIENTATION_KEY = 'queue-dashboard-orientation-dismissed-v1';
 
 const GROUP_META_KEYS = new Set([
+  'library',
+  'queue',
   'serializer',
   'test_data',
   'mode',
   'language',
   'filter',
   'variants',
+  'library_version',
+  'library_version',
   'serializer_version',
   'type_config_hash',
   'StreamMode',
   'compounded',
   'compound_parts',
 ]);
+
+/** Leftover serializer-benchmark / QueueName stats keys → canonical library keys. */
+const STATS_FIELD_ALIASES = [
+  ['library', 'queue'],
+  ['library', 'serializer'],
+  ['library_version', 'library_version'],
+  ['library_version', 'serializer_version'],
+  ['avg_time_enq_ns', 'avg_time_ser_ns'],
+  ['avg_time_deq_ns', 'avg_time_deser_ns'],
+  ['avg_time_handoff_ns', 'avg_time_total_ns'],
+];
+const STATS_PREFIX_ALIASES = [
+  ['enq_', 'ser_'],
+  ['deq_', 'deser_'],
+  ['handoff_', 'total_'],
+];
+const METRIC_KEY_ALIASES = {
+  serializer: 'library',
+  queue: 'library',
+  serializer_version: 'library_version',
+  queue_version: 'library_version',
+  avg_time_ser_ns: 'avg_time_enq_ns',
+  avg_time_deser_ns: 'avg_time_deq_ns',
+  avg_time_total_ns: 'avg_time_handoff_ns',
+};
+
+function canonicalizeMetricKey(key) {
+  if (!key) return key;
+  if (METRIC_KEY_ALIASES[key]) return METRIC_KEY_ALIASES[key];
+  for (const [np, op] of STATS_PREFIX_ALIASES) {
+    if (key.startsWith(op)) return np + key.slice(op.length);
+  }
+  return key;
+}
+
+function normalizeStatsGroup(g) {
+  if (!g || typeof g !== 'object') return g;
+  const out = { ...g };
+  for (const [canon, old] of STATS_FIELD_ALIASES) {
+    if (out[canon] == null && out[old] != null) out[canon] = out[old];
+  }
+  for (const [np, op] of STATS_PREFIX_ALIASES) {
+    for (const k of Object.keys(g)) {
+      if (typeof k === 'string' && k.startsWith(op)) {
+        const nk = np + k.slice(op.length);
+        if (out[nk] == null) out[nk] = g[k];
+      }
+    }
+  }
+  if (out.filter && typeof out.filter === 'object') {
+    const filt = { ...out.filter };
+    for (const [np, op] of STATS_PREFIX_ALIASES) {
+      for (const k of Object.keys(out.filter)) {
+        if (typeof k === 'string' && k.startsWith(op)) {
+          const nk = np + k.slice(op.length);
+          if (filt[nk] == null) filt[nk] = out.filter[k];
+        }
+      }
+    }
+    out.filter = filt;
+  }
+  return out;
+}
 const SUITE_TYPE_IDS = ['message', 'document', 'telemetry', 'strings', 'event'];
 
 /** Named sample-filter policies (must match analysis FILTER_POLICY_IDS). */
@@ -61,7 +128,7 @@ const FILTER_POLICY_FALLBACK = {
     id: 'iqr_1.5',
     label: 'IQR k=1.5 (strict / default)',
     description:
-      'Paired Tukey fences (k=1.5) on ser/deser/total; drop if outlier on any.',
+      'Paired Tukey fences (k=1.5) on enqueue/dequeue/handoff; drop if outlier on any.',
   },
   iqr_3: {
     id: 'iqr_3',
@@ -71,7 +138,7 @@ const FILTER_POLICY_FALLBACK = {
   winsorize_5_95: {
     id: 'winsorize_5_95',
     label: 'Winsorize 5–95%',
-    description: 'Clip ser/deser/total at 5th–95th percentiles; n unchanged.',
+    description: 'Clip enqueue/dequeue/handoff at 5th–95th percentiles; n unchanged.',
   },
 };
 const DEFAULT_FILTER_POLICY = 'iqr_1.5';
@@ -120,53 +187,53 @@ const LANGUAGE_CATALOG = [
 
 const CROSS_LANG_METRICS = [
   { key: 'avg_ops_per_sec', label: 'Ops/s', higherIsBetter: true },
-  { key: 'avg_time_total_ns', label: 'Total latency (mean)', higherIsBetter: false },
-  { key: 'avg_time_ser_ns', label: 'Enqueue latency', higherIsBetter: false },
-  { key: 'avg_time_deser_ns', label: 'Dequeue latency', higherIsBetter: false },
-  { key: 'total_median_ns', label: 'Median total', higherIsBetter: false },
-  { key: 'total_p95_ns', label: 'Total p95', higherIsBetter: false },
+  { key: 'avg_time_handoff_ns', label: 'Handoff latency (mean)', higherIsBetter: false },
+  { key: 'avg_time_enq_ns', label: 'Enqueue latency', higherIsBetter: false },
+  { key: 'avg_time_deq_ns', label: 'Dequeue latency', higherIsBetter: false },
+  { key: 'handoff_median_ns', label: 'Median handoff', higherIsBetter: false },
+  { key: 'handoff_p95_ns', label: 'Handoff p95', higherIsBetter: false },
   { key: 'median_size_bytes', label: 'Median size', higherIsBetter: false },
   { key: 'mean_fidelity', label: 'Fidelity', higherIsBetter: true },
   { key: 'mean_memory_peak_bytes', label: 'Peak memory', higherIsBetter: false },
   { key: 'runs', label: 'Samples', higherIsBetter: null },
-  { key: 'total_cv', label: 'Total CV', higherIsBetter: false },
+  { key: 'handoff_cv', label: 'Handoff CV', higherIsBetter: false },
 ];
 
 const DEFAULT_SELECTED_METRICS = [
   'avg_ops_per_sec',
-  'avg_time_total_ns',
-  'avg_time_ser_ns',
-  'avg_time_deser_ns',
-  'total_median_ns',
-  'total_p95_ns',
-  'total_ci_low_ns',
-  'total_ci_high_ns',
+  'avg_time_handoff_ns',
+  'avg_time_enq_ns',
+  'avg_time_deq_ns',
+  'handoff_median_ns',
+  'handoff_p95_ns',
+  'handoff_ci_low_ns',
+  'handoff_ci_high_ns',
   'median_size_bytes',
   'mean_fidelity',
   'mean_memory_peak_bytes',
   'runs',
-  'serializer_version',
+  'library_version',
 ];
 
-/** Max serializer columns in Compare matrix (baseline counts). */
+/** Max queue columns in Compare matrix (baseline counts). */
 const MAX_COMPARE_COLUMNS = 8;
 
 /** Metric presets for Compare catalog. */
 const METRIC_PRESETS = {
   defaults: DEFAULT_SELECTED_METRICS,
   latency: [
-    'avg_time_total_ns',
-    'avg_time_ser_ns',
-    'avg_time_deser_ns',
-    'total_median_ns',
-    'total_p95_ns',
-    'total_p50_ns',
-    'total_p99_ns',
-    'total_ci_low_ns',
-    'total_ci_high_ns',
-    'total_cv',
-    'ser_median_ns',
-    'deser_median_ns',
+    'avg_time_handoff_ns',
+    'avg_time_enq_ns',
+    'avg_time_deq_ns',
+    'handoff_median_ns',
+    'handoff_p95_ns',
+    'handoff_p50_ns',
+    'handoff_p99_ns',
+    'handoff_ci_low_ns',
+    'handoff_ci_high_ns',
+    'handoff_cv',
+    'enq_median_ns',
+    'deq_median_ns',
   ],
   size: ['median_size_bytes', 'mean_memory_peak_bytes', 'mean_fidelity', 'runs'],
 };
@@ -184,7 +251,7 @@ let state = {
   rosterMetric: 'ops',
   rankSort: 'speed', // 'speed' | 'size' for ranking chart
   searchQuery: '',
-  sortKey: 'serializer',
+  sortKey: 'library',
   sortDirection: 'asc',
   allGroups: [],
   /** @type {Record<string, object[]>} policy id → full group list for current language */
@@ -194,9 +261,9 @@ let state = {
   filterPolicy: DEFAULT_FILTER_POLICY,
   defaultFilterPolicy: DEFAULT_FILTER_POLICY,
   filteredGroups: [],
-  paretoSerializerNames: [],
-  serializerNames: [],
-  detailSerializers: [],
+  paretoQueueNames: [],
+  queueNames: [],
+  detailQueues: [],
   availableMetrics: [],
   selectedMetrics: [...DEFAULT_SELECTED_METRICS],
   compareBaseline: '',
@@ -209,7 +276,7 @@ let state = {
   xlMode: '',
   xlSelected: [],
   xlSelectionMode: 'pareto',
-  xlBaselineKey: '', // "lang|serializer"
+  xlBaselineKey: '', // "lang|queue"
 
   currentRunId: '',
   currentRunConfigs: {},
@@ -322,13 +389,11 @@ function setupOrientationBanner() {
 
 function loadSettings() {
   try {
-    const raw = localStorage.getItem(SETTINGS_KEY);
-    if (!raw) {
-      // migrate v1
-      const v1 = localStorage.getItem('serializer-dashboard-settings-v1');
-      if (v1) return JSON.parse(v1);
-      return null;
-    }
+    const raw =
+      localStorage.getItem(SETTINGS_KEY) ||
+      localStorage.getItem('serializer-dashboard-settings-v2') ||
+      localStorage.getItem('serializer-dashboard-settings-v1');
+    if (!raw) return null;
     return JSON.parse(raw);
   } catch (e) {
     console.warn('Could not read saved dashboard settings:', e);
@@ -348,7 +413,8 @@ function saveSettings() {
     searchQuery: state.searchQuery,
     sortKey: state.sortKey,
     sortDirection: state.sortDirection,
-    detailSerializers: state.detailSerializers,
+    detailQueues: state.detailQueues,
+    detailQueues: state.detailQueues,
     selectedMetrics: state.selectedMetrics,
     compareBaseline: state.compareBaseline,
     compareScope: state.compareScope,
@@ -391,17 +457,23 @@ function applySavedSettings(saved) {
     setRankSort(state.rankSort);
   }
   if (typeof saved.searchQuery === 'string') state.searchQuery = saved.searchQuery;
-  if (typeof saved.sortKey === 'string' && saved.sortKey) state.sortKey = saved.sortKey;
+  if (typeof saved.sortKey === 'string' && saved.sortKey) {
+    state.sortKey = canonicalizeMetricKey(saved.sortKey === 'queue' || saved.sortKey === 'serializer' ? 'library' : saved.sortKey);
+  }
   if (saved.sortDirection === 'asc' || saved.sortDirection === 'desc') {
     state.sortDirection = saved.sortDirection;
   }
-  if (Array.isArray(saved.detailSerializers)) {
-    state.detailSerializers = saved.detailSerializers.filter((s) => typeof s === 'string');
+  if (Array.isArray(saved.detailQueues)) {
+    state.detailQueues = saved.detailQueues.filter((s) => typeof s === 'string');
+  } else if (Array.isArray(saved.detailQueues)) {
+    state.detailQueues = saved.detailQueues.filter((s) => typeof s === 'string');
   } else if (typeof saved.detailSerializer === 'string' && saved.detailSerializer) {
-    state.detailSerializers = [saved.detailSerializer];
+    state.detailQueues = [saved.detailSerializer];
   }
   if (Array.isArray(saved.selectedMetrics) && saved.selectedMetrics.length > 0) {
-    state.selectedMetrics = saved.selectedMetrics.filter((k) => typeof k === 'string');
+    state.selectedMetrics = saved.selectedMetrics
+      .filter((k) => typeof k === 'string')
+      .map(canonicalizeMetricKey);
   }
   if (typeof saved.compareBaseline === 'string') state.compareBaseline = saved.compareBaseline;
   // migrate old compareA as baseline
@@ -418,8 +490,8 @@ function applySavedSettings(saved) {
   }
   if (Array.isArray(saved.xlSelected)) {
     state.xlSelected = saved.xlSelected
-      .filter((x) => x && typeof x.lang === 'string' && typeof x.serializer === 'string')
-      .map((x) => ({ lang: x.lang, serializer: x.serializer }));
+      .filter((x) => x && typeof x.lang === 'string' && typeof (x.library || x.queue || x.serializer) === 'string')
+      .map((x) => ({ lang: x.lang, library: x.library || x.queue || x.serializer }));
   }
   if (typeof saved.xlBaselineKey === 'string') state.xlBaselineKey = saved.xlBaselineKey;
   if (typeof saved.filterPolicy === 'string' && saved.filterPolicy) {
@@ -447,7 +519,7 @@ function applyUrlParams() {
   }
   if (p.has('policy')) state.filterPolicy = p.get('policy');
   const sers = p.getAll('ser').filter(Boolean);
-  if (sers.length) state.detailSerializers = sers.slice(0, MAX_COMPARE_COLUMNS);
+  if (sers.length) state.detailQueues = sers.slice(0, MAX_COMPARE_COLUMNS);
   setChartLogScale(state.chartLogScale);
 }
 
@@ -469,7 +541,7 @@ function syncUrlFromState() {
     if (state.filterPolicy && state.filterPolicy !== DEFAULT_FILTER_POLICY) {
       p.set('policy', state.filterPolicy);
     }
-    const sers = (state.detailSerializers || []).filter(Boolean).slice(0, MAX_COMPARE_COLUMNS);
+    const sers = (state.detailQueues || []).filter(Boolean).slice(0, MAX_COMPARE_COLUMNS);
     for (const s of sers) p.append('ser', s);
     const qs = p.toString();
     const url = `${window.location.pathname}${qs ? `?${qs}` : ''}${window.location.hash || ''}`;
@@ -521,15 +593,15 @@ function updateSortIndicators() {
     th.classList.remove('sort-asc', 'sort-desc');
   });
   const sortHeaderMap = {
-    serializer: 'th-serializer',
+    library: 'th-queue',
     ops_median: 'th-ops-median',
     ops_std: 'th-ops-std',
     ops_p95: 'th-ops-p95',
     ops_p99: 'th-ops-p99',
-    total_median_ns: 'th-lat-median',
-    total_std_ns: 'th-lat-std',
-    total_p95_ns: 'th-lat-p95',
-    total_p99_ns: 'th-lat-p99',
+    handoff_median_ns: 'th-lat-median',
+    handoff_std_ns: 'th-lat-std',
+    handoff_p95_ns: 'th-lat-p95',
+    handoff_p99_ns: 'th-lat-p99',
     median_size_bytes: 'th-size',
   };
   const sortTh = document.getElementById(sortHeaderMap[state.sortKey]);
@@ -574,7 +646,7 @@ function updateCompareStatusLine() {
   const metricsEl = document.getElementById('metrics-selected-count');
   let n = 0;
   if (state.compareScope === 'same') {
-    n = state.detailSerializers.filter((s) => state.serializerNames.includes(s)).length;
+    n = state.detailQueues.filter((s) => state.queueNames.includes(s)).length;
   } else {
     n = state.xlSelected.length;
   }
@@ -656,7 +728,7 @@ function setupEventListeners() {
     setChartLogScale(state.chartLogScale);
     document.getElementById('btn-chart-log')?.classList.toggle('active', state.chartLogScale);
     saveSettings();
-    updateCharts(state.filteredGroups, state.paretoSerializerNames, state.displayMetric);
+    updateCharts(state.filteredGroups, state.paretoQueueNames, state.displayMetric);
   });
 
   const setRankingSort = (sort) => {
@@ -666,7 +738,7 @@ function setupEventListeners() {
     document.getElementById('btn-rank-sort-size')?.classList.toggle('active', state.rankSort === 'size');
     updateRankSortPrimaryLabel();
     saveSettings();
-    updateCharts(state.filteredGroups, state.paretoSerializerNames, state.displayMetric);
+    updateCharts(state.filteredGroups, state.paretoQueueNames, state.displayMetric);
   };
   document.getElementById('btn-rank-sort-speed')?.addEventListener('click', () => setRankingSort('speed'));
   document.getElementById('btn-rank-sort-size')?.addEventListener('click', () => setRankingSort('size'));
@@ -687,15 +759,15 @@ function setupEventListeners() {
   });
 
   const headers = [
-    { id: 'th-serializer', key: 'serializer' },
+    { id: 'th-queue', key: 'library' },
     { id: 'th-ops-median', key: 'ops_median' },
     { id: 'th-ops-std', key: 'ops_std' },
     { id: 'th-ops-p95', key: 'ops_p95' },
     { id: 'th-ops-p99', key: 'ops_p99' },
-    { id: 'th-lat-median', key: 'total_median_ns' },
-    { id: 'th-lat-std', key: 'total_std_ns' },
-    { id: 'th-lat-p95', key: 'total_p95_ns' },
-    { id: 'th-lat-p99', key: 'total_p99_ns' },
+    { id: 'th-lat-median', key: 'handoff_median_ns' },
+    { id: 'th-lat-std', key: 'handoff_std_ns' },
+    { id: 'th-lat-p95', key: 'handoff_p95_ns' },
+    { id: 'th-lat-p99', key: 'handoff_p99_ns' },
     { id: 'th-size', key: 'median_size_bytes' },
   ];
   headers.forEach((h) => {
@@ -717,9 +789,9 @@ function setupEventListeners() {
     if (
       state.compareScope === 'same' &&
       state.compareBaseline &&
-      !state.detailSerializers.includes(state.compareBaseline)
+      !state.detailQueues.includes(state.compareBaseline)
     ) {
-      state.detailSerializers = [state.compareBaseline, ...state.detailSerializers].slice(
+      state.detailQueues = [state.compareBaseline, ...state.detailQueues].slice(
         0,
         MAX_COMPARE_COLUMNS
       );
@@ -753,15 +825,15 @@ function setupEventListeners() {
 
   document.getElementById('detail-ser-select-all')?.addEventListener('click', () => {
     // Same-language only: add all (capped)
-    state.detailSerializers = state.serializerNames.slice(0, MAX_COMPARE_COLUMNS);
+    state.detailQueues = state.queueNames.slice(0, MAX_COMPARE_COLUMNS);
     if (
       state.compareBaseline &&
-      !state.detailSerializers.includes(state.compareBaseline) &&
-      state.serializerNames.includes(state.compareBaseline)
+      !state.detailQueues.includes(state.compareBaseline) &&
+      state.queueNames.includes(state.compareBaseline)
     ) {
-      state.detailSerializers = [
+      state.detailQueues = [
         state.compareBaseline,
-        ...state.detailSerializers.filter((s) => s !== state.compareBaseline),
+        ...state.detailQueues.filter((s) => s !== state.compareBaseline),
       ].slice(0, MAX_COMPARE_COLUMNS);
     }
     saveSettings();
@@ -773,7 +845,7 @@ function setupEventListeners() {
 
   document.getElementById('detail-ser-select-none')?.addEventListener('click', () => {
     if (state.compareScope === 'same') {
-      state.detailSerializers = state.compareBaseline ? [state.compareBaseline] : [];
+      state.detailQueues = state.compareBaseline ? [state.compareBaseline] : [];
       renderSameSelectionChips();
       populateSameSerAddSelect();
     } else {
@@ -843,7 +915,7 @@ function setupEventListeners() {
     state.xlTestData = e.target.value;
     if (state.xlSelectionMode === 'pareto') applyCrossLangParetoSelection();
     else pruneCrossLangSelection();
-    refreshCrossLangAddSerializerOptions();
+    refreshCrossLangAddQueueOptions();
     renderCrossLangSelection();
     updateXlBaselineSelect();
     renderCompareMatrix();
@@ -855,7 +927,7 @@ function setupEventListeners() {
     state.xlMode = e.target.value;
     if (state.xlSelectionMode === 'pareto') applyCrossLangParetoSelection();
     else pruneCrossLangSelection();
-    refreshCrossLangAddSerializerOptions();
+    refreshCrossLangAddQueueOptions();
     renderCrossLangSelection();
     updateXlBaselineSelect();
     renderCompareMatrix();
@@ -872,21 +944,21 @@ function setupEventListeners() {
     }
     renderCrossLangSelection();
     updateXlBaselineSelect();
-    refreshCrossLangAddSerializerOptions();
+    refreshCrossLangAddQueueOptions();
     renderCompareMatrix();
     saveSettings();
     updateCompareStatusLine();
   });
 
   document.getElementById('xl-add-lang')?.addEventListener('change', () => {
-    refreshCrossLangAddSerializerOptions();
+    refreshCrossLangAddQueueOptions();
   });
 
   document.getElementById('xl-add-btn')?.addEventListener('click', () => {
     const lang = document.getElementById('xl-add-lang').value;
-    const serializer = document.getElementById('xl-add-serializer').value;
-    if (!lang || !serializer) return;
-    if (state.xlSelected.some((x) => x.lang === lang && x.serializer === serializer)) {
+    const library = document.getElementById('xl-add-queue').value;
+    if (!lang || !library) return;
+    if (state.xlSelected.some((x) => x.lang === lang && x.library === library)) {
       showNotification('Already selected for comparison.', 'info');
       return;
     }
@@ -894,16 +966,16 @@ function setupEventListeners() {
       showNotification(`At most ${MAX_COMPARE_COLUMNS} queues in Compare.`, 'info');
       return;
     }
-    const group = findCrossLangGroup(lang, serializer);
+    const group = findCrossLangGroup(lang, library);
     if (!group) {
       showNotification('No data for that queue under the current data type / mode.', 'error');
       return;
     }
     state.xlSelectionMode = 'custom';
-    state.xlSelected = [...state.xlSelected, { lang, serializer }];
+    state.xlSelected = [...state.xlSelected, { lang, library }];
     renderCrossLangSelection();
     updateXlBaselineSelect();
-    refreshCrossLangAddSerializerOptions();
+    refreshCrossLangAddQueueOptions();
     renderCompareMatrix();
     saveSettings();
     updateCompareStatusLine();
@@ -1279,9 +1351,9 @@ function appendConfigRow(dl, term, value) {
   dl.appendChild(dd);
 }
 
-function buildSerializerNameList(items) {
+function buildQueueNameList(items) {
   const ul = document.createElement('ul');
-  ul.className = 'run-config-serializers';
+  ul.className = 'run-config-queues';
   const list = Array.isArray(items) ? items : [];
   for (const it of list.slice(0, 40)) {
     if (!it || typeof it !== 'object') continue;
@@ -1312,7 +1384,7 @@ function updateRunConfigPanel() {
   const mem = env.memory || {};
   const git = env.git || {};
   const dataset = cfg.dataset || {};
-  const ser = cfg.serializers || {};
+  const ser = cfg.libraries || cfg.queues || cfg.serializers || {};
   const run = cfg.run || {};
   const lang = cfg.language || state.currentLanguage || '';
 
@@ -1359,7 +1431,7 @@ function updateRunConfigPanel() {
     appendConfigRow(dl, 'Data types (config)', typeNames.join(', '));
   }
 
-  const serList = buildSerializerNameList(ser.items);
+  const serList = buildQueueNameList(ser.items);
   if (serList) {
     appendConfigRow(dl, 'Queues (from CSV)', serList);
   }
@@ -1416,13 +1488,13 @@ async function loadHistoricalRunIntoDashboard(runId) {
 }
 
 const GROUP_IDENTITY_KEYS = new Set([
-  'serializer',
+  'queue',
   'test_data',
   'type_config_hash',
   'data_type_instance_count',
   'mode',
   'language',
-  'serializer_version',
+  'library_version',
   'StreamMode',
   'variants',
 ]);
@@ -1447,13 +1519,13 @@ function expandVariantGroups(slimGroups, catalog) {
     }
     // Always copy known identity fields even if null
     for (const k of [
-      'serializer',
+      'queue',
       'test_data',
       'type_config_hash',
       'data_type_instance_count',
       'mode',
       'language',
-      'serializer_version',
+      'library_version',
     ]) {
       if (k in g) identity[k] = g[k];
     }
@@ -1498,10 +1570,10 @@ function normalizeStatsPayload(statsObj) {
       : DEFAULT_FILTER_POLICY;
 
   const mapGroups = (list) =>
-    (Array.isArray(list) ? list : []).map((g) => ({
-      ...g,
-      test_data: fixtureKey(g),
-    }));
+    (Array.isArray(list) ? list : []).map((g) => {
+      const n = normalizeStatsGroup(g);
+      return { ...n, test_data: fixtureKey(n) };
+    });
 
   /** @type {Record<string, object[]>} */
   let groupsByPolicy = {};
@@ -1680,9 +1752,9 @@ function updateFilterPolicyMeta() {
       `min_n=${f.min_samples_for_outlier_filter ?? catalog.min_samples_for_outlier_filter}`
     );
   }
-  if (f.fence_total_low_ns != null && f.fence_total_high_ns != null && sample) {
+  if (f.fence_handoff_low_ns != null && f.fence_handoff_high_ns != null && sample) {
     criteriaBits.push(
-      `e.g. total fences [${formatTimeCompact(f.fence_total_low_ns)}, ${formatTimeCompact(f.fence_total_high_ns)}] on ${sample.serializer}`
+      `e.g. total fences [${formatTimeCompact(f.fence_handoff_low_ns)}, ${formatTimeCompact(f.fence_handoff_high_ns)}] on ${sample.queue}`
     );
   }
 
@@ -1791,11 +1863,11 @@ function populateFixtureSelect(options, cfg = {}) {
 
 /**
  * Docs Summary aggregation (reports._scientific_summary_md intent):
- * - Prefer bytes/string mode when present for a serializer (else keep all modes).
+ * - Prefer bytes/string mode when present for a queue (else keep all modes).
  * - Restrict to suite data-type base ids (message, document, …).
  * - One value per field: arithmetic mean across remaining groups;
- *   `runs` is summed; non-numeric: first non-empty (e.g. serializer_version).
- * - `total_median_ns` falls back to `avg_time_total_ns` when missing.
+ *   `runs` is summed; non-numeric: first non-empty (e.g. queue_version).
+ * - `handoff_median_ns` falls back to `avg_time_handoff_ns` when missing.
  */
 
 /** Instance count from group (column or @n= suffix). */
@@ -1858,12 +1930,12 @@ function isCompoundFixture(key) {
 }
 
 /**
- * Average numeric fields across a list of groups (same serializer).
- * runs: sum; total_median_ns falls back to avg_time_total_ns.
+ * Average numeric fields across a list of groups (same queue).
+ * runs: sum; handoff_median_ns falls back to avg_time_handoff_ns.
  */
-function averageGroupsForSerializer(serializer, entries, meta) {
+function averageGroupsForQueue(library, entries, meta) {
   const row = {
-    serializer,
+    library,
     test_data: meta.test_data,
     mode: meta.mode,
     language: entries[0]?.language || state.currentLanguage,
@@ -1872,12 +1944,12 @@ function averageGroupsForSerializer(serializer, entries, meta) {
   };
   let version = '';
   for (const e of entries) {
-    if (e.serializer_version) {
-      version = String(e.serializer_version).trim();
+    if (e.library_version) {
+      version = String(e.library_version).trim();
       break;
     }
   }
-  if (version) row.serializer_version = version;
+  if (version) row.library_version = version;
 
   const streamModes = [
     ...new Set(
@@ -1900,8 +1972,8 @@ function averageGroupsForSerializer(serializer, entries, meta) {
     const vals = [];
     for (const e of entries) {
       let v = e[key];
-      if ((v === null || v === undefined) && key === 'total_median_ns') {
-        v = e.avg_time_total_ns;
+      if ((v === null || v === undefined) && key === 'handoff_median_ns') {
+        v = e.avg_time_handoff_ns;
       }
       if (typeof v === 'number' && Number.isFinite(v)) vals.push(v);
     }
@@ -1915,17 +1987,17 @@ function averageGroupsForSerializer(serializer, entries, meta) {
         ? vals.reduce((a, b) => a + b, 0)
         : vals.reduce((a, b) => a + b, 0) / vals.length;
   }
-  if (row.avg_time_total_ns == null && row.total_median_ns != null) {
-    row.avg_time_total_ns = row.total_median_ns;
+  if (row.avg_time_handoff_ns == null && row.handoff_median_ns != null) {
+    row.avg_time_handoff_ns = row.handoff_median_ns;
   }
-  if (row.avg_ops_per_sec == null && row.avg_time_total_ns > 0) {
-    row.avg_ops_per_sec = 1e9 / row.avg_time_total_ns;
+  if (row.avg_ops_per_sec == null && row.avg_time_handoff_ns > 0) {
+    row.avg_ops_per_sec = 1e9 / row.avg_time_handoff_ns;
   }
   return row;
 }
 
 /**
- * Build compounded rows: for each serializer, mean of n=A and n=B groups
+ * Build compounded rows: for each queue, mean of n=A and n=B groups
  * for the same base type + mode.
  */
 function buildCompoundedFixtureGroups(allGroups, base, nA, nB, mode) {
@@ -1939,14 +2011,14 @@ function buildCompoundedFixtureGroups(allGroups, base, nA, nB, mode) {
 
   const bySer = new Map();
   for (const g of matched) {
-    if (!bySer.has(g.serializer)) bySer.set(g.serializer, []);
-    bySer.get(g.serializer).push(g);
+    if (!bySer.has(g.library)) bySer.set(g.library, []);
+    bySer.get(g.library).push(g);
   }
 
   const test_data = compoundFixtureKey(base, nA, nB);
   const out = [];
-  for (const [serializer, entries] of bySer) {
-    // Prefer serializers that have both batch sizes
+  for (const [library, entries] of bySer) {
+    // Prefer queues that have both batch sizes
     const ns = new Set(entries.map(instanceCount).filter((x) => x != null));
     if (!ns.has(nA) || !ns.has(nB)) continue;
     // One group per n (if duplicates, average those first)
@@ -1962,7 +2034,7 @@ function buildCompoundedFixtureGroups(allGroups, base, nA, nB, mode) {
       if (list.length === 1) parts.push(list[0]);
       else if (list.length > 1) {
         parts.push(
-          averageGroupsForSerializer(serializer, list, {
+          averageGroupsForQueue(library, list, {
             test_data: `${base}@n=${n}`,
             mode,
             compounded: false,
@@ -1972,7 +2044,7 @@ function buildCompoundedFixtureGroups(allGroups, base, nA, nB, mode) {
     }
     if (parts.length < 2) continue;
     out.push(
-      averageGroupsForSerializer(serializer, parts, {
+      averageGroupsForQueue(library, parts, {
         test_data,
         mode,
         compounded: true,
@@ -1980,7 +2052,7 @@ function buildCompoundedFixtureGroups(allGroups, base, nA, nB, mode) {
       })
     );
   }
-  return out.sort((a, b) => a.serializer.localeCompare(b.serializer));
+  return out.sort((a, b) => a.queue.localeCompare(b.queue));
 }
 
 /**
@@ -1996,13 +2068,13 @@ function buildAllTypesAtNGroups(allGroups, n, mode) {
 
   const bySer = new Map();
   for (const g of matched) {
-    if (!bySer.has(g.serializer)) bySer.set(g.serializer, []);
-    bySer.get(g.serializer).push(g);
+    if (!bySer.has(g.library)) bySer.set(g.library, []);
+    bySer.get(g.library).push(g);
   }
 
   const test_data = `all@${n}`;
   const out = [];
-  for (const [serializer, entries] of bySer) {
+  for (const [library, entries] of bySer) {
     // One value per base type, then mean across types
     const byBase = new Map();
     for (const e of entries) {
@@ -2019,7 +2091,7 @@ function buildAllTypesAtNGroups(allGroups, n, mode) {
       if (list.length === 1) parts.push(list[0]);
       else {
         parts.push(
-          averageGroupsForSerializer(serializer, list, {
+          averageGroupsForQueue(library, list, {
             test_data: `${base}@n=${n}`,
             mode,
             compounded: false,
@@ -2029,7 +2101,7 @@ function buildAllTypesAtNGroups(allGroups, n, mode) {
     }
     if (parts.length < 1) continue;
     out.push(
-      averageGroupsForSerializer(serializer, parts, {
+      averageGroupsForQueue(library, parts, {
         test_data,
         mode,
         compounded: true,
@@ -2037,7 +2109,7 @@ function buildAllTypesAtNGroups(allGroups, n, mode) {
       })
     );
   }
-  return out.sort((a, b) => a.serializer.localeCompare(b.serializer));
+  return out.sort((a, b) => a.queue.localeCompare(b.queue));
 }
 
 /**
@@ -2052,12 +2124,12 @@ function buildAllAllGroups(allGroups, mode) {
 
   const bySer = new Map();
   for (const g of matched) {
-    if (!bySer.has(g.serializer)) bySer.set(g.serializer, []);
-    bySer.get(g.serializer).push(g);
+    if (!bySer.has(g.library)) bySer.set(g.library, []);
+    bySer.get(g.library).push(g);
   }
 
   const out = [];
-  for (const [serializer, entries] of bySer) {
+  for (const [library, entries] of bySer) {
     const byCell = new Map(); // base@n -> groups
     for (const e of entries) {
       const n = instanceCount(e);
@@ -2074,7 +2146,7 @@ function buildAllAllGroups(allGroups, mode) {
       if (list.length === 1) parts.push(list[0]);
       else {
         parts.push(
-          averageGroupsForSerializer(serializer, list, {
+          averageGroupsForQueue(library, list, {
             test_data: cell,
             mode,
             compounded: false,
@@ -2084,7 +2156,7 @@ function buildAllAllGroups(allGroups, mode) {
     }
     if (parts.length < 1) continue;
     out.push(
-      averageGroupsForSerializer(serializer, parts, {
+      averageGroupsForQueue(library, parts, {
         test_data: 'all@all',
         mode,
         compounded: true,
@@ -2092,7 +2164,7 @@ function buildAllAllGroups(allGroups, mode) {
       })
     );
   }
-  return out.sort((a, b) => a.serializer.localeCompare(b.serializer));
+  return out.sort((a, b) => a.queue.localeCompare(b.queue));
 }
 
 /** Natural + synthetic data-type keys for the Test Data dropdown. */
@@ -2188,32 +2260,32 @@ function filterAndRefresh() {
   state.filteredGroups =
     cat === 'all'
       ? resolved
-      : resolved.filter((g) => communicationBucket(g.serializer) === cat);
+      : resolved.filter((g) => communicationBucket(g.library) === cat);
 
-  state.serializerNames = [
-    ...new Set(state.filteredGroups.map((g) => g.serializer)),
+  state.queueNames = [
+    ...new Set(state.filteredGroups.map((g) => g.library)),
   ].sort((a, b) => a.localeCompare(b));
 
   calculateParetoFrontier();
 
   // Baseline default
-  if (!state.compareBaseline || !state.serializerNames.includes(state.compareBaseline)) {
+  if (!state.compareBaseline || !state.queueNames.includes(state.compareBaseline)) {
     state.compareBaseline =
-      state.paretoSerializerNames[0] || state.serializerNames[0] || '';
+      state.paretoQueueNames[0] || state.queueNames[0] || '';
   }
 
-  // Detail serializers default: baseline + a few others (capped)
-  state.detailSerializers = state.detailSerializers.filter((s) =>
-    state.serializerNames.includes(s)
+  // Detail queues default: baseline + a few others (capped)
+  state.detailQueues = state.detailQueues.filter((s) =>
+    state.queueNames.includes(s)
   );
-  if (!state.detailSerializers.length) {
-    const seed = state.paretoSerializerNames.length
-      ? state.paretoSerializerNames
-      : state.serializerNames;
-    state.detailSerializers = seed.slice(0, Math.min(6, seed.length));
+  if (!state.detailQueues.length) {
+    const seed = state.paretoQueueNames.length
+      ? state.paretoQueueNames
+      : state.queueNames;
+    state.detailQueues = seed.slice(0, Math.min(6, seed.length));
   }
-  if (state.compareBaseline && !state.detailSerializers.includes(state.compareBaseline)) {
-    state.detailSerializers = [state.compareBaseline, ...state.detailSerializers].slice(
+  if (state.compareBaseline && !state.detailQueues.includes(state.compareBaseline)) {
+    state.detailQueues = [state.compareBaseline, ...state.detailQueues].slice(
       0,
       MAX_COMPARE_COLUMNS
     );
@@ -2228,7 +2300,7 @@ function filterAndRefresh() {
   renderMetricsChecklist();
   renderTable();
   renderCompareMatrix();
-  updateCharts(state.filteredGroups, state.paretoSerializerNames, state.displayMetric);
+  updateCharts(state.filteredGroups, state.paretoQueueNames, state.displayMetric);
   updateSortIndicators();
   updateCompareStatusLine();
   saveSettings();
@@ -2240,7 +2312,7 @@ function setViewMetric(metric) {
   document.getElementById('btn-time-ns')?.classList.toggle('active', metric === 'time');
   updateRankSortPrimaryLabel();
   saveSettings();
-  updateCharts(state.filteredGroups, state.paretoSerializerNames, state.displayMetric);
+  updateCharts(state.filteredGroups, state.paretoQueueNames, state.displayMetric);
 }
 
 function setRosterMetric(metric) {
@@ -2249,12 +2321,12 @@ function setRosterMetric(metric) {
   document.getElementById('btn-roster-latency')?.classList.toggle('active', state.rosterMetric === 'time');
   // Reset sort to primary column of the active view
   const opsKeys = new Set(['ops_median', 'ops_std', 'ops_p95', 'ops_p99']);
-  const latKeys = new Set(['total_median_ns', 'total_std_ns', 'total_p95_ns', 'total_p99_ns']);
+  const latKeys = new Set(['handoff_median_ns', 'handoff_std_ns', 'handoff_p95_ns', 'handoff_p99_ns']);
   if (state.rosterMetric === 'ops' && latKeys.has(state.sortKey)) {
     state.sortKey = 'ops_median';
     state.sortDirection = 'desc';
   } else if (state.rosterMetric === 'time' && opsKeys.has(state.sortKey)) {
-    state.sortKey = 'total_median_ns';
+    state.sortKey = 'handoff_median_ns';
     state.sortDirection = 'asc';
   }
   saveSettings();
@@ -2273,12 +2345,12 @@ function invNsToOps(ns) {
 /** Attach ops_median / ops_std / ops_p95 / ops_p99 for roster display & sort. */
 function withOpsDerivedStats(g) {
   if (!g) return g;
-  const medianNs = g.total_median_ns ?? g.total_p50_ns ?? g.avg_time_total_ns;
-  const meanNs = g.total_mean_ns ?? g.avg_time_total_ns;
-  const stdNs = g.total_std_ns;
+  const medianNs = g.handoff_median_ns ?? g.handoff_p50_ns ?? g.avg_time_handoff_ns;
+  const meanNs = g.handoff_mean_ns ?? g.avg_time_handoff_ns;
+  const stdNs = g.handoff_std_ns;
   // High throughput percentiles ↔ low latency percentiles
-  const p95Ops = invNsToOps(g.total_p5_ns);
-  const p99Ops = invNsToOps(g.total_min_ns ?? g.total_p5_ns);
+  const p95Ops = invNsToOps(g.handoff_p5_ns);
+  const p99Ops = invNsToOps(g.handoff_min_ns ?? g.handoff_p5_ns);
   let opsStd = null;
   if (
     typeof meanNs === 'number' &&
@@ -2302,10 +2374,10 @@ function withOpsDerivedStats(g) {
 function rosterMetricKeys() {
   if (state.rosterMetric === 'time') {
     return [
-      { key: 'total_median_ns', higherIsBetter: false, label: 'Median' },
-      { key: 'total_std_ns', higherIsBetter: false, label: 'Std' },
-      { key: 'total_p95_ns', higherIsBetter: false, label: 'P95' },
-      { key: 'total_p99_ns', higherIsBetter: false, label: 'P99' },
+      { key: 'handoff_median_ns', higherIsBetter: false, label: 'Median' },
+      { key: 'handoff_std_ns', higherIsBetter: false, label: 'Std' },
+      { key: 'handoff_p95_ns', higherIsBetter: false, label: 'P95' },
+      { key: 'handoff_p99_ns', higherIsBetter: false, label: 'P99' },
       { key: 'median_size_bytes', higherIsBetter: false, label: 'Median size' },
     ];
   }
@@ -2336,8 +2408,8 @@ function formatRosterRelativeCell(row, key, higherIsBetter, scales, baselineGrou
   const ownMedian =
     key.startsWith('ops_')
       ? row.ops_median
-      : key.startsWith('total_')
-        ? row.total_median_ns ?? row.total_p50_ns
+      : key.startsWith('handoff_') || key.startsWith('total_')
+        ? row.handoff_median_ns ?? row.handoff_p50_ns
         : null;
 
   // Shape stats: ratio to own median
@@ -2345,9 +2417,9 @@ function formatRosterRelativeCell(row, key, higherIsBetter, scales, baselineGrou
     key === 'ops_std' ||
     key === 'ops_p95' ||
     key === 'ops_p99' ||
-    key === 'total_std_ns' ||
-    key === 'total_p95_ns' ||
-    key === 'total_p99_ns';
+    key === 'handoff_std_ns' ||
+    key === 'handoff_p95_ns' ||
+    key === 'handoff_p99_ns';
 
   if (vsOwnMed) {
     // ×med is distribution shape (tail/spread vs typical), not better/worse vs baseline.
@@ -2413,7 +2485,7 @@ function paretoOptimalGroups(groups) {
 }
 
 function calculateParetoFrontier() {
-  state.paretoSerializerNames = paretoOptimalGroups(state.filteredGroups).map((g) => g.serializer);
+  state.paretoQueueNames = paretoOptimalGroups(state.filteredGroups).map((g) => g.library);
 }
 
 // ---------- Cross-language ----------
@@ -2642,7 +2714,7 @@ function initCrossLangControls() {
       langSel.appendChild(opt);
     });
   }
-  refreshCrossLangAddSerializerOptions();
+  refreshCrossLangAddQueueOptions();
 }
 
 /**
@@ -2676,9 +2748,9 @@ function filterGroupsForCrossLang(groups) {
   return normalized.filter((g) => g.test_data === state.xlTestData);
 }
 
-function findCrossLangGroup(lang, serializer) {
+function findCrossLangGroup(lang, library) {
   const groups = filterGroupsForCrossLang(state.crossLangGroupsByLang[lang] || []);
-  return groups.find((g) => g.serializer === serializer) || null;
+  return groups.find((g) => g.library === library) || null;
 }
 
 function applyCrossLangParetoSelection() {
@@ -2688,42 +2760,42 @@ function applyCrossLangParetoSelection() {
     const pareto = paretoOptimalGroups(groups)
       .sort((a, b) => b.avg_ops_per_sec - a.avg_ops_per_sec)
       .slice(0, 2);
-    pareto.forEach((g) => selected.push({ lang: lang.id, serializer: g.serializer }));
+    pareto.forEach((g) => selected.push({ lang: lang.id, library: g.library }));
   }
   // Prefer diversity but keep table readable
   state.xlSelected = selected.slice(0, MAX_COMPARE_COLUMNS);
   state.xlSelectionMode = 'pareto';
   if (state.xlSelected.length) {
-    const keys = new Set(state.xlSelected.map((x) => `${x.lang}|${x.serializer}`));
+    const keys = new Set(state.xlSelected.map((x) => `${x.lang}|${x.library}`));
     if (!keys.has(state.xlBaselineKey)) {
-      state.xlBaselineKey = `${state.xlSelected[0].lang}|${state.xlSelected[0].serializer}`;
+      state.xlBaselineKey = `${state.xlSelected[0].lang}|${state.xlSelected[0].library}`;
     }
   }
 }
 
 function pruneCrossLangSelection() {
-  state.xlSelected = state.xlSelected.filter((x) => findCrossLangGroup(x.lang, x.serializer));
+  state.xlSelected = state.xlSelected.filter((x) => findCrossLangGroup(x.lang, x.library));
 }
 
-function refreshCrossLangAddSerializerOptions() {
+function refreshCrossLangAddQueueOptions() {
   const lang = document.getElementById('xl-add-lang')?.value;
-  const serSel = document.getElementById('xl-add-serializer');
+  const serSel = document.getElementById('xl-add-queue');
   if (!serSel || !lang) return;
   const groups = filterGroupsForCrossLang(state.crossLangGroupsByLang[lang] || []);
-  const names = [...new Set(groups.map((g) => g.serializer))].sort((a, b) =>
+  const names = [...new Set(groups.map((g) => g.library))].sort((a, b) =>
     a.localeCompare(b)
   );
   const selected = new Set(
-    state.xlSelected.filter((x) => x.lang === lang).map((x) => x.serializer)
+    state.xlSelected.filter((x) => x.lang === lang).map((x) => x.library)
   );
   serSel.innerHTML = '';
   names
     .filter((n) => !selected.has(n))
     .forEach((n) => {
-      const g = groups.find((x) => x.serializer === n);
+      const g = groups.find((x) => x.library === n);
       const opt = document.createElement('option');
       opt.value = n;
-      opt.textContent = g ? serializerLabelFromGroup(g) : n;
+      opt.textContent = g ? queueLabelFromGroup(g) : n;
       serSel.appendChild(opt);
     });
 }
@@ -2807,9 +2879,9 @@ function renderCrossLangSelection() {
     const items = byLang.get(langId) || [];
     const langShort = languageLabel(langId);
     const chips = items.map((x) => {
-      const g = findCrossLangGroup(x.lang, x.serializer);
-      const serLabel = g ? serializerLabelFromGroup(g) : x.serializer;
-      const key = `${x.lang}|${x.serializer}`;
+      const g = findCrossLangGroup(x.lang, x.library);
+      const serLabel = g ? queueLabelFromGroup(g) : x.library;
+      const key = `${x.lang}|${x.library}`;
       // Compact: "C#: BinaryPack" on one chip (no separate language rows)
       return makeChip({
         fullLabel: serLabel,
@@ -2819,11 +2891,11 @@ function renderCrossLangSelection() {
         onRemove: () => {
           state.xlSelectionMode = 'custom';
           state.xlSelected = state.xlSelected.filter(
-            (y) => !(y.lang === x.lang && y.serializer === x.serializer)
+            (y) => !(y.lang === x.lang && y.library === x.library)
           );
           renderCrossLangSelection();
           updateXlBaselineSelect();
-          refreshCrossLangAddSerializerOptions();
+          refreshCrossLangAddQueueOptions();
           renderCompareMatrix();
           saveSettings();
           updateCompareStatusLine();
@@ -2841,12 +2913,12 @@ function populateSameSerAddSelect() {
   const sel = document.getElementById('same-ser-add-select');
   if (!sel) return;
   const q = (document.getElementById('same-ser-search')?.value || '').toLowerCase().trim();
-  const selected = new Set(state.detailSerializers);
-  const candidates = state.serializerNames.filter((n) => !selected.has(n));
+  const selected = new Set(state.detailQueues);
+  const candidates = state.queueNames.filter((n) => !selected.has(n));
   const filtered = candidates.filter((n) => {
     if (!q) return true;
     const g = groupForSerializer(n);
-    const label = (g ? serializerLabelFromGroup(g) : n).toLowerCase();
+    const label = (g ? queueLabelFromGroup(g) : n).toLowerCase();
     return n.toLowerCase().includes(q) || label.includes(q);
   });
   sel.innerHTML = '';
@@ -2861,22 +2933,22 @@ function populateSameSerAddSelect() {
     const g = groupForSerializer(n);
     const opt = document.createElement('option');
     opt.value = n;
-    opt.textContent = g ? serializerLabelFromGroup(g) : n;
+    opt.textContent = g ? queueLabelFromGroup(g) : n;
     sel.appendChild(opt);
   });
 }
 
 function addSameLanguageSerializer(name) {
-  if (!name || !state.serializerNames.includes(name)) return;
-  if (state.detailSerializers.includes(name)) {
+  if (!name || !state.queueNames.includes(name)) return;
+  if (state.detailQueues.includes(name)) {
     showNotification('Already selected.', 'info');
     return;
   }
-  if (state.detailSerializers.length >= MAX_COMPARE_COLUMNS) {
+  if (state.detailQueues.length >= MAX_COMPARE_COLUMNS) {
     showNotification(`At most ${MAX_COMPARE_COLUMNS} queues in Compare.`, 'info');
     return;
   }
-  state.detailSerializers = [...state.detailSerializers, name];
+  state.detailQueues = [...state.detailQueues, name];
   saveSettings();
   renderSameSelectionChips();
   populateSameSerAddSelect();
@@ -2887,7 +2959,7 @@ function addSameLanguageSerializer(name) {
 function renderSameSelectionChips() {
   const host = document.getElementById('same-selection-chips');
   if (!host) return;
-  const names = state.detailSerializers.filter((s) => state.serializerNames.includes(s));
+  const names = state.detailQueues.filter((s) => state.queueNames.includes(s));
   if (!names.length) {
     renderChipGroups(host, []);
     updateCompareStatusLine();
@@ -2895,19 +2967,19 @@ function renderSameSelectionChips() {
   }
   const chips = names.map((name) => {
     const g = groupForSerializer(name);
-    const full = g ? serializerLabelFromGroup(g) : name;
+    const full = g ? queueLabelFromGroup(g) : name;
     return makeChip({
       fullLabel: full,
       shortLabel: full.split(':')[0],
       title: full,
       isBaseline: name === state.compareBaseline,
       onRemove: () => {
-        state.detailSerializers = state.detailSerializers.filter((s) => s !== name);
+        state.detailQueues = state.detailQueues.filter((s) => s !== name);
         if (
           state.compareBaseline === name ||
-          !state.detailSerializers.includes(state.compareBaseline)
+          !state.detailQueues.includes(state.compareBaseline)
         ) {
-          state.compareBaseline = state.detailSerializers[0] || '';
+          state.compareBaseline = state.detailQueues[0] || '';
           populateBaselineSelect();
         }
         saveSettings();
@@ -2928,19 +3000,19 @@ function updateXlBaselineSelect() {
   sel.innerHTML = '';
   state.xlSelected.forEach((x) => {
     const opt = document.createElement('option');
-    opt.value = `${x.lang}|${x.serializer}`;
-    const g = findCrossLangGroup(x.lang, x.serializer);
-    const serLabel = g ? serializerLabelFromGroup(g) : x.serializer;
+    opt.value = `${x.lang}|${x.library}`;
+    const g = findCrossLangGroup(x.lang, x.library);
+    const serLabel = g ? queueLabelFromGroup(g) : x.library;
     opt.textContent = `${languageLabel(x.lang)} / ${serLabel}`;
     sel.appendChild(opt);
   });
   if (
     state.xlBaselineKey &&
-    state.xlSelected.some((x) => `${x.lang}|${x.serializer}` === state.xlBaselineKey)
+    state.xlSelected.some((x) => `${x.lang}|${x.library}` === state.xlBaselineKey)
   ) {
     sel.value = state.xlBaselineKey;
   } else if (state.xlSelected.length) {
-    state.xlBaselineKey = `${state.xlSelected[0].lang}|${state.xlSelected[0].serializer}`;
+    state.xlBaselineKey = `${state.xlSelected[0].lang}|${state.xlSelected[0].library}`;
     sel.value = state.xlBaselineKey;
   } else {
     state.xlBaselineKey = '';
@@ -2976,15 +3048,15 @@ function updateKPIs() {
   }
 
   const latencyKey = (g) =>
-    g.total_median_ns != null && Number.isFinite(g.total_median_ns)
-      ? g.total_median_ns
-      : g.avg_time_total_ns;
+    g.handoff_median_ns != null && Number.isFinite(g.handoff_median_ns)
+      ? g.handoff_median_ns
+      : g.avg_time_handoff_ns;
 
   const fastest = [...state.filteredGroups]
     .filter((g) => latencyKey(g) != null && Number.isFinite(latencyKey(g)))
     .sort((a, b) => latencyKey(a) - latencyKey(b))[0];
   if (fastest) {
-    document.getElementById('kpi-fastest').textContent = fastest.serializer;
+    document.getElementById('kpi-fastest').textContent = fastest.queue;
     const lat = latencyKey(fastest);
     const suffix = fastest.compounded ? ` · ${state.currentTestData}` : '';
     document.getElementById('kpi-fastest-val').textContent =
@@ -2995,14 +3067,14 @@ function updateKPIs() {
     .filter((g) => g.median_size_bytes != null)
     .sort((a, b) => a.median_size_bytes - b.median_size_bytes)[0];
   if (compact) {
-    document.getElementById('kpi-compact').textContent = compact.serializer;
+    document.getElementById('kpi-compact').textContent = compact.queue;
     const suffix = compact.compounded ? ` · ${state.currentTestData}` : '';
     document.getElementById('kpi-compact-val').textContent =
       `${formatIntGrouped(compact.median_size_bytes)} bytes${suffix}`;
   }
 
   document.getElementById('kpi-pareto').textContent =
-    `${state.paretoSerializerNames.length} / ${total}`;
+    `${state.paretoQueueNames.length} / ${total}`;
   const paretoDesc = document.querySelector('#kpi-pareto')?.closest('.kpi-card')?.querySelector('.kpi-desc');
   if (paretoDesc) {
     const pl =
@@ -3012,7 +3084,7 @@ function updateKPIs() {
 }
 
 function groupForSerializer(name) {
-  return state.filteredGroups.find((g) => g.serializer === name) || null;
+  return state.filteredGroups.find((g) => g.library === name) || null;
 }
 
 function populateBaselineSelect() {
@@ -3022,24 +3094,24 @@ function populateBaselineSelect() {
   ].filter(Boolean);
   if (!sels.length) return;
 
-  if (state.compareBaseline && state.serializerNames.includes(state.compareBaseline)) {
+  if (state.compareBaseline && state.queueNames.includes(state.compareBaseline)) {
     // keep
-  } else if (state.serializerNames.length) {
+  } else if (state.queueNames.length) {
     state.compareBaseline =
-      state.paretoSerializerNames[0] || state.serializerNames[0] || '';
+      state.paretoQueueNames[0] || state.queueNames[0] || '';
   }
 
   sels.forEach((sel) => {
     sel.innerHTML = '';
-    state.serializerNames.forEach((name) => {
+    state.queueNames.forEach((name) => {
       const opt = document.createElement('option');
       opt.value = name;
       const g = groupForSerializer(name);
-      const label = g ? serializerLabelFromGroup(g) : name;
-      opt.textContent = label + (state.paretoSerializerNames.includes(name) ? ' ★' : '');
+      const label = g ? queueLabelFromGroup(g) : name;
+      opt.textContent = label + (state.paretoQueueNames.includes(name) ? ' ★' : '');
       sel.appendChild(opt);
     });
-    if (state.compareBaseline && state.serializerNames.includes(state.compareBaseline)) {
+    if (state.compareBaseline && state.queueNames.includes(state.compareBaseline)) {
       sel.value = state.compareBaseline;
     }
   });
@@ -3071,11 +3143,31 @@ function metricHigherIsBetter(key) {
 
 function metricGroupName(key) {
   if (key.includes('ops')) return 'Throughput';
-  if (key.includes('and_deser') || key.startsWith('total_') || key.includes('time_total')) {
+  if (
+    key.includes('and_deser') ||
+    key.startsWith('total_') ||
+    key.startsWith('handoff_') ||
+    key.includes('time_total') ||
+    key.includes('time_handoff')
+  ) {
     return 'Handoff';
   }
-  if (key.startsWith('deser_') || key.includes('time_deser')) return 'Dequeue';
-  if (key.startsWith('ser_') || key.includes('time_ser')) return 'Enqueue';
+  if (
+    key.startsWith('deser_') ||
+    key.startsWith('deq_') ||
+    key.includes('time_deser') ||
+    key.includes('time_deq')
+  ) {
+    return 'Dequeue';
+  }
+  if (
+    key.startsWith('ser_') ||
+    key.startsWith('enq_') ||
+    key.includes('time_ser') ||
+    key.includes('time_enq')
+  ) {
+    return 'Enqueue';
+  }
   if (key.includes('size') || key.includes('bytes') || key.includes('memory')) return 'Size & memory';
   if (key.includes('fidelity') || key.includes('effect')) return 'Quality';
   if (key.includes('run') || key.includes('warmup') || key.includes('outlier')) return 'Samples';
@@ -3095,12 +3187,18 @@ function groupMetrics(keys) {
 function metricLabel(key) {
   return key
     .replace(/time_deser/g, 'dequeue')
+    .replace(/time_deq/g, 'dequeue')
     .replace(/time_ser_and_deser/g, 'handoff')
+    .replace(/time_handoff/g, 'handoff')
     .replace(/time_ser/g, 'enqueue')
+    .replace(/time_enq/g, 'enqueue')
     .replace(/time_total/g, 'handoff')
     .replace(/^deser_/, 'dequeue_')
+    .replace(/^deq_/, 'dequeue_')
     .replace(/^ser_/, 'enqueue_')
+    .replace(/^enq_/, 'enqueue_')
     .replace(/^total_/, 'handoff_')
+    .replace(/^handoff_/, 'handoff_')
     .replace(/_ns$/g, '')
     .replace(/_bytes$/g, '')
     .replace(/_per_sec$/g, '')
@@ -3205,7 +3303,7 @@ function handleTableSort(key) {
     state.sortDirection = state.sortDirection === 'asc' ? 'desc' : 'asc';
   } else {
     state.sortKey = key;
-    state.sortDirection = key === 'serializer' ? 'asc' : 'desc';
+    state.sortDirection = key === 'library' ? 'asc' : 'desc';
   }
   updateSortIndicators();
   saveSettings();
@@ -3228,7 +3326,7 @@ function renderTable() {
 
   // Enrich with derived ops stats for sort + cells
   let rows = state.filteredGroups
-    .filter((g) => (g.serializer || '').toLowerCase().includes(state.searchQuery))
+    .filter((g) => (g.library || '').toLowerCase().includes(state.searchQuery))
     .map(withOpsDerivedStats);
 
   rows.sort((a, b) => {
@@ -3282,7 +3380,7 @@ function renderTable() {
   setTh('th-lat-p99', `P99 (${u})`);
 
   const baselineRaw =
-    state.filteredGroups.find((g) => g.serializer === state.compareBaseline) || null;
+    state.filteredGroups.find((g) => g.library === state.compareBaseline) || null;
   const baselineGroup = baselineRaw ? withOpsDerivedStats(baselineRaw) : null;
 
   const help = document.getElementById('detailed-analytics-help');
@@ -3309,7 +3407,7 @@ function renderTable() {
         scopeNote +
         speedNote +
         ratioNote +
-        ` Baseline: <strong>${escapeHtml(serializerLabelFromGroup(baselineGroup))}</strong>.` +
+        ` Baseline: <strong>${escapeHtml(queueLabelFromGroup(baselineGroup))}</strong>.` +
         paretoNote;
     } else {
       help.innerHTML = scopeNote + speedNote + ratioNote + paretoNote;
@@ -3327,22 +3425,22 @@ function renderTable() {
 
   rows.forEach((r) => {
     const tr = document.createElement('tr');
-    const isBaseline = baselineGroup && r.serializer === baselineGroup.serializer;
-    const isOptimal = state.paretoSerializerNames.includes(r.serializer);
+    const isBaseline = baselineGroup && r.library === baselineGroup.queue;
+    const isOptimal = state.paretoQueueNames.includes(r.library);
     if (isBaseline) tr.classList.add('roster-baseline-row');
     if (isOptimal) tr.classList.add('roster-pareto-row');
 
     const tdName = document.createElement('td');
     tdName.className = 'str';
-    const displayName = serializerLabelFromGroup(r);
+    const displayName = queueLabelFromGroup(r);
     let nameHtml = `<strong>${escapeHtml(displayName)}</strong>`;
     if (isBaseline) {
       nameHtml += ' <span class="badge badge-cyan">Baseline</span>';
     }
     tdName.innerHTML = nameHtml;
-    tdName.title = r.serializer_version
-      ? `${r.serializer} @ ${r.serializer_version}`
-      : r.serializer;
+    tdName.title = r.library_version
+      ? `${r.library} @ ${r.library_version}`
+      : r.library;
     tr.appendChild(tdName);
 
     const tdHonesty = document.createElement('td');
@@ -3358,7 +3456,7 @@ function renderTable() {
     metricKeys.forEach(({ key, higherIsBetter }) => {
       const td = document.createElement('td');
       if (key.startsWith('ops_')) td.classList.add('roster-col-ops');
-      if (key.startsWith('total_')) td.classList.add('roster-col-latency');
+      if (key.startsWith('handoff_') || key.startsWith('total_')) td.classList.add('roster-col-latency');
 
       const v = r[key];
       if (v === null || v === undefined) {
@@ -3380,8 +3478,8 @@ function renderTable() {
 }
 
 function renderCompareMatrix() {
-  const thead = document.getElementById('serializer-metrics-head');
-  const tbody = document.getElementById('serializer-metrics-body');
+  const thead = document.getElementById('queue-metrics-head');
+  const tbody = document.getElementById('queue-metrics-body');
   if (!thead || !tbody) return;
   thead.innerHTML = '';
   tbody.innerHTML = '';
@@ -3390,7 +3488,7 @@ function renderCompareMatrix() {
   let columns = [];
 
   if (state.compareScope === 'same') {
-    const names = state.detailSerializers.filter((s) => state.serializerNames.includes(s));
+    const names = state.detailQueues.filter((s) => state.queueNames.includes(s));
     // Baseline first
     const ordered = [];
     if (state.compareBaseline && names.includes(state.compareBaseline)) {
@@ -3400,11 +3498,11 @@ function renderCompareMatrix() {
       if (!ordered.includes(n)) ordered.push(n);
     });
     columns = ordered.map((name) => {
-      const group = state.filteredGroups.find((g) => g.serializer === name) || null;
+      const group = state.filteredGroups.find((g) => g.library === name) || null;
       return {
         key: name,
         // Docs Summary style: name:version
-        label: group ? serializerLabelFromGroup(group) : name,
+        label: group ? queueLabelFromGroup(group) : name,
         group,
         isBaseline: name === state.compareBaseline,
       };
@@ -3412,21 +3510,21 @@ function renderCompareMatrix() {
   } else {
     const ordered = [...state.xlSelected];
     // baseline first
-    const bi = ordered.findIndex((x) => `${x.lang}|${x.serializer}` === state.xlBaselineKey);
+    const bi = ordered.findIndex((x) => `${x.lang}|${x.library}` === state.xlBaselineKey);
     if (bi > 0) {
       const [b] = ordered.splice(bi, 1);
       ordered.unshift(b);
     }
     columns = ordered.map((x) => {
-      const group = findCrossLangGroup(x.lang, x.serializer);
+      const group = findCrossLangGroup(x.lang, x.library);
       const serLabel = group
-        ? serializerLabelFromGroup(group)
-        : x.serializer;
+        ? queueLabelFromGroup(group)
+        : x.library;
       return {
-        key: `${x.lang}|${x.serializer}`,
+        key: `${x.lang}|${x.library}`,
         label: `${languageLabel(x.lang)} / ${serLabel}`,
         group,
-        isBaseline: `${x.lang}|${x.serializer}` === state.xlBaselineKey,
+        isBaseline: `${x.lang}|${x.library}` === state.xlBaselineKey,
       };
     });
   }
@@ -3572,7 +3670,7 @@ function copyRosterMarkdown() {
   const metricSpecs = rosterMetricKeys();
   const rows = state.filteredGroups
     .map(withOpsDerivedStats)
-    .sort((a, b) => a.serializer.localeCompare(b.serializer));
+    .sort((a, b) => a.queue.localeCompare(b.queue));
   const latVals = [];
   const opsVals = [];
   for (const g of rows) {
@@ -3588,10 +3686,10 @@ function copyRosterMarkdown() {
     ops: opsVals.length ? chooseOpsUnit(opsVals) : { divisor: 1, header: 'Ops/s' },
   };
   const baselineRaw =
-    state.filteredGroups.find((g) => g.serializer === state.compareBaseline) || null;
+    state.filteredGroups.find((g) => g.library === state.compareBaseline) || null;
   const baselineGroup = baselineRaw ? withOpsDerivedStats(baselineRaw) : null;
   const baseLabel = baselineGroup
-    ? serializerLabelFromGroup(baselineGroup)
+    ? queueLabelFromGroup(baselineGroup)
     : state.compareBaseline || '—';
   const u = scales.latency.header;
   const oHdr = scales.ops.header;
@@ -3627,8 +3725,8 @@ function copyRosterMarkdown() {
     `|${headers.map((h, i) => (i === 0 || h === 'Pareto' || h === 'Honesty' ? '---' : '---:')).join('|')}|`,
   ];
   rows.forEach((r) => {
-    const opt = state.paretoSerializerNames.includes(r.serializer) ? 'yes' : '';
-    const isBaseline = baselineGroup && r.serializer === baselineGroup.serializer;
+    const opt = state.paretoQueueNames.includes(r.library) ? 'yes' : '';
+    const isBaseline = baselineGroup && r.library === baselineGroup.queue;
     const cells = metricSpecs.map(({ key, higherIsBetter }) => {
       const cell = formatRosterRelativeCell(
         r,
@@ -3641,7 +3739,7 @@ function copyRosterMarkdown() {
       return cell.text;
     });
     const name =
-      serializerLabelFromGroup(r) + (isBaseline ? ' (baseline)' : '');
+      queueLabelFromGroup(r) + (isBaseline ? ' (baseline)' : '');
     const honestyCell = showHonesty ? ` ${honestyDisplayLabel(r.StreamMode)} |` : '';
     lines.push(`| ${name} |${honestyCell} ${cells.join(' | ')} | ${opt} |`);
   });
@@ -3649,7 +3747,7 @@ function copyRosterMarkdown() {
 }
 
 function copyCompareMarkdown() {
-  const table = document.getElementById('serializer-metrics-table');
+  const table = document.getElementById('queue-metrics-table');
   if (!table) return;
   const rows = [...table.querySelectorAll('tr')];
   const md = rows
@@ -3750,34 +3848,36 @@ function parseCSVLine(line) {
 function aggregateCSVRecords(records) {
   const map = new Map();
   for (const r of records) {
-    const serializer = r.Serializer || r.serializer;
-    const test_data = r.TestData || r.test_data || r.DataType;
-    const mode = r.Mode || r.mode || 'bytes';
-    if (!serializer) continue;
-    const key = `${serializer}|${test_data}|${mode}`;
+    const library = r.LibraryName || r.library || r.QueueName || r.SerializerName || r.Serializer || r.serializer;
+    const test_data = r.TestDataName || r.TestData || r.test_data || r.DataType;
+    const mode = r.Pattern || r.StringOrStream || r.Mode || r.mode || 'bytes';
+    if (!library) continue;
+    const key = `${library}|${test_data}|${mode}`;
     if (!map.has(key)) {
       map.set(key, {
-        serializer,
+        library,
         test_data,
         mode,
         times: [],
-        ser: [],
-        deser: [],
+        enq: [],
+        deq: [],
         sizes: [],
         ops: [],
         fidelities: [],
       });
     }
     const g = map.get(key);
-    const total = Number(r.TotalTimeNs || r.total_time_ns || r.TimeNs);
-    const ser = Number(r.SerTimeNs || r.ser_time_ns);
-    const deser = Number(r.DeserTimeNs || r.deser_time_ns);
-    const size = Number(r.SizeBytes || r.size_bytes || r.PayloadSize);
-    const ops = Number(r.OpsPerSec || r.ops_per_sec);
+    const total = Number(
+      r.TimeHandoff || r.TimeSerAndDeser || r.TotalTimeNs || r.total_time_ns || r.TimeNs
+    );
+    const enq = Number(r.TimeEnq || r.TimeSer || r.SerTimeNs || r.ser_time_ns);
+    const deq = Number(r.TimeDeq || r.TimeDeser || r.DeserTimeNs || r.deser_time_ns);
+    const size = Number(r.Size || r.SizeBytes || r.size_bytes || r.PayloadSize);
+    const ops = Number(r.OpPerSecHandoff || r.OpPerSecSerAndDeser || r.OpsPerSec || r.ops_per_sec);
     const fid = Number(r.FidelityScore || r.fidelity);
     if (Number.isFinite(total)) g.times.push(total);
-    if (Number.isFinite(ser)) g.ser.push(ser);
-    if (Number.isFinite(deser)) g.deser.push(deser);
+    if (Number.isFinite(enq)) g.enq.push(enq);
+    if (Number.isFinite(deq)) g.deq.push(deq);
     if (Number.isFinite(size)) g.sizes.push(size);
     if (Number.isFinite(ops)) g.ops.push(ops);
     if (Number.isFinite(fid)) g.fidelities.push(fid);
@@ -3786,16 +3886,16 @@ function aggregateCSVRecords(records) {
   const groups = [];
   for (const g of map.values()) {
     if (!g.times.length && !g.ops.length) continue;
-    const avg_time_total_ns = mean(g.times);
+    const avg_time_handoff_ns = mean(g.times);
     const avg_ops_per_sec =
-      g.ops.length > 0 ? mean(g.ops) : avg_time_total_ns > 0 ? 1e9 / avg_time_total_ns : 0;
+      g.ops.length > 0 ? mean(g.ops) : avg_time_handoff_ns > 0 ? 1e9 / avg_time_handoff_ns : 0;
     groups.push({
-      serializer: g.serializer,
+      library: g.library,
       test_data: g.test_data,
       mode: g.mode,
-      avg_time_total_ns,
-      avg_time_ser_ns: mean(g.ser),
-      avg_time_deser_ns: mean(g.deser),
+      avg_time_handoff_ns,
+      avg_time_enq_ns: mean(g.enq),
+      avg_time_deq_ns: mean(g.deq),
       avg_ops_per_sec,
       median_size_bytes: median(g.sizes),
       mean_fidelity: g.fidelities.length ? mean(g.fidelities) : null,

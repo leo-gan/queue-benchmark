@@ -2,49 +2,49 @@
   "status": "ok",
   "rows": [
     {
-      "library": "crossbeam-queue",
-      "pattern": "bytes",
-      "n": 9,
-      "median_handoff_ns": 6105.0,
-      "p50_ns": 6105.0,
-      "mean_ns": 6544.444444444444,
-      "rel_to_fastest": 1.0
-    },
-    {
       "library": "steal-deque",
       "pattern": "bytes",
       "n": 9,
-      "median_handoff_ns": 6124.0,
-      "p50_ns": 6124.0,
-      "mean_ns": 6133.555555555556,
-      "rel_to_fastest": 1.003112203112203
+      "median_handoff_ns": 5907.0,
+      "p50_ns": 5907.0,
+      "mean_ns": 5929.333333333333,
+      "rel_to_fastest": 1.0
+    },
+    {
+      "library": "crossbeam-queue",
+      "pattern": "bytes",
+      "n": 9,
+      "median_handoff_ns": 6081.0,
+      "p50_ns": 6081.0,
+      "mean_ns": 7057.555555555556,
+      "rel_to_fastest": 1.0294565769426105
     },
     {
       "library": "crossbeam-channel",
       "pattern": "bytes",
       "n": 9,
-      "median_handoff_ns": 6962.0,
-      "p50_ns": 6962.0,
-      "mean_ns": 7139.555555555556,
-      "rel_to_fastest": 1.1403767403767404
-    },
-    {
-      "library": "tokio-mpsc",
-      "pattern": "bytes",
-      "n": 9,
-      "median_handoff_ns": 7671.0,
-      "p50_ns": 7671.0,
-      "mean_ns": 7944.777777777777,
-      "rel_to_fastest": 1.2565110565110564
+      "median_handoff_ns": 9184.0,
+      "p50_ns": 9184.0,
+      "mean_ns": 9220.666666666666,
+      "rel_to_fastest": 1.5547655324191636
     },
     {
       "library": "std-mpsc",
       "pattern": "bytes",
       "n": 9,
-      "median_handoff_ns": 7690.0,
-      "p50_ns": 7690.0,
-      "mean_ns": 11230.444444444445,
-      "rel_to_fastest": 1.2596232596232597
+      "median_handoff_ns": 9628.0,
+      "p50_ns": 9628.0,
+      "mean_ns": 10428.222222222223,
+      "rel_to_fastest": 1.6299305908244455
+    },
+    {
+      "library": "tokio-mpsc",
+      "pattern": "bytes",
+      "n": 9,
+      "median_handoff_ns": 11009.0,
+      "p50_ns": 11009.0,
+      "mean_ns": 11173.444444444445,
+      "rel_to_fastest": 1.8637210089724057
     }
   ]
 }

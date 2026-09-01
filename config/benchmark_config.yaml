@@ -183,43 +183,43 @@ run_sidecar:
   filename_suffix: "configs.json"
   include_environment: true
   include_dataset: true
-  include_serializers: true
+  include_queues: true
 
 metrics:
   catalog_version: "1"
   multi_way:
     include_importance: [high]
-    rank_by: total_median_ns
+    rank_by: handoff_median_ns
     secondary_rank_by: median_size_bytes
   pairwise:
     include_importance: [high, medium, low]
   importance:
-    total_median_ns: high
-    ser_median_ns: high
-    deser_median_ns: high
-    avg_time_total_ns: medium
-    avg_time_ser_ns: medium
-    avg_time_deser_ns: medium
-    total_mean_ns: medium
-    ser_mean_ns: medium
-    deser_mean_ns: medium
+    handoff_median_ns: high
+    enq_median_ns: high
+    deq_median_ns: high
+    avg_time_handoff_ns: medium
+    avg_time_enq_ns: medium
+    avg_time_deq_ns: medium
+    handoff_mean_ns: medium
+    enq_mean_ns: medium
+    deq_mean_ns: medium
     avg_ops_per_sec: high
     median_size_bytes: high
     mean_fidelity: high
-    serializer_version: high
+    library_version: high
     runs: high
     runs_raw: medium
     warmup_skipped: medium
     outliers_removed: medium
-    total_ci_low_ns: medium
-    total_ci_high_ns: medium
-    total_p95_ns: medium
-    total_p99_ns: medium
-    total_p999_ns: high
+    handoff_ci_low_ns: medium
+    handoff_ci_high_ns: medium
+    handoff_p95_ns: medium
+    handoff_p99_ns: medium
+    handoff_p999_ns: high
     msgs_per_cpu_sec: high
-    total_cv: medium
-    total_mad_ns: medium
-    total_std_ns: medium
+    handoff_cv: medium
+    handoff_mad_ns: medium
+    handoff_std_ns: medium
     mean_memory_peak_bytes: medium
     effect_vs_fastest_cliffs_delta: medium
     effect_vs_fastest_cliffs_label: medium
@@ -231,7 +231,7 @@ metrics:
 regression:
   enabled: true
   threshold_percent: 10.0
-  metric: total_median_ns
+  metric: handoff_median_ns
   combine: and
   direction: higher_is_worse
   cliffs_delta:

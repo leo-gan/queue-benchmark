@@ -2,4 +2,4 @@
 
 | Library | Pattern | Median handoff (ns) | vs fastest | n |
 |---------|---------|--------------------:|-----------:|--:|
-| p-queue | bytes | 147734 | 1.00× | 9 |
+| p-queue | bytes | 148270 | 1.00× | 9 |

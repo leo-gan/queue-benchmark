@@ -41,7 +41,7 @@ Directory.CreateDirectory(logDir);
 var stamp = Environment.GetEnvironmentVariable("BENCHMARK_TS") ?? "run";
 var csv = Path.Combine(logDir, stamp + ".csv");
 var sb = new StringBuilder();
-sb.AppendLine("Language,StringOrStream,TestDataName,Repetitions,RepetitionIndex,SerializerName,SerializerVersion,TimeSer,TimeDeser,Size,TimeSerAndDeser,OpPerSecSer,OpPerSecDeser,OpPerSecSerAndDeser,MemoryPeakBytes,FidelityScore,DataTypeInstanceCount,TypeConfigHash,SizeGzip,SizeZstd,NativeKind,StreamMode,RunOrder,SchedulePosition,CpuTimeNs");
+sb.AppendLine("Language,Pattern,TestDataName,Repetitions,RepetitionIndex,LibraryName,LibraryVersion,TimeEnq,TimeDeq,Size,TimeHandoff,OpPerSecEnq,OpPerSecDeq,OpPerSecHandoff,MemoryPeakBytes,FidelityScore,DataTypeInstanceCount,TypeConfigHash,SizeGzip,SizeZstd,NativeKind,StreamMode,RunOrder,SchedulePosition,CpuTimeNs");
 
 string Ver = Environment.Version.ToString();
 double Ops(long ns) => ns > 0 ? 1_000_000_000.0 / ns : 0;

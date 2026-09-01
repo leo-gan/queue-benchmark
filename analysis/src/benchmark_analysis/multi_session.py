@@ -12,11 +12,17 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
 
+from .abi import pick_stats
+
+
+def _queue_name(entry: Dict[str, Any]) -> Any:
+    return pick_stats(entry, "library")
+
 
 def _group_key(entry: Dict[str, Any]) -> Tuple:
     return (
         entry.get("language"),
-        entry.get("serializer"),
+        _queue_name(entry),
         entry.get("test_data"),
         entry.get("type_config_hash"),
         entry.get("data_type_instance_count"),
@@ -25,7 +31,7 @@ def _group_key(entry: Dict[str, Any]) -> Tuple:
 
 
 def _rank_key(entry: Dict[str, Any]) -> Tuple:
-    """Group for ranking (exclude serializer)."""
+    """Group for ranking (exclude queue)."""
     return (
         entry.get("language"),
         entry.get("test_data"),
@@ -36,9 +42,9 @@ def _rank_key(entry: Dict[str, Any]) -> Tuple:
 
 
 def _point(entry: Dict[str, Any]) -> float:
-    v = entry.get("total_median_ns")
+    v = pick_stats(entry, "handoff_median_ns")
     if v is None or v != v:
-        v = entry.get("avg_time_total_ns") or float("inf")
+        v = pick_stats(entry, "avg_time_handoff_ns") or float("inf")
     return float(v)
 
 
@@ -52,12 +58,12 @@ def aggregate_multi_session(
     Each session is::
         {"run_id": str, "machine_id": optional str, "stats": {group_key: entry}}
 
-    Returns JSON-serializable summary with per-serializer-across-sessions stats
+    Returns JSON-serializable summary with per-queue-across-sessions stats
     and rank-frequency tables.
     """
-    # serializer key -> list of session medians
+    # queue key -> list of session medians
     by_ser: Dict[Tuple, List[float]] = defaultdict(list)
-    # rank group -> Counter of fastest serializer per session
+    # rank group -> Counter of fastest queue per session
     rank_wins: Dict[Tuple, Counter] = defaultdict(Counter)
     machine_ids: List[str] = []
     run_ids: List[str] = []
@@ -82,7 +88,7 @@ def aggregate_multi_session(
             if not entries:
                 continue
             best = min(entries, key=_point)
-            rank_wins[rg][str(best.get("serializer"))] += 1
+            rank_wins[rg][str(_queue_name(best))] += 1
 
     n_sessions = len(sessions)
     unique_machines = sorted(set(machine_ids))
@@ -102,7 +108,7 @@ def aggregate_multi_session(
         groups_out.append(
             {
                 "language": gkey[0],
-                "serializer": gkey[1],
+                "library": gkey[1],
                 "test_data": gkey[2],
                 "type_config_hash": gkey[3],
                 "data_type_instance_count": gkey[4],
@@ -132,7 +138,7 @@ def aggregate_multi_session(
                 "mode": rg[4],
                 "n_sessions_ranked": total,
                 "fastest_frequency": [
-                    {"serializer": s, "wins": w, "fraction": w / total} for s, w in top
+                    {"library": s, "wins": w, "fraction": w / total} for s, w in top
                 ],
             }
         )
@@ -214,7 +220,7 @@ def multi_session_markdown(report: Dict[str, Any]) -> str:
         "See [Claims and replication](../docs/analysis/CLAIMS_AND_REPLICATION.md) "
         "for what L1/L2/L3 allow you to say.",
         "",
-        "## Rank stability (how often each serializer is fastest)",
+        "## Rank stability (how often each queue is fastest)",
         "",
     ]
     for row in (report.get("rank_stability") or [])[:40]:
@@ -223,11 +229,11 @@ def multi_session_markdown(report: Dict[str, Any]) -> str:
         mode = row.get("mode")
         lines.append(f"### {td} · n={n} · {mode}")
         lines.append("")
-        lines.append("| serializer | wins | fraction |")
-        lines.append("|------------|-----:|---------:|")
+        lines.append("| queue | wins | fraction |")
+        lines.append("|-------|-----:|---------:|")
         for f in row.get("fastest_frequency") or []:
             lines.append(
-                f"| {f.get('serializer')} | {f.get('wins')} | {f.get('fraction', 0):.2f} |"
+                f"| {f.get('library') or f.get('queue') or f.get('serializer')} | {f.get('wins')} | {f.get('fraction', 0):.2f} |"
             )
         lines.append("")
     return "\n".join(lines)

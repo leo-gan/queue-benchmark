@@ -13,7 +13,43 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
+from .abi import pick_stats
 from .stats import prepare_analysis_records
+
+
+def _queue_name(entry: Any) -> str:
+    if not isinstance(entry, dict):
+        return ""
+    return str(
+        pick_stats(entry, "library")
+        or entry.get("LibraryName")
+        or entry.get("SerializerName")
+        or ""
+    )
+
+
+def _queue_version(entry: Any) -> Any:
+    if not isinstance(entry, dict):
+        return None
+    return pick_stats(entry, "library_version") or entry.get("LibraryVersion") or entry.get("SerializerVersion")
+
+
+def _handoff_ns(entry: Any) -> Any:
+    if not isinstance(entry, dict):
+        return None
+    v = pick_stats(entry, "avg_time_handoff_ns")
+    if v is not None:
+        return v
+    return entry.get("avg_time_total_ns")
+
+
+def _stat_get(entry: Any, field_id: str) -> Any:
+    if not isinstance(entry, dict) or not field_id:
+        return None
+    v = pick_stats(entry, field_id)
+    if v is not None:
+        return v
+    return entry.get(field_id)
 
 
 # Machine key: type_id@n=<DataTypeInstanceCount> (filenames / join keys).
@@ -100,13 +136,28 @@ def _records_to_melted_df(
 
         df["TestDataName"] = df.apply(_td_label, axis=1)
 
-    # Melt serialize/deserialize into Operation column. Times are already ns.
+    # Melt enqueue/dequeue into Operation column. Times are already ns.
+    if "LibraryName" not in df.columns and "QueueName" in df.columns:
+        df["LibraryName"] = df["QueueName"]
+    if "LibraryName" not in df.columns and "SerializerName" in df.columns:
+        df["LibraryName"] = df["SerializerName"]
+    if "Pattern" not in df.columns and "StringOrStream" in df.columns:
+        df["Pattern"] = df["StringOrStream"]
+    if "TimeEnq" not in df.columns and "TimeSer" in df.columns:
+        df["TimeEnq"] = df["TimeSer"]
+    if "TimeDeq" not in df.columns and "TimeDeser" in df.columns:
+        df["TimeDeq"] = df["TimeDeser"]
+    if "OpPerSecEnq" not in df.columns and "OpPerSecSer" in df.columns:
+        df["OpPerSecEnq"] = df["OpPerSecSer"]
+    if "OpPerSecDeq" not in df.columns and "OpPerSecDeser" in df.columns:
+        df["OpPerSecDeq"] = df["OpPerSecDeser"]
+
     need = [
-        "SerializerName",
+        "LibraryName",
         "TestDataName",
-        "StringOrStream",
-        "TimeSer",
-        "TimeDeser",
+        "Pattern",
+        "TimeEnq",
+        "TimeDeq",
         "Language",
         "RepetitionIndex",
     ]
@@ -118,22 +169,22 @@ def _records_to_melted_df(
                 return pd.DataFrame()
 
     ser = df[
-        ["SerializerName", "TestDataName", "StringOrStream", "TimeSer", "Language", "RepetitionIndex"]
+        ["LibraryName", "TestDataName", "Pattern", "TimeEnq", "Language", "RepetitionIndex"]
     ].copy()
     ser["Operation"] = "Enqueue"
-    ser = ser.rename(columns={"TimeSer": "Time_ns"})
-    if "OpPerSecSer" in df.columns:
-        ser["OpPerSec"] = df["OpPerSecSer"].values
+    ser = ser.rename(columns={"TimeEnq": "Time_ns"})
+    if "OpPerSecEnq" in df.columns:
+        ser["OpPerSec"] = df["OpPerSecEnq"].values
     else:
         ser["OpPerSec"] = 0
 
     deser = df[
-        ["SerializerName", "TestDataName", "StringOrStream", "TimeDeser", "Language", "RepetitionIndex"]
+        ["LibraryName", "TestDataName", "Pattern", "TimeDeq", "Language", "RepetitionIndex"]
     ].copy()
     deser["Operation"] = "Dequeue"
-    deser = deser.rename(columns={"TimeDeser": "Time_ns"})
-    if "OpPerSecDeser" in df.columns:
-        deser["OpPerSec"] = df["OpPerSecDeser"].values
+    deser = deser.rename(columns={"TimeDeq": "Time_ns"})
+    if "OpPerSecDeq" in df.columns:
+        deser["OpPerSec"] = df["OpPerSecDeq"].values
     else:
         deser["OpPerSec"] = 0
 
@@ -157,8 +208,8 @@ def _generate_violin_plot(
 ) -> Optional[str]:
     """Generate combined mean-bar + violin figure for one fixture.
 
-    Layout (shared Y = serializer rank, both linear µs from 0):
-      left  — horizontal bars at **mean** ser / deser (easy ranking; aligns with ops/s)
+    Layout (shared Y = queue rank, both linear µs from 0):
+      left  — horizontal bars at **mean** enqueue / dequeue (easy ranking; aligns with ops/s)
       right — split violins of full sample density (spread / shape)
 
     Embeds mapping metadata (fixture, language id, log path, modes, n) in the
@@ -178,27 +229,27 @@ def _generate_violin_plot(
     if subset.empty:
         return None
 
-    # Filter to top N serializers by mean time (default: top 5 for every language).
+    # Filter to top N queues by mean time (default: top 5 for every language).
     # This is a *display* choice (plot density), not a change to the analysis sample
-    # used for tables — tables always include every serializer.
+    # used for tables — tables always include every queue.
     if top_n is None:
         top_n = VIOLIN_TOP_N_SERIALIZERS
     if top_n > 0:
-        mean_times = subset.groupby("SerializerName")["Time_us"].mean().sort_values()
+        mean_times = subset.groupby("LibraryName")["Time_us"].mean().sort_values()
         # If fewer than top_n exist, head() returns all of them.
-        top_serializers = mean_times.head(int(top_n)).index.tolist()
-        subset = subset[subset["SerializerName"].isin(top_serializers)].copy()
+        top_queues = mean_times.head(int(top_n)).index.tolist()
+        subset = subset[subset["LibraryName"].isin(top_queues)].copy()
 
     # No additional p99 winsorization: seaborn cut=0 already limits KDE to the
     # observed data range, and tables/plots must share the same sample values.
 
-    order = subset.groupby('SerializerName')['Time_us'].mean().sort_values().index.tolist()
+    order = subset.groupby('LibraryName')['Time_us'].mean().sort_values().index.tolist()
     # Always linear X from 0 (no log): absolute µs stay comparable.
 
     try:
-        # Per-serializer mean ser / deser for the bar panel (same family as ops/s).
+        # Per-queue mean enqueue / dequeue for the bar panel (same family as ops/s).
         means = (
-            subset.groupby(["SerializerName", "Operation"], as_index=False)["Time_us"]
+            subset.groupby(["LibraryName", "Operation"], as_index=False)["Time_us"]
             .mean()
             .rename(columns={"Time_us": "Mean_us"})
         )
@@ -221,7 +272,7 @@ def _generate_violin_plot(
         sns.barplot(
             data=means,
             x="Mean_us",
-            y="SerializerName",
+            y="LibraryName",
             hue="Operation",
             order=order,
             hue_order=hue_order,
@@ -258,7 +309,7 @@ def _generate_violin_plot(
         sns.violinplot(
             data=subset,
             x="Time_us",
-            y="SerializerName",
+            y="LibraryName",
             hue="Operation",
             order=order,
             hue_order=hue_order,
@@ -286,7 +337,7 @@ def _generate_violin_plot(
         img_name = f"{lang_key}_{safe_fixture}.png"
         src = data_source or f"logs/{lang_key}/benchmark-log.csv"
         modes = sorted(
-            {str(m) for m in subset.get("StringOrStream", pd.Series(dtype=str)).dropna().unique()}
+            {str(m) for m in subset.get("Pattern", pd.Series(dtype=str)).dropna().unique()}
         )
         modes_s = ",".join(modes) if modes else "n/a"
         n_pts = len(subset)
@@ -508,12 +559,12 @@ def _time_ns_to_display_us(value_key: str) -> bool:
     key = (value_key or "").lower()
     if not key.endswith("_ns"):
         return False
-    # avg_time_*, total_median_ns, ser_p95_ns, total_ci_low_ns, etc.
+    # avg_time_*, handoff_median_ns, enq_p95_ns, handoff_ci_low_ns, etc.
     return (
         "time" in key
         or "latency" in key
         or "duration" in key
-        or key.startswith(("ser_", "deser_", "total_"))
+        or key.startswith(("enq_", "deq_", "handoff_", "ser_", "deser_", "total_"))
         or "_median_ns" in key
         or "_mean_ns" in key
         or "_p" in key  # percentiles *_p95_ns
@@ -551,7 +602,7 @@ def _pivot_table_md(
 
     # Extract unique row and column values (case-insensitive name order for serializers)
     def _sort_dim(vals, dim: str):
-        if dim == "serializer":
+        if dim in ("library", "queue", "serializer"):
             return sorted(vals, key=lambda x: str(x).casefold())
         return sorted(vals)
 
@@ -650,11 +701,15 @@ def _pivot_table_md(
 
     # Rows — all cells in a column share that column's unit; best is bold
     for rv in row_vals:
-        if rows_dim == "serializer":
+        if rows_dim in ("library", "queue", "serializer"):
             version = ""
-            matching_entries = [s for s in stats.values() if s[rows_dim] == rv]
+            matching_entries = [
+                s
+                for s in stats.values()
+                if (s.get(rows_dim) if rows_dim in s else _queue_name(s)) == rv
+            ]
             for s in matching_entries:
-                v = s.get("serializer_version")
+                v = _queue_version(s)
                 if v:
                     version = str(v).strip()
                     break
@@ -793,17 +848,17 @@ def _category_pivot_md(stats: Dict, lang_id: str, title: str) -> str:
     for e in entries:
         if not isinstance(e, dict):
             continue
-        mode = _normalize_mode(e.get("mode") or e.get("StringOrStream") or "")
+        mode = _normalize_mode(e.get("mode") or e.get("Pattern") or e.get("StringOrStream") or "")
         if mode != "bytes":
             continue
-        ser = e.get("serializer") or e.get("SerializerName") or ""
+        ser = _queue_name(e)
         if ser not in cat_map:
             continue
         ops = e.get("avg_ops_per_sec")
         if ops is None:
-            tot = e.get("avg_time_total_ns") or 0
+            tot = _handoff_ns(e) or 0
             ops = (1_000_000_000.0 / tot) if tot else 0.0
-        # Aggregate per serializer across test_data (mean later)
+        # Aggregate per queue across test_data (mean later)
         by_cat.setdefault(cat_map[ser], []).append((ser, float(ops)))
 
     if not by_cat:
@@ -812,12 +867,11 @@ def _category_pivot_md(stats: Dict, lang_id: str, title: str) -> str:
     lines = [
         f"### {title}",
         "",
-        "Compare serializers **inside the same family** only (for example JSON with JSON, "
-        "not JSON with a zero-copy schema codec). "
-        "Each value is mean serialize+deserialize **operations per second** across data types, "
+        "Compare queues **inside the same family** only. "
+        "Each value is mean handoff **operations per second** across data types, "
         "using **bytes mode** only (the in-memory buffer API — not “payload size in bytes”). "
         "Higher is better. Stream mode is left out of this ranking. "
-        "Rows are sorted by serializer name; **bold** marks the highest ops/s in the column.",
+        "Rows are sorted by queue name; **bold** marks the highest ops/s in the column.",
         "",
     ]
     for cat in sorted(by_cat.keys()):
@@ -835,14 +889,14 @@ def _category_pivot_md(stats: Dict, lang_id: str, title: str) -> str:
         unit_label = f" ({unit})" if unit else ""
         lines.append(f"#### {cat}")
         lines.append("")
-        lines.append(f"| serializer | mean ops/s (bytes mode){unit_label} |")
+        lines.append(f"| queue | mean ops/s (bytes mode){unit_label} |")
         lines.append("|---|---:|")
         for ser, mean_ops in named:
-            # Find the version of this serializer in entries
+            # Find the version of this queue in entries
             version = ""
             for e in entries:
-                if (e.get("serializer") or e.get("SerializerName")) == ser:
-                    v = e.get("serializer_version")
+                if _queue_name(e) == ser:
+                    v = _queue_version(e)
                     if v:
                         version = str(v).strip()
                         break
@@ -882,7 +936,7 @@ def _config_section_md(lang_id: str, csv_path: Optional[str]) -> str:
         "(`*.configs.json`, or older `*.environment.json` files). "
         "They describe the machine and the run setup, not the timing formulas. "
         "For metric definitions, see the [Metrics catalog](../analysis/METRICS.md). "
-        "Optional blocks (`dataset`, `serializers`) appear only when the benchmark runner recorded them.",
+        "Optional blocks (`dataset`, `queues`) appear only when the benchmark runner recorded them.",
         "",
     ]
     if csv_path:
@@ -904,7 +958,13 @@ def _config_section_md(lang_id: str, csv_path: Optional[str]) -> str:
                 body.append(
                     f"- **Data types (config):** {', '.join(str(n) for n in names)}"
                 )
-        ser = doc.get("serializers") if isinstance(doc.get("serializers"), dict) else {}
+        ser = (
+            doc.get("libraries")
+            if isinstance(doc.get("libraries"), dict)
+            else doc.get("queues")
+            if isinstance(doc.get("queues"), dict)
+            else doc.get("serializers") if isinstance(doc.get("serializers"), dict) else {}
+        )
         items = ser.get("items") if isinstance(ser.get("items"), list) else []
         if items:
             body.append("- **Queues (from CSV):**")
@@ -921,7 +981,7 @@ def _config_section_md(lang_id: str, csv_path: Optional[str]) -> str:
         "",
         "## Run configuration (important)",
         "",
-        '??? note "Show host, seed, serializers, and source CSV"',
+        '??? note "Show host, seed, queues, and source CSV"',
         "",
     ]
     for line in body:
@@ -1009,19 +1069,19 @@ def _scientific_summary_md(stats: Dict, profile: str = "multi_way") -> str:
         c
         for c in MULTI_WAY_SUMMARY_FIELDS
         if c[0] in keep
-        and c[0] not in ("serializer_version", "mean_fidelity", "runs")
+        and c[0] not in ("library_version", "serializer_version", "mean_fidelity", "runs")
     ]
     if not cols:
         return ""
 
-    # One row per serializer: prefer bytes mode, average medians across fixtures if needed
+    # One row per queue: prefer bytes mode, average medians across fixtures if needed
     by_ser: Dict[str, List[Dict]] = {}
     for e in stats.values():
         if not isinstance(e, dict):
             continue
-        by_ser.setdefault(str(e.get("serializer") or ""), []).append(e)
+        by_ser.setdefault(_queue_name(e), []).append(e)
 
-    # Rows sorted by serializer name (stable lookup); bold still marks best-in-column.
+    # Rows sorted by queue name (stable lookup); bold still marks best-in-column.
     serializers = sorted(by_ser.keys(), key=lambda s: s.casefold())
     if not serializers:
         return ""
@@ -1029,13 +1089,13 @@ def _scientific_summary_md(stats: Dict, profile: str = "multi_way") -> str:
     lines = [
         "### Summary",
         "",
-        "One row per serializer (averaged across data types; bytes mode preferred when both exist). "
+        "One row per queue (averaged across data types; bytes mode preferred when both exist). "
         "Only **high-importance** columns appear here by default "
         "([Metrics catalog](../analysis/METRICS.md)). "
         "Times are **µs**. **Bold** = best in that column.",
         "",
     ]
-    headers = ["serializer"] + [c[1] for c in cols]
+    headers = ["library"] + [c[1] for c in cols]
     lines.append("| " + " | ".join(headers) + " |")
     lines.append("|" + "---|" * len(headers))
 
@@ -1044,13 +1104,13 @@ def _scientific_summary_md(stats: Dict, profile: str = "multi_way") -> str:
     for ser in serializers:
         entries = by_ser[ser]
         for field_id, _title, is_time, hib in cols:
-            if field_id in ("serializer_version", "effect_vs_fastest_cliffs_label"):
+            if field_id in ("library_version", "serializer_version", "effect_vs_fastest_cliffs_label"):
                 continue
             vals = []
             for e in entries:
-                v = e.get(field_id)
-                if v is None and field_id == "total_median_ns":
-                    v = e.get("avg_time_total_ns")
+                v = _stat_get(e, field_id)
+                if v is None and field_id in ("handoff_median_ns", "total_median_ns"):
+                    v = _handoff_ns(e)
                 if v is None:
                     continue
                 if isinstance(v, (int, float)) and not isinstance(v, bool):
@@ -1083,7 +1143,7 @@ def _scientific_summary_md(stats: Dict, profile: str = "multi_way") -> str:
         entries = by_ser[ser]
         version = ""
         for e in entries:
-            v = e.get("serializer_version")
+            v = _queue_version(e)
             if v:
                 version = str(v).strip()
                 break
@@ -1092,21 +1152,21 @@ def _scientific_summary_md(stats: Dict, profile: str = "multi_way") -> str:
         for field_id, _title, is_time, hib in cols:
             vals = []
             for e in entries:
-                v = e.get(field_id)
-                if v is None and field_id == "total_median_ns":
-                    v = e.get("avg_time_total_ns")
+                v = _stat_get(e, field_id)
+                if v is None and field_id in ("handoff_median_ns", "total_median_ns"):
+                    v = _handoff_ns(e)
                 if v is None:
                     continue
                 if isinstance(v, (int, float)) and not isinstance(v, bool):
                     vals.append(float(v))
-                elif field_id in ("serializer_version", "effect_vs_fastest_cliffs_label"):
+                elif field_id in ("library_version", "serializer_version", "effect_vs_fastest_cliffs_label"):
                     if str(v).strip():
                         vals.append(str(v).strip())  # type: ignore[arg-type]
                         break
             if not vals:
                 cells.append("-")
                 continue
-            if field_id in ("serializer_version", "effect_vs_fastest_cliffs_label"):
+            if field_id in ("library_version", "serializer_version", "effect_vs_fastest_cliffs_label"):
                 cells.append(str(vals[0]))
                 continue
             
@@ -1141,22 +1201,22 @@ def _scientific_summary_md(stats: Dict, profile: str = "multi_way") -> str:
 
 def _total_time_pivot_table_md(stats: Dict) -> str:
     """Generate a combined Mean/Median Total Time pivot table."""
-    # Rows sorted by serializer name (stable lookup); bold still marks best-in-column.
+    # Rows sorted by queue name (stable lookup); bold still marks best-in-column.
     by_ser: Dict[str, List[Dict]] = {}
     for e in stats.values():
         if not isinstance(e, dict):
             continue
-        by_ser.setdefault(str(e.get("serializer") or ""), []).append(e)
+        by_ser.setdefault(_queue_name(e), []).append(e)
 
     serializers = sorted(by_ser.keys(), key=lambda s: s.casefold())
     if not serializers:
         return ""
 
     # Values are ns→µs in _get_val; units live on the column headers only.
-    lines = ["\n### Total Time\n"]
+    lines = ["\n### Handoff Time\n"]
     
     headers = [
-        "serializer",
+        "library",
         "bytes mode/mean (µs)",
         "bytes mode/median (µs)",
         "stream mode/mean (µs)",
@@ -1176,9 +1236,9 @@ def _total_time_pivot_table_md(stats: Dict) -> str:
     def _get_val(entry, key):
         if not entry:
             return None
-        v = entry.get(key)
-        if v is None and key == "total_median_ns":
-            v = entry.get("avg_time_total_ns")
+        v = _stat_get(entry, key)
+        if v is None and key in ("handoff_median_ns", "total_median_ns"):
+            v = _handoff_ns(entry)
         if isinstance(v, (int, float)) and not isinstance(v, bool) and v == v:
             return float(v) / 1000.0
         return None
@@ -1194,10 +1254,10 @@ def _total_time_pivot_table_md(stats: Dict) -> str:
         bytes_entry = _entry_for_mode(entries, "bytes")
         stream_entry = _entry_for_mode(entries, "stream")
 
-        bm_val = _get_val(bytes_entry, "avg_time_total_ns")
-        bmed_val = _get_val(bytes_entry, "total_median_ns")
-        sm_val = _get_val(stream_entry, "avg_time_total_ns")
-        smed_val = _get_val(stream_entry, "total_median_ns")
+        bm_val = _get_val(bytes_entry, "avg_time_handoff_ns")
+        bmed_val = _get_val(bytes_entry, "handoff_median_ns")
+        sm_val = _get_val(stream_entry, "avg_time_handoff_ns")
+        smed_val = _get_val(stream_entry, "handoff_median_ns")
 
         if bm_val is not None: col_vals["bytes_mean"].append(bm_val)
         if bmed_val is not None: col_vals["bytes_median"].append(bmed_val)
@@ -1215,7 +1275,7 @@ def _total_time_pivot_table_md(stats: Dict) -> str:
         entries = by_ser[ser]
         version = ""
         for e in entries:
-            v = e.get("serializer_version")
+            v = _queue_version(e)
             if v:
                 version = str(v).strip()
                 break
@@ -1224,10 +1284,10 @@ def _total_time_pivot_table_md(stats: Dict) -> str:
         bytes_entry = _entry_for_mode(entries, "bytes")
         stream_entry = _entry_for_mode(entries, "stream")
 
-        bm_val = _get_val(bytes_entry, "avg_time_total_ns")
-        bmed_val = _get_val(bytes_entry, "total_median_ns")
-        sm_val = _get_val(stream_entry, "avg_time_total_ns")
-        smed_val = _get_val(stream_entry, "total_median_ns")
+        bm_val = _get_val(bytes_entry, "avg_time_handoff_ns")
+        bmed_val = _get_val(bytes_entry, "handoff_median_ns")
+        sm_val = _get_val(stream_entry, "avg_time_handoff_ns")
+        smed_val = _get_val(stream_entry, "handoff_median_ns")
 
         row_cells = [display_name]
         for val, key in [(bm_val, "bytes_mean"), (bmed_val, "bytes_median"), (sm_val, "stream_mean"), (smed_val, "stream_median")]:
@@ -1324,7 +1384,7 @@ def generate_language_results_pages(
             "",
             "## How to read these tables",
             "",
-            "Compare serializers **inside this language**. Prefer the same "
+            "Compare queues **inside this language**. Prefer the same "
             "[category](../analysis/serialization_categories.md) "
             "(for example JSON with JSON) and the same "
             "[I/O mode](../analysis/modes.md) "
@@ -1342,10 +1402,10 @@ def generate_language_results_pages(
             "| **Ops/s** | Operations per second from mean total time — higher is faster |",
             "| **Bold** | Best value in that column (lowest time/size; highest ops/s). Ties are all bolded. |",
             "",
-            "Rows are sorted by **serializer name** (easy lookup), not by rank. "
+            "Rows are sorted by **queue name** (easy lookup), not by rank. "
             "Batch workloads appear as **Data type · N instances** "
             "(for example Message · 100 instances). "
-            "Default multi-serializer tables show **high-importance** metrics only; "
+            "Default multi-queue tables show **high-importance** metrics only; "
             "pairwise / version A/B reports can show the full set "
             "([Metrics](../analysis/METRICS.md)).",
             "",
@@ -1358,7 +1418,7 @@ def generate_language_results_pages(
         # Exploratory ranking banner (multi-way effect-vs-fastest is descriptive)
         lines.append(
             "> **Exploratory ranks:** effect sizes vs the fastest codec are **descriptive**. "
-            "When we attach Holm-adjusted tests, they only correct for many serializers "
+            "When we attach Holm-adjusted tests, they only correct for many queues "
             "**inside one** (data type × batch size × I/O mode) group — not for every "
             "comparison on this page. Prefer pairwise A/B "
             "(`analyze-benchmarks --compare-a … --compare-b …`) for confirmatory checks. "
@@ -1412,7 +1472,7 @@ def generate_language_results_pages(
             lines.append(
                 _pivot_table_md(
                     display_stats,
-                    "serializer",
+                    "library",
                     "test_data",
                     "avg_ops_per_sec",
                     "Ops/Sec",

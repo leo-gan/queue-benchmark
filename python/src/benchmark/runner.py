@@ -350,14 +350,14 @@ def run(reps: int, queue_filter: str = "", data_filter: str = "") -> Path:
                 cpu_ns = time.process_time_ns() - cpu0
                 storage.write(
                     BenchmarkLog(
-                        string_or_stream=io_mode,
+                        pattern=io_mode,
                         test_data_name=cell["type_id"],
                         repetitions=reps,
                         repetition_index=i,
-                        serializer_name=adapter.name,
-                        serializer_version=adapter.version(),
-                        time_ser_ns=enq,
-                        time_deser_ns=deq,
+                        library_name=adapter.name,
+                        library_version=adapter.version(),
+                        time_enq_ns=enq,
+                        time_deq_ns=deq,
                         size_bytes=size,
                         fidelity_score=fid,
                         data_type_instance_count=n,

@@ -2,85 +2,85 @@
   "status": "ok",
   "rows": [
     {
-      "library": "crossbeam-queue",
+      "library": "steal-deque",
       "pattern": "4p1c",
       "n": 9,
-      "median_handoff_ns": 74459.0,
-      "p50_ns": 74459.0,
-      "mean_ns": 81676.22222222222,
+      "median_handoff_ns": 75902.0,
+      "p50_ns": 75902.0,
+      "mean_ns": 96840.88888888889,
       "rel_to_fastest": 1.0
     },
     {
-      "library": "steal-deque",
+      "library": "crossbeam-channel",
       "pattern": "4p1c",
       "n": 9,
-      "median_handoff_ns": 75794.0,
-      "p50_ns": 75794.0,
-      "mean_ns": 102644.55555555556,
-      "rel_to_fastest": 1.0179293302354315
+      "median_handoff_ns": 85491.0,
+      "p50_ns": 85491.0,
+      "mean_ns": 108753.88888888889,
+      "rel_to_fastest": 1.126333956944481
+    },
+    {
+      "library": "crossbeam-queue",
+      "pattern": "4p1c",
+      "n": 9,
+      "median_handoff_ns": 89253.0,
+      "p50_ns": 89253.0,
+      "mean_ns": 106024.33333333333,
+      "rel_to_fastest": 1.1758978683038654
     },
     {
       "library": "crossbeam-queue",
       "pattern": "1p4c",
       "n": 9,
-      "median_handoff_ns": 95746.0,
-      "p50_ns": 95746.0,
-      "mean_ns": 105599.55555555556,
-      "rel_to_fastest": 1.2858888784431701
-    },
-    {
-      "library": "crossbeam-channel",
-      "pattern": "4p1c",
-      "n": 9,
-      "median_handoff_ns": 96011.0,
-      "p50_ns": 96011.0,
-      "mean_ns": 104834.33333333333,
-      "rel_to_fastest": 1.289447884070428
+      "median_handoff_ns": 94295.0,
+      "p50_ns": 94295.0,
+      "mean_ns": 95751.22222222222,
+      "rel_to_fastest": 1.242325630418171
     },
     {
       "library": "crossbeam-channel",
       "pattern": "1p4c",
       "n": 9,
-      "median_handoff_ns": 102709.0,
-      "p50_ns": 102709.0,
-      "mean_ns": 107366.22222222222,
-      "rel_to_fastest": 1.3794034300756122
+      "median_handoff_ns": 94338.0,
+      "p50_ns": 94338.0,
+      "mean_ns": 105681.0,
+      "rel_to_fastest": 1.242892150404469
+    },
+    {
+      "library": "steal-deque",
+      "pattern": "4p4c",
+      "n": 9,
+      "median_handoff_ns": 126458.0,
+      "p50_ns": 126458.0,
+      "mean_ns": 137476.55555555556,
+      "rel_to_fastest": 1.6660694052857632
     },
     {
       "library": "crossbeam-queue",
       "pattern": "4p4c",
       "n": 9,
-      "median_handoff_ns": 118935.0,
-      "p50_ns": 118935.0,
-      "mean_ns": 121364.44444444444,
-      "rel_to_fastest": 1.5973220161431123
-    },
-    {
-      "library": "crossbeam-channel",
-      "pattern": "4p4c",
-      "n": 9,
-      "median_handoff_ns": 126118.0,
-      "p50_ns": 126118.0,
-      "mean_ns": 162702.77777777778,
-      "rel_to_fastest": 1.6937912139566742
+      "median_handoff_ns": 156891.0,
+      "p50_ns": 156891.0,
+      "mean_ns": 159054.33333333334,
+      "rel_to_fastest": 2.067020631867408
     },
     {
       "library": "steal-deque",
       "pattern": "1p4c",
       "n": 9,
-      "median_handoff_ns": 139148.0,
-      "p50_ns": 139148.0,
-      "mean_ns": 124464.44444444444,
-      "rel_to_fastest": 1.868786849138452
+      "median_handoff_ns": 163860.0,
+      "p50_ns": 163860.0,
+      "mean_ns": 155818.66666666666,
+      "rel_to_fastest": 2.1588363942979103
     },
     {
-      "library": "steal-deque",
+      "library": "crossbeam-channel",
       "pattern": "4p4c",
       "n": 9,
-      "median_handoff_ns": 146370.0,
-      "p50_ns": 146370.0,
-      "mean_ns": 144232.0,
-      "rel_to_fastest": 1.965779825138667
+      "median_handoff_ns": 176511.0,
+      "p50_ns": 176511.0,
+      "mean_ns": 171652.11111111112,
+      "rel_to_fastest": 2.3255118442201788
     }
   ]
 }

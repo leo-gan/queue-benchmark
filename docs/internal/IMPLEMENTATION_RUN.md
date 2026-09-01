@@ -60,7 +60,7 @@ broker). That is a system bench, not a data-structure bench.
 io_modes: [bytes, stream, 1p4c, 4p1c, 4p4c]
 ```
 
-CSV names stay serializer leftovers (`bytes` = SPSC, `stream` = 2P2C).
+CSV `Pattern` values stay `bytes` = SPSC, `stream` = 2P2C.
 Named patterns are first-class cells. Libraries that cannot do MPMC skip
 those cells (existing `_can_run` / SPSC-only rules). A full bench is
 about 2.5× the old SPSC+2P2C matrix.

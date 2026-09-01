@@ -2,8 +2,8 @@
 
 | Library | Pattern | Median handoff (ns) | vs fastest | n |
 |---------|---------|--------------------:|-----------:|--:|
-| spsc-ring | bytes | 15221 | 1.00× | 9 |
-| steal-deque | bytes | 18780 | 1.23× | 9 |
-| deque-lock | bytes | 19467 | 1.28× | 9 |
-| asyncio.Queue | bytes | 44179 | 2.90× | 9 |
-| queue.Queue | bytes | 56582 | 3.72× | 9 |
+| spsc-ring | bytes | 15685 | 1.00× | 9 |
+| deque-lock | bytes | 19424 | 1.24× | 9 |
+| steal-deque | bytes | 19635 | 1.25× | 9 |
+| asyncio.Queue | bytes | 47507 | 3.03× | 9 |
+| queue.Queue | bytes | 59113 | 3.77× | 9 |

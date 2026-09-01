@@ -54,8 +54,8 @@ export function formatSig(value, sig = SIG) {
  * Docs Summary-table style label: ``simd-json:0.14.3`` when version is known.
  * Matches analysis/reports.py: ``f"{name}:{version}" if version else name``.
  */
-export function serializerDisplayName(serializer, version) {
-  const name = serializer == null ? '' : String(serializer).trim();
+export function queueDisplayName(queue, version) {
+  const name = queue == null ? '' : String(queue).trim();
   if (!name) return '—';
   const ver =
     version == null || version === ''
@@ -67,10 +67,13 @@ export function serializerDisplayName(serializer, version) {
   return `${name}:${ver}`;
 }
 
-/** Label from a stats group object (uses serializer_version when present). */
-export function serializerLabelFromGroup(g) {
+/** Label from a stats group object (uses queue_version when present). */
+export function queueLabelFromGroup(g) {
   if (!g) return '—';
-  return serializerDisplayName(g.serializer, g.serializer_version);
+  return queueDisplayName(
+    g.library || g.queue || g.serializer,
+    g.library_version || g.queue_version || g.serializer_version
+  );
 }
 
 /** Locale-grouped integer (sizes, counts). */
@@ -89,7 +92,7 @@ export const LATENCY_US = { unit: 'µs', divisor: 1e3, header: 'µs' };
  * Prefer **microseconds** for table columns. Queue handoff times
  * usually sit in the µs–ms band: ms collapses fast queues to awkward decimals
  * (e.g. 0.012 ms vs 12.3 µs), while a fixed µs scale keeps 3-sig values
- * comparable across total / ser / deser without unit hopping when one slow
+ * comparable across handoff / enqueue / dequeue without unit hopping when one slow
  * row would otherwise force the whole column into milliseconds.
  *
  * - max < 1 µs  → ns (sub-microsecond niche)
@@ -261,9 +264,9 @@ export function scalesFromGroups(groups, keys = null) {
   for (const g of gs) {
     if (!g) continue;
     if (!keys) {
-      if (typeof g.avg_time_total_ns === 'number') lat.push(g.avg_time_total_ns);
-      if (typeof g.avg_time_ser_ns === 'number') lat.push(g.avg_time_ser_ns);
-      if (typeof g.avg_time_deser_ns === 'number') lat.push(g.avg_time_deser_ns);
+      if (typeof g.avg_time_handoff_ns === 'number') lat.push(g.avg_time_handoff_ns);
+      if (typeof g.avg_time_enq_ns === 'number') lat.push(g.avg_time_enq_ns);
+      if (typeof g.avg_time_deq_ns === 'number') lat.push(g.avg_time_deq_ns);
       if (typeof g.avg_ops_per_sec === 'number') ops.push(g.avg_ops_per_sec);
     } else {
       for (const k of keys) {
@@ -281,3 +284,6 @@ export function scalesFromGroups(groups, keys = null) {
     ops: chooseOpsUnit(ops),
   };
 }
+
+export const serializerDisplayName = queueDisplayName;
+export const serializerLabelFromGroup = queueLabelFromGroup;

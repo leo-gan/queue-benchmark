@@ -4,8 +4,8 @@ from benchmark.runner import run
 
 def test_csv_header_abi():
     assert CSV_HEADER[0] == "Language"
-    assert "SerializerName" in CSV_HEADER
-    assert "TimeSer" in CSV_HEADER
+    assert "LibraryName" in CSV_HEADER
+    assert "TimeEnq" in CSV_HEADER
 
 
 def test_parse_pattern():

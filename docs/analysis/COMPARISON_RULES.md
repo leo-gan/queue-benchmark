@@ -41,7 +41,7 @@ a chart that looks decisive and is wrong.
 | Surface | What it does |
 |---------|----------------|
 | [Benchmark design](BENCHMARK_DESIGN.md) | Tests and how to read a result |
-| [Queue categories](queue_categories.md) | T / A published; P / S / D / N later |
+| [Queue categories](queue_categories.md) | T / A default; P / S / D opt-in; N unpublished |
 | [Claims](CLAIMS_AND_REPLICATION.md) | What a published dashboard payload means |
 | Dashboard Category filter | Hides the other communication model |
 

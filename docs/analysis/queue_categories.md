@@ -33,9 +33,11 @@ JavaScript `p-queue` is a **concurrency limiter** (scheduler), not a
 handoff queue. It is listed in the inventory; do not treat it as category A
 for ranking.
 
-## Published as opt-in (Python): P / S / D
+## Published as opt-in: P / S / D
 
-Python runners exist. They never share a violin or rank table with T.
+`pipe-ipc`, `shared-ring`, and `sqlite-queue` exist in C, C#, JS, Python,
+and Rust. They are **off the default matrix** unless
+`BENCHMARK_INCLUDE_PSD=1`. They never share a violin or rank table with T.
 The dashboard Category filter includes Thread / Async / Process / Shared /
 Durable / Other.
 
@@ -50,7 +52,7 @@ Brokers (Redis, Kafka, ZeroMQ) stay out of T/A charts.
 
 The dashboard **Category** control filters the current language’s table
 to Thread (T), Async (A), Process, Shared, Durable, or Other
-(`p-queue`). P/S/D series exist only for Python opt-in runs.
+(`p-queue`). P/S/D series appear after an opt-in run.
 
 ## Not categories
 
@@ -63,9 +65,9 @@ These are **properties** that can apply inside T or A:
 
 ## Patterns
 
-| Say | CSV `StringOrStream` | Work |
-|-----|----------------------|------|
+| Say | CSV `Pattern` | Work |
+|-----|---------------|------|
 | SPSC | `bytes` | 1 producer, 1 consumer |
 | MPMC | `stream` | 2 producers, 2 consumers |
 
-“Stream” is a leftover column name. It is not I/O.
+Logged values `bytes` / `stream` are pattern tags, not I/O.

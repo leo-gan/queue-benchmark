@@ -37,9 +37,11 @@ Compare in-process queue libraries across **Python, Rust, JavaScript, C#, and C*
 
 [Adding a language](https://leo-gan.github.io/queue-benchmark/analysis/ADDING_A_LANGUAGE/) · [Adding a queue](https://leo-gan.github.io/queue-benchmark/analysis/ADDING_A_QUEUE/).
 
-This suite measures **in-process** queues only. Compare inside one language
-and one category (thread vs async). Brokers (Redis, Kafka, ZeroMQ) need a
-different lab — never on the same chart as `deque-lock`.
+This suite measures **local** queues on one machine. Compare inside one
+language and one communication category: **thread**, **async**, and
+opt-in **process / IPC**, **shared memory**, and **durable / disk**.
+Network brokers (Redis, Kafka, ZeroMQ) need a different lab — never on
+the same chart as `deque-lock`.
 
 ---
 
@@ -124,11 +126,11 @@ Every language writes the same columns (nanoseconds). Domain mapping:
 
 | Column | Queue meaning |
 |--------|---------------|
-| `SerializerName` | Queue library name |
-| `TimeSer` | Enqueue ns |
-| `TimeDeser` | Dequeue ns |
-| `TimeSerAndDeser` | Handoff ns |
-| `StringOrStream` | `bytes` = **SPSC**, `stream` = **MPMC** (not I/O) |
+| `LibraryName` / `LibraryVersion` | Implementation + installed version |
+| `TimeEnq` | Enqueue ns |
+| `TimeDeq` | Dequeue ns |
+| `TimeHandoff` | Handoff ns |
+| `Pattern` | `bytes` = **SPSC**, `stream` = **MPMC** (not I/O) |
 | `Size` | Payload bytes |
 
 See [architecture](https://leo-gan.github.io/queue-benchmark/analysis/architecture/).

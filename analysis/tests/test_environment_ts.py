@@ -74,7 +74,7 @@ def test_capture_writes_configs_json_from_csv_stem(monkeypatch, tmp_path: Path):
     assert "/home/" not in text
     assert "machine_id" in text
     # serializers scraped from CSV when present
-    assert doc.get("serializers", {}).get("count") == 1
+    assert doc.get("libraries", {}).get("count") == 1
 
 
 def test_load_legacy_environment_json(tmp_path: Path):
@@ -94,9 +94,9 @@ def test_load_legacy_environment_json(tmp_path: Path):
 
 def test_multi_way_filters_high_importance_only():
     cfg = load_metrics_config()
-    fields = ["total_median_ns", "total_mean_ns", "effect_vs_fastest_hedges_g", "avg_ops_per_sec"]
+    fields = ["handoff_median_ns", "handoff_mean_ns", "effect_vs_fastest_hedges_g", "avg_ops_per_sec"]
     multi = filter_field_ids(fields, profile="multi_way", metrics_cfg=cfg)
-    assert "total_median_ns" in multi
+    assert "handoff_median_ns" in multi
     assert "avg_ops_per_sec" in multi
     assert "effect_vs_fastest_hedges_g" not in multi  # low
     pair = filter_field_ids(fields, profile="pairwise", metrics_cfg=cfg)

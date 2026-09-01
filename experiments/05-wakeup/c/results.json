@@ -5,9 +5,9 @@
       "library": "mutex-queue",
       "pattern": "bytes",
       "n": 9,
-      "median_handoff_ns": 112371261.0,
-      "p50_ns": 112371261.0,
-      "mean_ns": 111129689.66666667,
+      "median_handoff_ns": 110505762.0,
+      "p50_ns": 110505762.0,
+      "mean_ns": 110535781.22222222,
       "rel_to_fastest": 1.0
     }
   ]

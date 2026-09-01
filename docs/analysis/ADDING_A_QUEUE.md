@@ -1,8 +1,8 @@
 # Adding a queue
 
 1. Implement the language adapter (see the language README).
-2. Register the name **exactly** as it will appear in `SerializerName`.
-3. Report the installed package/crate version in `SerializerVersion`.
+2. Register the name **exactly** as it will appear in `LibraryName`.
+3. Report the installed package/crate version in `LibraryVersion`.
 4. Implement **SPSC**. Implement **MPMC** only if the library is actually MPMC;
    otherwise skip MPMC cells (CSV `io_mode=stream`). Set `communication` to
    `thread` or `async` in `config/benchmark_config.yaml`. Do not register a

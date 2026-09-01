@@ -88,17 +88,17 @@ function updateScatterChart(groups, paretoNames, metric) {
   const standardPoints = [];
 
   groups.forEach((g) => {
-    const xVal = isOps ? g.avg_ops_per_sec : g.avg_time_total_ns;
+    const xVal = isOps ? g.avg_ops_per_sec : g.avg_time_handoff_ns;
     const yVal = g.median_size_bytes;
     if (xVal == null || yVal == null || !Number.isFinite(xVal) || !Number.isFinite(yVal)) return;
     if (chartOptions.logScale && xVal <= 0) return;
     const point = {
       x: xVal,
       y: yVal,
-      label: g.serializer,
+      label: g.library,
       ops: g.avg_ops_per_sec,
-      time: g.avg_time_total_ns,
-      onFrontier: paretoNames.includes(g.serializer),
+      time: g.avg_time_handoff_ns,
+      onFrontier: paretoNames.includes(g.library),
     };
     if (point.onFrontier) paretoPoints.push(point);
     else standardPoints.push(point);
@@ -282,7 +282,7 @@ function updateBarChart(groups, paretoNames, metric) {
     .filter((g) => {
       if (!g) return false;
       if (g.median_size_bytes == null && sortBySize) return false;
-      return isOps ? g.avg_ops_per_sec != null : g.avg_time_total_ns != null;
+      return isOps ? g.avg_ops_per_sec != null : g.avg_time_handoff_ns != null;
     })
     .sort((a, b) => {
       if (sortBySize) {
@@ -296,9 +296,9 @@ function updateBarChart(groups, paretoNames, metric) {
     })
     .slice(0, 15);
 
-  const labels = sortedGroups.map((g) => g.serializer);
+  const labels = sortedGroups.map((g) => g.library);
   const primaryRaw = sortedGroups.map((g) =>
-    isOps ? g.avg_ops_per_sec : g.avg_time_total_ns
+    isOps ? g.avg_ops_per_sec : g.avg_time_handoff_ns
   );
   const sizeRaw = sortedGroups.map((g) => Number(g.median_size_bytes) || 0);
 
@@ -314,10 +314,10 @@ function updateBarChart(groups, paretoNames, metric) {
   );
 
   const speedColors = sortedGroups.map((g) =>
-    paretoNames.includes(g.serializer) ? 'rgba(26, 115, 232, 0.9)' : 'rgba(26, 115, 232, 0.28)'
+    paretoNames.includes(g.library) ? 'rgba(26, 115, 232, 0.9)' : 'rgba(26, 115, 232, 0.28)'
   );
   const sizeColors = sortedGroups.map((g) =>
-    paretoNames.includes(g.serializer) ? 'rgba(30, 142, 62, 0.9)' : 'rgba(30, 142, 62, 0.28)'
+    paretoNames.includes(g.library) ? 'rgba(30, 142, 62, 0.9)' : 'rgba(30, 142, 62, 0.28)'
   );
 
   barChartInstance = new Chart(canvas.getContext('2d'), {
@@ -331,7 +331,7 @@ function updateBarChart(groups, paretoNames, metric) {
           data: sizeNorm,
           backgroundColor: sizeColors,
           borderColor: sortedGroups.map((g) =>
-            paretoNames.includes(g.serializer) ? '#1e8e3e' : 'rgba(30, 142, 62, 0.45)'
+            paretoNames.includes(g.library) ? '#1e8e3e' : 'rgba(30, 142, 62, 0.45)'
           ),
           borderWidth: 1,
           borderRadius: 3,
@@ -343,7 +343,7 @@ function updateBarChart(groups, paretoNames, metric) {
           data: speedNorm,
           backgroundColor: speedColors,
           borderColor: sortedGroups.map((g) =>
-            paretoNames.includes(g.serializer) ? '#1a73e8' : 'rgba(26, 115, 232, 0.45)'
+            paretoNames.includes(g.library) ? '#1a73e8' : 'rgba(26, 115, 232, 0.45)'
           ),
           borderWidth: 1,
           borderRadius: 3,
@@ -389,7 +389,7 @@ function updateBarChart(groups, paretoNames, metric) {
               }
               const abs = isOps
                 ? formatOpsCompact(g.avg_ops_per_sec)
-                : formatTimeCompact(g.avg_time_total_ns);
+                : formatTimeCompact(g.avg_time_handoff_ns);
               return isOps
                 ? `Ops/s: ${abs}  (${pct}% of max in chart)`
                 : `Latency: ${abs}  (${pct}% of max in chart)`;
@@ -398,7 +398,7 @@ function updateBarChart(groups, paretoNames, metric) {
               const g = sortedGroups[items[0]?.dataIndex];
               if (!g) return [];
               return [
-                paretoNames.includes(g.serializer) ? 'Pareto optimal' : 'Dominated on speed/size',
+                paretoNames.includes(g.library) ? 'Pareto optimal' : 'Dominated on speed/size',
               ];
             },
           },

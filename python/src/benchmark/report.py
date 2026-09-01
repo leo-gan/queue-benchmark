@@ -1,4 +1,4 @@
-"""CSV logging. Shared ABI with serializer-benchmark (see docs/analysis/METRICS.md)."""
+"""CSV logging. Queue ABI (see docs/analysis/METRICS.md)."""
 
 from __future__ import annotations
 
@@ -9,14 +9,14 @@ from dataclasses import dataclass
 
 @dataclass
 class BenchmarkLog:
-    string_or_stream: str = ""
+    pattern: str = ""
     test_data_name: str = ""
     repetitions: int = 0
     repetition_index: int = 0
-    serializer_name: str = ""
-    serializer_version: str = ""
-    time_ser_ns: int = 0
-    time_deser_ns: int = 0
+    library_name: str = ""
+    library_version: str = ""
+    time_enq_ns: int = 0
+    time_deq_ns: int = 0
     size_bytes: int = 0
     memory_peak_bytes: int = 0
     fidelity_score: float = 1.0
@@ -29,38 +29,38 @@ class BenchmarkLog:
     cpu_time_ns: int = 0
 
     @property
-    def time_ser_and_deser_ns(self) -> int:
-        return self.time_ser_ns + self.time_deser_ns
+    def time_handoff_ns(self) -> int:
+        return self.time_enq_ns + self.time_deq_ns
 
     @property
-    def op_per_sec_ser(self) -> float:
-        return 1_000_000_000.0 / self.time_ser_ns if self.time_ser_ns > 0 else 0.0
+    def op_per_sec_enq(self) -> float:
+        return 1_000_000_000.0 / self.time_enq_ns if self.time_enq_ns > 0 else 0.0
 
     @property
-    def op_per_sec_deser(self) -> float:
-        return 1_000_000_000.0 / self.time_deser_ns if self.time_deser_ns > 0 else 0.0
+    def op_per_sec_deq(self) -> float:
+        return 1_000_000_000.0 / self.time_deq_ns if self.time_deq_ns > 0 else 0.0
 
     @property
-    def op_per_sec_ser_and_deser(self) -> float:
-        total = self.time_ser_and_deser_ns
+    def op_per_sec_handoff(self) -> float:
+        total = self.time_handoff_ns
         return 1_000_000_000.0 / total if total > 0 else 0.0
 
 
 CSV_HEADER = [
     "Language",
-    "StringOrStream",
+    "Pattern",
     "TestDataName",
     "Repetitions",
     "RepetitionIndex",
-    "SerializerName",
-    "SerializerVersion",
-    "TimeSer",
-    "TimeDeser",
+    "LibraryName",
+    "LibraryVersion",
+    "TimeEnq",
+    "TimeDeq",
     "Size",
-    "TimeSerAndDeser",
-    "OpPerSecSer",
-    "OpPerSecDeser",
-    "OpPerSecSerAndDeser",
+    "TimeHandoff",
+    "OpPerSecEnq",
+    "OpPerSecDeq",
+    "OpPerSecHandoff",
     "MemoryPeakBytes",
     "FidelityScore",
     "DataTypeInstanceCount",
@@ -88,19 +88,19 @@ class LogStorage:
         self._writer.writerow(
             [
                 language,
-                log.string_or_stream,
+                log.pattern,
                 log.test_data_name,
                 log.repetitions,
                 log.repetition_index,
-                log.serializer_name,
-                log.serializer_version or "",
-                log.time_ser_ns,
-                log.time_deser_ns,
+                log.library_name,
+                log.library_version or "",
+                log.time_enq_ns,
+                log.time_deq_ns,
                 log.size_bytes,
-                log.time_ser_and_deser_ns,
-                f"{log.op_per_sec_ser:.6f}",
-                f"{log.op_per_sec_deser:.6f}",
-                f"{log.op_per_sec_ser_and_deser:.6f}",
+                log.time_handoff_ns,
+                f"{log.op_per_sec_enq:.6f}",
+                f"{log.op_per_sec_deq:.6f}",
+                f"{log.op_per_sec_handoff:.6f}",
                 log.memory_peak_bytes,
                 f"{log.fidelity_score:.4f}",
                 log.data_type_instance_count,

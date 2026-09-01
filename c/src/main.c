@@ -357,7 +357,7 @@ int main(int argc, char **argv) {
     int include_psd = env_on("BENCHMARK_INCLUDE_PSD");
     const char *psd_names = getenv("BENCHMARK_PSD_NAMES");
     if (!psd_names) psd_names = "";
-    fprintf(out, "Language,StringOrStream,TestDataName,Repetitions,RepetitionIndex,SerializerName,SerializerVersion,TimeSer,TimeDeser,Size,TimeSerAndDeser,OpPerSecSer,OpPerSecDeser,OpPerSecSerAndDeser,MemoryPeakBytes,FidelityScore,DataTypeInstanceCount,TypeConfigHash,SizeGzip,SizeZstd,NativeKind,StreamMode,RunOrder,SchedulePosition,CpuTimeNs\n");
+    fprintf(out, "Language,Pattern,TestDataName,Repetitions,RepetitionIndex,LibraryName,LibraryVersion,TimeEnq,TimeDeq,Size,TimeHandoff,OpPerSecEnq,OpPerSecDeq,OpPerSecHandoff,MemoryPeakBytes,FidelityScore,DataTypeInstanceCount,TypeConfigHash,SizeGzip,SizeZstd,NativeKind,StreamMode,RunOrder,SchedulePosition,CpuTimeNs\n");
 
     FILE *cf = fopen(cells, "r");
     if (!cf) {
