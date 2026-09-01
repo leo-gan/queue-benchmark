@@ -80,7 +80,7 @@ echo -e "${BLUE}  Queue Benchmark Runner${NC}"
 echo -e "${BLUE}============================================${NC}"
 echo -e "Config: ${YELLOW}$PROJECT_ROOT/config/benchmark_config.yaml${NC}"
 echo -e "Mode: ${YELLOW}$MODE${NC} (reps=$(bench_mode_reps "$MODE"))  Lang filter: ${YELLOW}${LANG_FILTER:-all enabled}${NC}"
-echo -e "Data model: ${YELLOW}v2${NC} (payload type_ids: message document telemetry strings event)"
+echo -e "Data model: ${YELLOW}v2${NC} (payload type_ids: size_256 size_4096)"
 
 # Timestamp used for all result files in this run so they share the same stem.
 TS=$(date +%Y-%m-%d-%H%M%S)
