@@ -4,8 +4,8 @@ One question per folder under `experiments/`. Read [PLAN.md](../../experiments/P
 
 | # | Question |
 |---|----------|
-| [01-spsc-handoff](../../experiments/01-spsc-handoff/) | SPSC handoff of a small message |
-| [02-payload-size](../../experiments/02-payload-size/) | Same SPSC at 4 KiB |
+| [01-spsc-handoff](../../experiments/01-spsc-handoff/) | 1P1C handoff of a small message |
+| [02-payload-size](../../experiments/02-payload-size/) | Same 1P1C at 4 KiB |
 | [03-contention](../../experiments/03-contention/) | 1P4C / 4P1C / 4P4C |
 | [04-backpressure](../../experiments/04-backpressure/) | Bounded queue, slow consumer |
 | [05-wakeup](../../experiments/05-wakeup/) | Empty-queue wake |

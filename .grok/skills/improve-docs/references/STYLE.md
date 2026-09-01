@@ -6,7 +6,8 @@ Keep it simple. Prefer delete and clarify over decorate.
 
 | Say | Never say |
 |-----|-----------|
-| **payload size** (256 B, 4 KiB) for the published filter | fixture; five leftover type names as if they were different shapes |
+| **payload size** (256 B, 4 KiB) for the published size filter | fixture; five leftover type names as if they were different shapes |
+| **pattern** as **1P1C**, **4P4C**, **1P4C**, **4P1C** | SPSC, MPMC on the published filter |
 | **data type** only as the catalog id (`size_256`, `size_4096`) | fixture, fixtures, fixtureKey, `dataset.fixtures` |
 
 The published axis is how many bytes each queued item is. Experiment 13 showed that 256 B and 4 KiB tell different stories; 512 B / 1 KiB / 2 KiB do not. Use **payload size** in README, Dashboard copy, and findings. Catalog ids stay `type_id` values (`size_256`, `size_4096`). Older folders may still say `message` / `document` (same lengths). Do not keep `fixture*` as an internal alias. Old `configs.json` may still contain `fixtures`; read it as a fallback, write `data_types`.
@@ -29,7 +30,7 @@ Do not rank a library on payload size. Every queue in a cell moves the same byte
 ## Content style
 
 - **One idea per paragraph.** Prefer tables for role/path matrices **on the site / Dashboard**, not by fattening the root README.
-- **User terms:** payload size (256 B, 4 KiB), mode (bytes/stream), ops/s, latency, Pareto, baseline.
+- **User terms:** payload size (256 B, 4 KiB), pattern (1P1C, 4P4C), ops/s, latency, Pareto, baseline. Do not say SPSC or MPMC on the dashboard filter.
 - **Never say “fixture”.** The published sample is a **payload size**. The catalog id is a **data type** (`size_256`, `size_4096`). Say that in docs, Dashboard copy, skills, comments, identifiers, and JSON keys. Do not keep `fixture*` as an internal alias “until later.”
 - **Avoid in user copy:** fixture, median size (we do not measure payload size as a result), harness (prefer benchmark runner), unexplained IQR/P95.
 - **Honesty line** when ranks appear: within one language; cross-lang directional — prefer **one** place (e.g. Statistics / Method), not a second essay block on README.

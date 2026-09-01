@@ -1,6 +1,6 @@
 # Run config: default (publication matrix)
 id: default
-description: "Two payload sizes (256 B, 4 KiB) × [100, 1000] items; SPSC, 2P2C, 1P4C, 4P1C, 4P4C"
+description: "Two payload sizes (256 B, 4 KiB) × [100, 1000] items; 1P1C and 4P4C"
 data_model_version: 2
 
 types:
@@ -16,8 +16,9 @@ compression:
 
 execution:
   mode: full
-  # bytes = SPSC; stream = MPMC (CSV ABI name; not a stream API)
-  io_modes: [bytes, stream, 1p4c, 4p1c, 4p4c]
+  # bytes = 1P1C (CSV leftover name). 4p4c = four producers and four consumers.
+  # 2P2C / 1P4C / 4P1C stay on experiment 3, not the published matrix.
+  io_modes: [bytes, 4p4c]
 
 budget:
   soft_seconds_per_10_serializers: 60

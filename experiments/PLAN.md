@@ -5,8 +5,8 @@ by relative handoff time vs the fastest on that sample. Do not crown a winner.
 
 | # | Folder | Status | Question |
 |---|--------|--------|----------|
-| 1 | [01-spsc-handoff](01-spsc-handoff/) | Ready | SPSC handoff of a small message |
-| 2 | [02-payload-size](02-payload-size/) | Ready | Same SPSC, 4 KiB payload |
+| 1 | [01-spsc-handoff](01-spsc-handoff/) | Ready | 1P1C handoff of a small message |
+| 2 | [02-payload-size](02-payload-size/) | Ready | Same 1P1C, 4 KiB payload |
 | 3 | [03-contention](03-contention/) | Ready | 1P4C / 4P1C / 4P4C |
 | 4 | [04-backpressure](04-backpressure/) | Ready | Bounded queue, slow consumer |
 | 5 | [05-wakeup](05-wakeup/) | Ready | Empty-queue wake latency |
@@ -17,7 +17,7 @@ by relative handoff time vs the fastest on that sample. Do not crown a winner.
 | 10 | [10-process-ipc](10-process-ipc/) | Ready | Category P vs in-process |
 | 11 | [11-shared-memory](11-shared-memory/) | Ready | Category S ring |
 | 12 | [12-durable-local](12-durable-local/) | Ready | Category D sqlite |
-| 13 | [13-payload-size-sweep](13-payload-size-sweep/) | Ready | Which payload sizes change SPSC ranking |
+| 13 | [13-payload-size-sweep](13-payload-size-sweep/) | Ready | Which payload sizes change 1P1C ranking |
 
 T1=01, T2=02, T3=03, T4=04, T5=05, T6=06, A2=07, A3=08, A4=09.
 P/S/D have Python runners only. Do not plot P/S/D next to T.
@@ -51,3 +51,10 @@ See the size-dimension follow-up on this branch.
 
 Combined page: `experiments/13-payload-size-sweep/results.md`.
 PR: https://github.com/leo-gan/queue-benchmark/pull/32
+
+## After the pattern-dimension collapse
+
+The published pattern filter is **1P1C** and **4P4C**. Those are the two
+cells that change first place. 2P2C, 1P4C, and 4P1C stay on experiment 3.
+The dashboard never says SPSC or MPMC for this filter. CSV `bytes` is still
+1P1C. Eight-worker cells are not on the default matrix.

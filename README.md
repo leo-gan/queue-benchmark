@@ -131,7 +131,7 @@ Every language writes the same columns (nanoseconds). Domain mapping:
 | `TimeEnq` | Enqueue ns |
 | `TimeDeq` | Dequeue ns |
 | `TimeHandoff` | Handoff ns |
-| `Pattern` | `bytes` = **SPSC**, `stream` = **MPMC** (not I/O) |
+| `Pattern` | `bytes` = **1P1C**, `4p4c` = **4P4C** (`stream` is leftover 2P2C, not I/O) |
 | `CpuTimeNs` | Process CPU time (spin vs block) |
 
 See [Metrics](https://leo-gan.github.io/queue-benchmark/analysis/METRICS/) and [architecture](https://leo-gan.github.io/queue-benchmark/analysis/architecture/).

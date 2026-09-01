@@ -5,7 +5,7 @@ hard-code repetition counts.
 
 | Mode | Reps | Matrix | Use |
 |------|------|--------|-----|
-| `smoke` | 2 | `config/library/smoke.yaml` (256 B, n=1, SPSC) | CI, “does it run?” |
+| `smoke` | 2 | `config/library/smoke.yaml` (256 B, n=1, 1P1C) | CI, “does it run?” |
 | `all-single` | 10 | default matrix | Quick full pass |
 | `full` | 100 | default matrix | Publication |
 | `research` | 500 | default matrix | High-power stats |

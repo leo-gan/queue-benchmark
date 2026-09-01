@@ -24,7 +24,7 @@ Do **not** invent `msgs_per_cpu_sec` from wall time.
 | `Size` / `SizeGzip` / `SizeZstd` / `median_size_bytes` | Serializer leftovers. Payload bytes are the **data type**, not a result. | **Removed.** New CSVs and stats do not write these. Old logs may still contain `Size`; analysis ignores it. |
 | `mean_fidelity` | `FidelityScore` = fraction of items that arrived in order. | **Gate**, not a score. If `< 1`, the row is invalid for ranking. Typical value is `1.0`. |
 | `mean_memory_peak_bytes` | Process RSS (`getrusage` / `PeakWorkingSet64` / `process.memoryUsage().rss`). | Provenance. Usually the process, not the queue. Do not run a “most compact” contest on it. |
-| `StreamMode` / honesty | Serializer “native vs adapted stream I/O”. There is no stream I/O in this suite. `Pattern=stream` means **MPMC**. | Do not show an honesty column. |
+| `StreamMode` / honesty | Serializer “native vs adapted stream I/O”. There is no stream I/O in this suite. `Pattern=stream` means **2P2C**. | Do not show an honesty column. |
 | `OpPerSecEnq` / `Deq` / `Handoff` in the CSV | Convenience copies of `1e9 / Time*`. | Analysis recomputes from times. Do not treat CSV ops as a second clock. |
 
 ## Identity (not metrics)
@@ -33,8 +33,8 @@ Do **not** invent `msgs_per_cpu_sec` from wall time.
 `DataTypeInstanceCount`, `TypeConfigHash`, `Repetitions`, `RepetitionIndex`,
 `RunOrder`, `SchedulePosition`, `NativeKind` (implementation family label).
 
-`Pattern`: `bytes` = SPSC, `stream` = MPMC 2P2C, plus named `1p4c` / `4p1c` /
-`4p4c`.
+`Pattern`: `bytes` = 1P1C, `stream` = 2P2C (old logs / experiment 3), plus
+named `1p4c` / `4p1c` / `4p4c`. The published matrix is 1P1C and 4P4C.
 
 ## Derived stats (not CSV columns)
 
