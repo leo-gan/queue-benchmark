@@ -58,10 +58,10 @@ This document is the source of truth for the stacked PRs. Domain words change
 
 4. **Same modes.** smoke=2, all-single=10, full=100, research=500.
 
-5. **Same payload catalog type ids** (`message`, `document`, `telemetry`,
-   `strings`, `event`) so the run-config expander and analysis tests stay
-   compatible. Runners treat them as payload-size / shape knobs, not object
-   graphs to serialize.
+5. **Same payload catalog type ids.** The published matrix is `size_256`
+   (256 B) and `size_4096` (4 KiB). Older experiment folders still use
+   `message` / `document` for those lengths. Runners treat them as payload
+   lengths, not object graphs to serialize.
 
 6. **Native host runners.** No Docker. `scripts/run-benchmarks.sh` per language.
 

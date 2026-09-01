@@ -137,6 +137,7 @@ export PREPARE_PR_LANGS="${PREPARE_PR_LANGS:-$CHANGED_LANGS}"
 | `schemas/**` **except** prose (see below) | → **all** enabled languages |
 | `scripts/run-all-benchmarks.sh`, `scripts/lib/**`, `scripts/read-config.py`, `scripts/resolve_run_config.py` | → **all** |
 | `config/benchmark_config.yaml` | → **all** |
+| `config/library/*` (default / smoke run matrix) | → **all** |
 | **Always ignored (never select langs, never force-all)** | |
 | `docs/**`, `dashboard/public/data/**`, `logs/**`, `reports/**`, `site/**`, `.grok/**` | meta / published artifacts |
 | `**/*.md`, `**/*.mdx`, `**/README*`, `LICENSE*` **anywhere** (including under `schemas/`, `scripts/`, or a language tree) | prose-only; e.g. terminology edits in `schemas/v2/README.md` must **not** re-bench the world |

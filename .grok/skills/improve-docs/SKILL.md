@@ -87,7 +87,7 @@ Cut scope creep, ensure dismissible UI is not permanent noise, prefer small diff
 - Edit sources under `dashboard/` then **`npm run build`** in `dashboard/` so `docs/dashboard/` updates.
 - **README:** follow `README_EDITING.md` — short lede, compact audience table, section order Who → languages → Try it → Quick start; no slogan/meta CTA prose; no unsolicited role expansion.
 - MkDocs storefront (`docs/index.md`) only if asked or if it clearly contradicts a user-approved README fact.
-- Follow `STYLE.md` (simple, no new frameworks). **Terminology: always “data type”, never “fixture”** — in user copy, comments, identifiers, and JSON keys.
+- Follow `STYLE.md` (simple, no new frameworks). **Terminology:** published filter is **payload size**; never say “fixture”. Catalog ids stay type_id values.
 
 ### 2.5 Critique the implementation
 

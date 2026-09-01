@@ -1,8 +1,8 @@
 # Metrics
 
 This lab ranks **in-process queues**, not encodings. Times are nanoseconds.
-Throughput is derived: `1e9 / time_ns`. Payload shape is a **data type**
-(`message`, `document`, …), not a library score. Never call it a fixture.
+Throughput is derived: `1e9 / time_ns`. Payload **size** (256 B or 4 KiB) is the sample, not a library score.
+Never call it a fixture.
 
 ## What we rank
 

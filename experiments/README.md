@@ -19,6 +19,7 @@ Each language run is a subfolder. Combined numbers live in `results.json`.
 - Experiment 10: [`10-process-ipc/`](10-process-ipc/) — category P
 - Experiment 11: [`11-shared-memory/`](11-shared-memory/) — category S
 - Experiment 12: [`12-durable-local/`](12-durable-local/) — category D
+- Experiment 13: [`13-payload-size-sweep/`](13-payload-size-sweep/) — which payload sizes change ranking
 
 ```bash
 ./experiments/01-spsc-handoff/run.sh python

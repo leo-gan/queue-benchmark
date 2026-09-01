@@ -62,10 +62,10 @@ See [Timing honesty](TIMING_HONESTY.md) and [Architecture](architecture.md).
 | Messages / CPU-second (`msgs_per_cpu_sec`) | Spin can “win” latency and burn cores; needs `CpuTimeNs` |
 | Fidelity | Gate: lost or duplicated items invalidate the row |
 
-Payload shape is a **data type** (`message` vs `document`), not a library
-score. Every queue in a cell moves the same bytes. We do not record or rank
-payload size. Peak RSS is process-wide and is not a compactness contest.
-See [Metrics](METRICS.md).
+Payload **size** (256 B vs 4 KiB) is the sample, not a library score.
+Every queue in a cell moves the same bytes. We do not rank a queue on how
+large the payload is. Peak RSS is process-wide and is not a compactness
+contest. See [Metrics](METRICS.md).
 
 ## Published matrix (now)
 
@@ -76,7 +76,7 @@ Same run modes as [Modes](modes.md): smoke / all-single / full / research.
 | Languages | C, C#, JavaScript, Python, Rust |
 | Categories | T and A on the default matrix; P/S/D opt-in (see [categories](queue_categories.md)) |
 | Pattern | SPSC, 2P2C, 1P4C, 4P1C, 4P4C (skip if the library cannot) |
-| Payloads | `message`, `document`, `telemetry`, `strings`, `event` |
+| Payloads | 256 B (`size_256`) and 4 KiB (`size_4096`) |
 | Experiments | [01](../experiments/01-spsc-handoff/)–[12](../experiments/12-durable-local/) |
 
 ## Designed tests

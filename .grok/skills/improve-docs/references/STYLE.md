@@ -6,11 +6,12 @@ Keep it simple. Prefer delete and clarify over decorate.
 
 | Say | Never say |
 |-----|-----------|
-| **data type** (`message`, `document`, `telemetry`, `strings`, `event`) | fixture, fixtures, fixtureKey, `dataset.fixtures` |
+| **payload size** (256 B, 4 KiB) for the published filter | fixture; five leftover type names as if they were different shapes |
+| **data type** only as the catalog id (`size_256`, `size_4096`) | fixture, fixtures, fixtureKey, `dataset.fixtures` |
 
-This is the catalog payload shape. Use **data type** in README, Dashboard copy, skills, comments, function names, and new JSON keys. Do not keep `fixture*` as an internal alias. Old `configs.json` may still contain `fixtures`; read it as a fallback, write `data_types`.
+The published axis is how many bytes each queued item is. Experiment 13 showed that 256 B and 4 KiB tell different stories; 512 B / 1 KiB / 2 KiB do not. Use **payload size** in README, Dashboard copy, and findings. Catalog ids stay `type_id` values (`size_256`, `size_4096`). Older folders may still say `message` / `document` (same lengths). Do not keep `fixture*` as an internal alias. Old `configs.json` may still contain `fixtures`; read it as a fallback, write `data_types`.
 
-Do not measure or display payload **size** as a library result. Size is the data type, not a score.
+Do not rank a library on payload size. Every queue in a cell moves the same bytes. Size is the sample, not a score.
 
 ---
 
@@ -28,8 +29,8 @@ Do not measure or display payload **size** as a library result. Size is the data
 ## Content style
 
 - **One idea per paragraph.** Prefer tables for role/path matrices **on the site / Dashboard**, not by fattening the root README.
-- **User terms:** data type, mode (bytes/stream), ops/s, latency, Pareto, baseline.
-- **Never say “fixture”.** The catalog entry is a **data type** (`message`, `document`, …). Say it in docs, Dashboard copy, skills, comments, identifiers, and JSON keys. Do not keep `fixture*` as an internal alias “until later.”
+- **User terms:** payload size (256 B, 4 KiB), mode (bytes/stream), ops/s, latency, Pareto, baseline.
+- **Never say “fixture”.** The published sample is a **payload size**. The catalog id is a **data type** (`size_256`, `size_4096`). Say that in docs, Dashboard copy, skills, comments, identifiers, and JSON keys. Do not keep `fixture*` as an internal alias “until later.”
 - **Avoid in user copy:** fixture, median size (we do not measure payload size as a result), harness (prefer benchmark runner), unexplained IQR/P95.
 - **Honesty line** when ranks appear: within one language; cross-lang directional — prefer **one** place (e.g. Statistics / Method), not a second essay block on README.
 - **Links:** prefer site paths that match MkDocs nav labels (Dashboard, Learn, Method). Avoid “storefront” / “CTA” wording in user-facing labels.
@@ -38,15 +39,17 @@ Do not measure or display payload **size** as a library result. Size is the data
 ### Voice
 
 - **Textbook quality for a high-school student.** Complete sentences. One idea, then the reason. Define a term the first time it is not everyday English.
+- This Voice section applies to **replies to the user** as well as published copy. A chat explanation is reader-facing.
 - No slang (“at 3 a.m.”, “chatty ping”, “get user”).
 - No telegraphic fragments (“Keep YAML on disk. Convert once.”). Write the sentence out.
 - No unexplained jargon (stream, socket, pickle, gzip) unless the next sentence says what it is.
+- **No clipped systems metaphors.** Do not write “pass a handle”, “pointer-bound”, “copy-bound”, “pack collapse”, “size barely moves them”, or “the knee” as if those were ordinary English. First say what the computer does, then what the clocks did. Example: the queue either copies every byte of the message, or it stores a short reference to a message that is already in memory. A larger message then either takes longer (because every byte is copied) or it does not (because only the reference is moved).
 - Direct, calm. Not marketing hype (“blazing”, “crush”).
 - “We measure …” not “We revolutionize …”.
 - **No slogan stacks** under the title (“Same A. Same B. Same C.”).
 - **No lede hedges** that argue with imaginary critics (“not marketing microbenchmarks”).
 
-This rule applies to **every** reader-facing surface: Dashboard story cards (Why / Example / Trade-off), experiment YAML, `docs/experiments/`, Learn pages, README. The Dashboard reads Example and Trade-off from `experiments/*/experiment.yaml` via `sync-experiments.py`.
+This rule applies to **every** reader-facing surface: replies to the user, Dashboard story cards (Why / Example / Trade-off), experiment YAML, `results.md`, `experiments/PLAN.md`, `docs/experiments/`, Learn pages, README. The Dashboard reads Example and Trade-off from `experiments/*/experiment.yaml` via `sync-experiments.py`.
 
 ### README-specific (authoritative)
 

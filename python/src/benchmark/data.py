@@ -15,6 +15,11 @@ _PAYLOAD_DEFAULTS = {
     "telemetry": 1024,
     "strings": 2048,
     "event": 512,
+    "size_1": 1,
+    "size_64": 64,
+    "size_256": 256,
+    "size_4096": 4096,
+    "size_65536": 65536,
 }
 
 
