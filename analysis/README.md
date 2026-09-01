@@ -14,7 +14,7 @@ uv pip install -e .
 
 Each run writes a timestamped `YYYY-MM-DD-HHMMSS.csv` (never overwritten). Analysis picks the **latest** per language by default.
 
-Suite type ids: `message`, `document`, `telemetry`, `strings`, `event`.
+Suite type ids: `size_256` (256 B), `size_4096` (4 KiB).
 
 ```bash
 analyze-benchmarks

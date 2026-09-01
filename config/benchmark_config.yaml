@@ -53,30 +53,18 @@ data_model_v2:
   schemas_root: "schemas/v2"
   generate_script: "scripts/schemas/generate-all.sh"
 
-# Payload shapes. Catalog is normative; names are type_id values.
-# For queues these are payload sizes / shapes, not object graphs.
+# Payload sizes. Catalog is normative; names are type_id values.
+# For queues these are lengths of an opaque byte string, not object graphs.
 test_data:
   catalog_file: "schemas/data_catalog_v2.yaml"
   types:
-    - name: message
-      category: flat_mixed
-      description: "Small message payload (~256 B)"
+    - name: size_256
+      category: opaque_bytes
+      description: "256-byte payload (small message)"
       supports_circular: false
-    - name: document
-      category: nested
-      description: "Larger document payload (~4 KiB)"
-      supports_circular: false
-    - name: telemetry
-      category: numeric_bulk
-      description: "Numeric bulk payload (~1 KiB)"
-      supports_circular: false
-    - name: strings
-      category: text_bulk
-      description: "Text bulk payload (~2 KiB)"
-      supports_circular: false
-    - name: event
-      category: envelope
-      description: "Event envelope payload (~512 B)"
+    - name: size_4096
+      category: opaque_bytes
+      description: "4 KiB payload (copy cost starts to matter)"
       supports_circular: false
 
 # Pattern axis (CSV StringOrStream). Logged names are serializer ABI leftovers:

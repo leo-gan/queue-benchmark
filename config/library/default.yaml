@@ -1,18 +1,12 @@
 # Run config: default (publication matrix)
 id: default
-description: "Five payload types × [100, 1000] items; SPSC, 2P2C, 1P4C, 4P1C, 4P4C"
+description: "Two payload sizes (256 B, 4 KiB) × [100, 1000] items; SPSC, 2P2C, 1P4C, 4P1C, 4P4C"
 data_model_version: 2
 
 types:
-  - type_id: message
+  - type_id: size_256
     type_config: {}
-  - type_id: document
-    type_config: {}
-  - type_id: telemetry
-    type_config: {}
-  - type_id: strings
-    type_config: {}
-  - type_id: event
+  - type_id: size_4096
     type_config: {}
 
 data_type_instance_count: [100, 1000]

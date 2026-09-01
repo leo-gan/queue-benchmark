@@ -98,7 +98,7 @@ is_shared_force_all() {
     scripts/run-all-benchmarks.sh|scripts/lib/*|scripts/read-config.py|scripts/resolve_run_config.py|scripts/emit-cells-tsv.py)
       return 0
       ;;
-    config/benchmark_config.yaml)
+    config/benchmark_config.yaml|config/library/*)
       return 0
       ;;
   esac

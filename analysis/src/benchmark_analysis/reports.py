@@ -56,13 +56,27 @@ def _stat_get(entry: Any, field_id: str) -> Any:
 _FIXTURE_KEY_RE = re.compile(r"^(.*?)(?:@n=(\d+))+$", re.IGNORECASE)
 
 
+_PAYLOAD_SIZE_LABELS = {
+    "size_1": "1 B",
+    "size_64": "64 B",
+    "size_256": "256 B",
+    "size_4096": "4 KiB",
+    "size_65536": "64 KiB",
+    "message": "256 B",
+    "document": "4 KiB",
+    "event": "512 B",
+    "telemetry": "1 KiB",
+    "strings": "2 KiB",
+}
+
+
 def _format_data_type_display(label: str) -> str:
-    """Decode cryptic ``message@n=100`` keys for titles and table headers.
+    """Decode ``size_256@n=100`` keys for titles and table headers.
 
     Examples:
-      ``message@n=1``   → ``Message · 1 instance``
-      ``message@n=100`` → ``Message · 100 instances``
-      ``document``      → ``Document``
+      ``size_256@n=1``   → ``256 B · 1 item``
+      ``size_4096@n=100`` → ``4 KiB · 100 items``
+      ``message``         → ``256 B``
     """
     s = str(label or "").strip()
     if not s:
@@ -77,15 +91,16 @@ def _format_data_type_display(label: str) -> str:
     else:
         base, n = s, None
 
-    # Suite type_ids are lowercase words; older labels may already be Title/Pascal.
-    if base and base == base.lower() and re.fullmatch(r"[a-z][a-z0-9_]*", base):
-        pretty = base.replace("_", " ").title()
-    else:
-        pretty = base
+    pretty = _PAYLOAD_SIZE_LABELS.get(base)
+    if pretty is None:
+        if base and base == base.lower() and re.fullmatch(r"[a-z][a-z0-9_]*", base):
+            pretty = base.replace("_", " ").title()
+        else:
+            pretty = base
 
     if n is None:
         return pretty
-    unit = "instance" if n == 1 else "instances"
+    unit = "item" if n == 1 else "items"
     return f"{pretty} · {n} {unit}"
 
 
@@ -1393,7 +1408,7 @@ def generate_language_results_pages(
             "",
             "| Term | Meaning |",
             "|------|---------|",
-            "| **data type** | Sample shape: `message`, `document`, `telemetry`, `strings`, or `event` "
+            "| **payload size** | How many bytes each item is: `size_256` (256 B) or `size_4096` (4 KiB) "
             "(CSV `TestDataName`) |",
             "| **bytes mode** | In-memory buffer API (encode to bytes / decode from a buffer). "
             "On C# this is often the **string** path — see [Modes](../analysis/modes.md). |",

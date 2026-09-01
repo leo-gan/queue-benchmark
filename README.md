@@ -101,7 +101,8 @@ commit before `publish-docs` deploys the site.
 
 ## Test data
 
-Shared **payload types**: `message`, `document`, `telemetry`, `strings`, and `event`.
+Shared **payload sizes**: 256 B (`size_256`) and 4 KiB (`size_4096`). Every
+runner builds an opaque byte string of that length.
 
 Catalog and defaults: `schemas/data_catalog_v2.yaml`. Run matrices: `config/library/`.
 

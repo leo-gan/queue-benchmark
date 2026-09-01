@@ -81,17 +81,19 @@ def test_type_config_hash_stable():
 
 def test_smoke_expand_cell_count():
     resolved = resolve_run_config(_LIBRARY / "smoke.yaml", catalog_path=_CATALOG, seed=42)
-    assert resolved["cell_count"] == 1  # message × [1]
+    assert resolved["cell_count"] == 1  # size_256 × [1]
     assert resolved["seed"] == 42
     assert resolved["run_config"]["content_sha256"]
     ids = {(c["type_id"], c["data_type_instance_count"]) for c in resolved["cells"]}
-    assert ids == {("message", 1)}
+    assert ids == {("size_256", 1)}
 
 
 def test_default_expand_cell_count():
     resolved = resolve_run_config(_LIBRARY / "default.yaml", catalog_path=_CATALOG)
-    # 5 types × 2 counts
-    assert resolved["cell_count"] == 10
+    # 2 sizes × 2 counts
+    assert resolved["cell_count"] == 4
+    ids = {c["type_id"] for c in resolved["cells"]}
+    assert ids == {"size_256", "size_4096"}
     counts = {c["data_type_instance_count"] for c in resolved["cells"]}
     assert counts == {100, 1000}
 

@@ -29,7 +29,7 @@ else
   REPS="$(bench_mode_reps "$MODE")"
   if [[ "$MODE" == "smoke" ]]; then
     FILTER_SER="${FILTER_SER:-deque-lock}"
-    FILTER_DATA="${FILTER_DATA:-message}"
+    FILTER_DATA="${FILTER_DATA:-size_256}"
   fi
 fi
 

@@ -6,11 +6,12 @@ Keep it simple. Prefer delete and clarify over decorate.
 
 | Say | Never say |
 |-----|-----------|
-| **data type** (`message`, `document`, `telemetry`, `strings`, `event`) | fixture, fixtures, fixtureKey, `dataset.fixtures` |
+| **payload size** (256 B, 4 KiB) for the published filter | fixture; five leftover type names as if they were different shapes |
+| **data type** only as the catalog id (`size_256`, `size_4096`) | fixture, fixtures, fixtureKey, `dataset.fixtures` |
 
-This is the catalog payload shape. Use **data type** in README, Dashboard copy, skills, comments, function names, and new JSON keys. Do not keep `fixture*` as an internal alias. Old `configs.json` may still contain `fixtures`; read it as a fallback, write `data_types`.
+The published axis is how many bytes each queued item is. Experiment 13 showed that 256 B and 4 KiB tell different stories; 512 B / 1 KiB / 2 KiB do not. Use **payload size** in README, Dashboard copy, and findings. Catalog ids stay `type_id` values (`size_256`, `size_4096`). Older folders may still say `message` / `document` (same lengths). Do not keep `fixture*` as an internal alias. Old `configs.json` may still contain `fixtures`; read it as a fallback, write `data_types`.
 
-Do not measure or display payload **size** as a library result. Size is the data type, not a score.
+Do not rank a library on payload size. Every queue in a cell moves the same bytes. Size is the sample, not a score.
 
 ---
 
@@ -28,8 +29,8 @@ Do not measure or display payload **size** as a library result. Size is the data
 ## Content style
 
 - **One idea per paragraph.** Prefer tables for role/path matrices **on the site / Dashboard**, not by fattening the root README.
-- **User terms:** data type, mode (bytes/stream), ops/s, latency, Pareto, baseline.
-- **Never say “fixture”.** The catalog entry is a **data type** (`message`, `document`, …). Say it in docs, Dashboard copy, skills, comments, identifiers, and JSON keys. Do not keep `fixture*` as an internal alias “until later.”
+- **User terms:** payload size (256 B, 4 KiB), mode (bytes/stream), ops/s, latency, Pareto, baseline.
+- **Never say “fixture”.** The published sample is a **payload size**. The catalog id is a **data type** (`size_256`, `size_4096`). Say that in docs, Dashboard copy, skills, comments, identifiers, and JSON keys. Do not keep `fixture*` as an internal alias “until later.”
 - **Avoid in user copy:** fixture, median size (we do not measure payload size as a result), harness (prefer benchmark runner), unexplained IQR/P95.
 - **Honesty line** when ranks appear: within one language; cross-lang directional — prefer **one** place (e.g. Statistics / Method), not a second essay block on README.
 - **Links:** prefer site paths that match MkDocs nav labels (Dashboard, Learn, Method). Avoid “storefront” / “CTA” wording in user-facing labels.

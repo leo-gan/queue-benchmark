@@ -177,9 +177,9 @@ def test_smoke_writes_rows(tmp_path, monkeypatch):
     monkeypatch.setenv("BENCHMARK_TS", "2026-01-01-000000")
     monkeypatch.setenv("BENCHMARK_SEED", "42")
     # Use the real repo run config / catalog via cwd of the package
-    csv_path = run(2, "deque-lock", "message")
+    csv_path = run(2, "deque-lock", "size_256")
     text = csv_path.read_text(encoding="utf-8")
     assert "deque-lock" in text
-    assert "message" in text
+    assert "size_256" in text
     lines = [ln for ln in text.splitlines() if ln.strip()]
     assert len(lines) >= 3  # header + 2 reps (maybe more cells)

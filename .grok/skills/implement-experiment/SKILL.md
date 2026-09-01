@@ -40,7 +40,7 @@ export PATH="${HOME}/.local/go/bin:${HOME}/.cargo/bin:${HOME}/.dotnet:${HOME}/.l
 2. **One question per folder.** Number it `NN-short-kebab` (next free `NN` after existing dirs).
 3. **Edit `experiment.yaml` only** for sample, languages, libraries, run mode, grouping cut-offs. `run.yaml` is generated. Do not keep a second library list.
 4. **Shared sample** at the experiment root (`sample.json`). Language folders hold **results** only (`results.md`, `results.json`). **Do not commit experiment logs** (CSVs under `<lang>/logs/`). Those stay on the machine that ran the timing. Saved results are enough.
-5. **Do not compare times across languages.** Different runtimes. Directional only. Do not invent a size contest — payload bytes are the **data type**, not a library score.
+5. **Do not compare times across languages.** Different runtimes. Directional only. Do not invent a size contest — payload size is the sample, not a library score.
 6. **Do not crown a single winner.** Use `top_group` (similar / close / slower via Cliff’s delta vs the fastest library in the comparison set). Not “top 5%.”
 7. **Textbook language** — follow `.grok/skills/improve-docs/references/STYLE.md` § Voice. That includes the finding you tell the user, not only `experiment.yaml` (`story.example`, `story.tradeoff`, `story.why`), `README.md`, `results.md`, the Dashboard, and the PLAN update. The Dashboard copies `story` from `experiment.yaml`.
 8. **Do not overwrite** published site tables (`docs/<lang>/results.md`) or dashboard `*_latest.json.gz` unless the user asked to publish suite numbers.
@@ -97,7 +97,7 @@ Copy Experiment 1’s file and change:
 |-----|-------------|
 | `id` | Folder name (`NN-short-kebab`) |
 | `title` / `question` | From the PLAN section (ordinary words) |
-| `sample.kind` | `message` \| `document` \| `telemetry` \| `strings` \| `event` |
+| `sample.kind` | `size_256` \| `size_4096` \| `message` \| `document` |
 | `sample.records_per_write` | `1` or `[1, 100]` |
 | `sample.settings` | Only extra knobs (e.g. `points: 128`). `{}` = catalog defaults |
 | `sample.seed` | `42` unless the PLAN says otherwise |

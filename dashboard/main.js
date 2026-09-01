@@ -1,6 +1,6 @@
 /**
- * Dashboard UI terminology: always say **data type** (test_data control label).
- * Never use "fixture" anywhere — copy, comments, or identifiers.
+ * Dashboard UI terminology: the published payload axis is **payload size**
+ * (256 B, 4 KiB). Never say "fixture". Catalog ids remain type_id values.
  */
 import {
   initCharts,
@@ -113,7 +113,15 @@ function normalizeStatsGroup(g) {
   }
   return out;
 }
-const SUITE_TYPE_IDS = ['message', 'document', 'telemetry', 'strings', 'event'];
+const SUITE_TYPE_IDS = ['size_256', 'size_4096'];
+/** Older logs used serializer-style names for the same two lengths. */
+const LEGACY_SUITE_TYPE_IDS = ['message', 'document'];
+const PAYLOAD_SIZE_LABELS = {
+  size_256: '256 B',
+  size_4096: '4 KiB',
+  message: '256 B',
+  document: '4 KiB',
+};
 
 /** Named sample-filter policies (must match analysis FILTER_POLICY_IDS). */
 const FILTER_POLICY_FALLBACK = {
@@ -163,16 +171,20 @@ function baseTypeId(key) {
   return i >= 0 ? String(key).slice(0, i) : String(key);
 }
 
+function publishedTypeIds() {
+  return [...SUITE_TYPE_IDS, ...LEGACY_SUITE_TYPE_IDS];
+}
+
 function pickPreferredDataType(options) {
   if (!options || !options.length) return '';
   const preferred = [];
-  for (const id of SUITE_TYPE_IDS) {
-    preferred.push(`${id}@n=1`, id, `${id}@n=100`);
+  for (const id of publishedTypeIds()) {
+    preferred.push(`${id}@n=100`, `${id}@n=1`, id);
   }
   for (const p of preferred) {
     if (options.includes(p)) return p;
   }
-  const cleaned = options.filter((o) => SUITE_TYPE_IDS.includes(baseTypeId(o)));
+  const cleaned = options.filter((o) => publishedTypeIds().includes(baseTypeId(o)));
   return cleaned[0] || options[0] || '';
 }
 
@@ -2078,7 +2090,7 @@ function buildCompoundedDataTypeGroups(allGroups, base, nA, nB, mode) {
  */
 function buildAllTypesAtNGroups(allGroups, n, mode) {
   const matched = (allGroups || []).filter((g) => {
-    if (!SUITE_TYPE_IDS.includes(baseTypeId(g.test_data))) return false;
+    if (!publishedTypeIds().includes(baseTypeId(g.test_data))) return false;
     if (normalizeMode(g.mode) !== normalizeMode(mode)) return false;
     return instanceCount(g) === n;
   });
@@ -2101,7 +2113,7 @@ function buildAllTypesAtNGroups(allGroups, n, mode) {
     }
     const parts = [];
     const bases = [];
-    for (const base of SUITE_TYPE_IDS) {
+    for (const base of publishedTypeIds()) {
       const list = byBase.get(base);
       if (!list || !list.length) continue;
       bases.push(`${base}@n=${n}`);
@@ -2135,7 +2147,7 @@ function buildAllTypesAtNGroups(allGroups, n, mode) {
  */
 function buildAllAllGroups(allGroups, mode) {
   const matched = (allGroups || []).filter((g) => {
-    if (!SUITE_TYPE_IDS.includes(baseTypeId(g.test_data))) return false;
+    if (!publishedTypeIds().includes(baseTypeId(g.test_data))) return false;
     return normalizeMode(g.mode) === normalizeMode(mode);
   });
 
@@ -2190,7 +2202,7 @@ function discoverDataTypeOptions(allGroups) {
     ...new Set(
       (allGroups || [])
         .map((g) => g.test_data)
-        .filter((k) => k && SUITE_TYPE_IDS.includes(baseTypeId(k)))
+        .filter((k) => k && publishedTypeIds().includes(baseTypeId(k)))
     ),
   ].sort();
 
@@ -2198,7 +2210,7 @@ function discoverDataTypeOptions(allGroups) {
   const nsGlobal = new Set();
   for (const g of allGroups || []) {
     const base = baseTypeId(g.test_data);
-    if (!SUITE_TYPE_IDS.includes(base)) continue;
+    if (!publishedTypeIds().includes(base)) continue;
     const n = instanceCount(g);
     if (n == null) continue;
     if (!byBase.has(base)) byBase.set(base, new Set());
@@ -2232,18 +2244,31 @@ function discoverDataTypeOptions(allGroups) {
   };
 }
 
+function payloadSizeLabel(typeId) {
+  const base = baseTypeId(typeId);
+  return PAYLOAD_SIZE_LABELS[base] || base;
+}
+
 function dataTypeOptionLabel(key) {
   const p = parseDataTypeSelection(key);
   if (p.kind === 'batch_compound') {
-    return `${p.base}@n=${p.nA}+${p.nB} (compounded batch)`;
+    return `${payloadSizeLabel(p.base)} · ${p.nA}+${p.nB} items`;
   }
   if (p.kind === 'all_n') {
-    return `all@${p.n} (all data types, n=${p.n})`;
+    return `both sizes · ${p.n} items`;
   }
   if (p.kind === 'all_all') {
-    return 'all@all (all types × all n)';
+    return 'both sizes · every item count';
   }
-  return key;
+  const raw = p.key || key;
+  const size = payloadSizeLabel(p.base || raw);
+  const nMatch = String(raw).match(/@n=(\d+)/i);
+  if (nMatch) {
+    const n = Number(nMatch[1]);
+    const unit = n === 1 ? 'item' : 'items';
+    return `${size} · ${n} ${unit}`;
+  }
+  return size;
 }
 
 function resolveDataTypeGroups() {
