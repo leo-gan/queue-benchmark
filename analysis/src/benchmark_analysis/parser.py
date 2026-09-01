@@ -6,12 +6,15 @@ import csv
 import os
 from typing import Dict, List, Optional, Tuple
 
+from .abi import canonicalize_csv_record
+
 
 def parse_csv_file(filepath: str, language_hint: Optional[str] = None) -> Tuple[List[Dict], int]:
     """Parse benchmark CSV file and return (records, skipped_count).
 
-    Supports legacy headers (no Language column) and v1.1+ with Language,
-    MemoryPeakBytes, FidelityScore, SerializerVersion.
+    Emits canonical queue column names. Accepts leftover serializer-benchmark
+    headers (``SerializerName``, ``TimeSer``, ``StringOrStream``, …) so
+    historical logs keep loading.
 
     The second return value makes skipped/malformed rows auditable by callers.
     """
@@ -63,48 +66,7 @@ def parse_csv_file(filepath: str, language_hint: Optional[str] = None) -> Tuple[
         for row in reader:
             try:
                 lang = (row.get("Language") or language_hint or "").strip()
-                record = {
-                    "Language": lang,
-                    "StringOrStream": row.get("StringOrStream", ""),
-                    "TestDataName": row.get("TestDataName", ""),
-                    "Repetitions": int(row.get("Repetitions", 0) or 0),
-                    "RepetitionIndex": int(row.get("RepetitionIndex", 0) or 0),
-                    "SerializerName": row.get("SerializerName", ""),
-                    "TimeSer": int(float(row.get("TimeSer", 0) or 0)),
-                    "TimeDeser": int(float(row.get("TimeDeser", 0) or 0)),
-                    "Size": int(float(row.get("Size", 0) or 0)),
-                    "TimeSerAndDeser": int(float(row.get("TimeSerAndDeser", 0) or 0)),
-                    "OpPerSecSer": float(row.get("OpPerSecSer", 0) or 0),
-                    "OpPerSecDeser": float(row.get("OpPerSecDeser", 0) or 0),
-                    "OpPerSecSerAndDeser": float(row.get("OpPerSecSerAndDeser", 0) or 0),
-                }
-                if "MemoryPeakBytes" in row and row["MemoryPeakBytes"] not in (None, ""):
-                    record["MemoryPeakBytes"] = int(float(row["MemoryPeakBytes"]))
-                if "CpuTimeNs" in row and row["CpuTimeNs"] not in (None, ""):
-                    record["CpuTimeNs"] = int(float(row["CpuTimeNs"]))
-                if "FidelityScore" in row and row["FidelityScore"] not in (None, ""):
-                    record["FidelityScore"] = float(row["FidelityScore"])
-                if "SerializerVersion" in row and row["SerializerVersion"]:
-                    record["SerializerVersion"] = row["SerializerVersion"]
-                # Optional metadata (Rust v0.2+; ignored if absent for older CSVs)
-                if "NativeKind" in row and row["NativeKind"] not in (None, ""):
-                    record["NativeKind"] = str(row["NativeKind"]).strip()
-                if "StreamMode" in row and row["StreamMode"] not in (None, ""):
-                    record["StreamMode"] = str(row["StreamMode"]).strip()
-                # Optional batch columns
-                if "DataTypeInstanceCount" in row and row["DataTypeInstanceCount"] not in (None, ""):
-                    record["DataTypeInstanceCount"] = int(float(row["DataTypeInstanceCount"]))
-                if "TypeConfigHash" in row and row["TypeConfigHash"] not in (None, ""):
-                    record["TypeConfigHash"] = str(row["TypeConfigHash"]).strip()
-                if "SizeGzip" in row and row["SizeGzip"] not in (None, ""):
-                    record["SizeGzip"] = int(float(row["SizeGzip"]))
-                if "SizeZstd" in row and row["SizeZstd"] not in (None, ""):
-                    record["SizeZstd"] = int(float(row["SizeZstd"]))
-                if "RunOrder" in row and row["RunOrder"] not in (None, ""):
-                    record["RunOrder"] = int(float(row["RunOrder"]))
-                if "SchedulePosition" in row and row["SchedulePosition"] not in (None, ""):
-                    record["SchedulePosition"] = int(float(row["SchedulePosition"]))
-                records.append(record)
+                records.append(canonicalize_csv_record(row, language=lang))
             except (ValueError, KeyError, TypeError) as e:
                 skipped += 1
                 print(f"Warning: Skipping malformed row: {row}, error: {e}")

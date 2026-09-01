@@ -4,7 +4,7 @@ Writes a ``*.configs.json`` sidecar beside the result CSV:
 
 - ``environment`` — hardware, OS, runtimes, git (preferred)
 - ``dataset`` — optional: seed, fixtures, repetitions (best-effort)
-- ``serializers`` — optional: names from the run (best-effort)
+- ``queues`` — optional: names from the run (best-effort)
 - ``run`` — optional: mode, metrics profile, timestamp
 
 Legacy ``*.environment.json`` files are still loaded (treated as the
@@ -216,21 +216,23 @@ def _dataset_block() -> Dict[str, Any]:
     return {k: v for k, v in block.items() if v not in (None, "", [])}
 
 
-def _serializers_block_from_csv(result_csv_path: Optional[str]) -> Dict[str, Any]:
-    """Optional serializer inventory scraped from the result CSV (best-effort)."""
+def _queues_block_from_csv(result_csv_path: Optional[str]) -> Dict[str, Any]:
+    """Optional queue inventory scraped from the result CSV (best-effort)."""
     if not result_csv_path or not Path(result_csv_path).is_file():
         return {}
     try:
         import csv
 
+        from .abi import pick
+
         names: Dict[str, str] = {}
         with open(result_csv_path, encoding="utf-8") as f:
             reader = csv.DictReader(f)
             for row in reader:
-                n = (row.get("SerializerName") or "").strip()
+                n = str(pick(row, "LibraryName") or "").strip()
                 if not n:
                     continue
-                ver = (row.get("SerializerVersion") or "").strip()
+                ver = str(pick(row, "LibraryVersion") or "").strip()
                 # Prefer first non-empty version seen
                 if n not in names or (ver and not names[n]):
                     names[n] = ver
@@ -358,14 +360,17 @@ def capture_environment(
     """
     include_env = True
     include_dataset = True
-    include_serializers = True
+    include_queues = True
     try:
         from .config_loader import dig, load_master_config
 
         cfg = load_master_config()
         include_env = bool(dig(cfg, "run_sidecar.include_environment", True))
         include_dataset = bool(dig(cfg, "run_sidecar.include_dataset", True))
-        include_serializers = bool(dig(cfg, "run_sidecar.include_serializers", True))
+        if dig(cfg, "run_sidecar.include_queues", None) is not None:
+            include_queues = bool(dig(cfg, "run_sidecar.include_queues", True))
+        else:
+            include_queues = bool(dig(cfg, "run_sidecar.include_serializers", True))
     except Exception:
         pass
 
@@ -395,11 +400,11 @@ def capture_environment(
     if run_block:
         doc["run"] = run_block
 
-    # Serializers: prefer CSV scrape after file exists; allow extra override
-    if include_serializers and result_csv_path:
-        ser = _serializers_block_from_csv(result_csv_path)
-        if ser:
-            doc["serializers"] = ser
+    # Queues: prefer CSV scrape after file exists; allow extra override
+    if include_queues and result_csv_path:
+        queues = _queues_block_from_csv(result_csv_path)
+        if queues:
+            doc["libraries"] = queues
 
     if extra:
         for k, v in extra.items():
@@ -514,9 +519,13 @@ def important_config_summary(doc: Optional[Dict[str, Any]]) -> List[str]:
         lines.append(f"mode={ds['mode']}")
     if ds.get("warmup_repetitions") is not None:
         lines.append(f"warmup_reps={ds['warmup_repetitions']}")
-    ser = doc.get("serializers") if isinstance(doc.get("serializers"), dict) else {}
-    if ser.get("count"):
-        lines.append(f"serializers={ser['count']}")
+    queues = doc.get("libraries") if isinstance(doc.get("libraries"), dict) else {}
+    if not queues:
+        queues = doc.get("queues") if isinstance(doc.get("queues"), dict) else {}
+    if not queues:
+        queues = doc.get("serializers") if isinstance(doc.get("serializers"), dict) else {}
+    if queues.get("count"):
+        lines.append(f"libraries={queues['count']}")
     run = doc.get("run") if isinstance(doc.get("run"), dict) else {}
     if run.get("metrics_profile"):
         lines.append(f"metrics_profile={run['metrics_profile']}")

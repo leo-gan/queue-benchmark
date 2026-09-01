@@ -8,14 +8,15 @@ hide:
 Fair, reproducible measurements of **in-process queue libraries** across five languages.
 
 This is a **measurement lab**, not a leaderboard of “the fastest queue in the world.”
-Compare queues **inside one language and one category** (thread vs async).
+Compare queues **inside one language and one communication category**
+(thread, async, or opt-in process / shared memory / durable).
 Cross-language times are directional only.
 
 | Go here | Why |
 |---------|-----|
 | [Benchmark design](analysis/BENCHMARK_DESIGN.md) | Categories, tests, how to read a result |
 | [Comparison rules](analysis/COMPARISON_RULES.md) | What we never rank together |
-| [Queue categories](analysis/queue_categories.md) | T (thread) and A (async) |
+| [Queue categories](analysis/queue_categories.md) | Thread, async, process, shared, durable |
 | [Architecture](analysis/architecture.md) | How the suite is built |
 | [Modes](analysis/modes.md) | smoke / all-single / full / research |
 | [Metrics](analysis/METRICS.md) | What the columns mean (enqueue / dequeue / handoff) |

@@ -51,9 +51,9 @@ A fair timing experiment separates **preparation** (once, untimed) from **the lo
    here.** See [Timing honesty](TIMING_HONESTY.md).
 
 2. **Timed loop** (for each repetition `i`):
-   - enqueue every item → record **enqueue time** (`TimeSer`)
-   - dequeue every item → record **dequeue time** (`TimeDeser`)
-   - wall-clock of the pair → **handoff** (`TimeSerAndDeser`)
+   - enqueue every item → record **enqueue time** (`TimeEnq`)
+   - dequeue every item → record **dequeue time** (`TimeDeq`)
+   - wall-clock of the pair → **handoff** (`TimeHandoff`)
    - Check **fidelity** (every item arrived, in order). Failures go to an errors
      file; a broken handoff is never a speed win.
 
@@ -62,16 +62,16 @@ A fair timing experiment separates **preparation** (once, untimed) from **the lo
 
 ## CSV ABI
 
-Column names match the serializer-benchmark contract so analysis and dashboard
-code can be reused. Mapping:
+Runners write queue names. The parser still accepts leftover
+serializer-benchmark columns so historical logs keep loading.
 
 | Column | Queue meaning |
 |--------|---------------|
-| `SerializerName` | Queue library name |
-| `TimeSer` | Enqueue ns |
-| `TimeDeser` | Dequeue ns |
-| `TimeSerAndDeser` | Handoff ns |
-| `StringOrStream` | `bytes` = **SPSC**, `stream` = **MPMC** (not I/O) |
+| `LibraryName` / `LibraryVersion` | Implementation + installed version |
+| `TimeEnq` | Enqueue ns |
+| `TimeDeq` | Dequeue ns |
+| `TimeHandoff` | Handoff ns |
+| `Pattern` | `bytes` = **SPSC**, `stream` = **MPMC** (not I/O) |
 | `Size` | Payload bytes |
 
 ## Patterns

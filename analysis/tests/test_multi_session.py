@@ -20,13 +20,13 @@ from benchmark_analysis.cli import _resolve_multi_session_paths, _expand_multi_s
 def _entry(ser: str, median: float, lang: str = "python", mode: str = "bytes", n: int = 1):
     return {
         "language": lang,
-        "serializer": ser,
+        "library": ser,
         "test_data": "message",
         "type_config_hash": "h",
         "data_type_instance_count": n,
         "mode": mode,
-        "total_median_ns": median,
-        "avg_time_total_ns": median,
+        "handoff_median_ns": median,
+        "avg_time_handoff_ns": median,
     }
 
 
@@ -64,11 +64,11 @@ def test_aggregate_rank_stability_and_l2_claim():
     assert report["machine_ids"] == ["abcd1234"]
     assert len(report["groups"]) == 2
     # ser_a medians 100,110,105 → median 105
-    a = next(g for g in report["groups"] if g["serializer"] == "ser_a")
+    a = next(g for g in report["groups"] if g["library"] == "ser_a")
     assert a["n_sessions"] == 3
     assert a["median_of_session_medians_ns"] == pytest.approx(105.0)
     rank = report["rank_stability"][0]
-    wins = {f["serializer"]: f["wins"] for f in rank["fastest_frequency"]}
+    wins = {f["library"]: f["wins"] for f in rank["fastest_frequency"]}
     assert wins["ser_a"] == 2
     assert wins["ser_b"] == 1
 

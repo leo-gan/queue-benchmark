@@ -17,7 +17,7 @@ Compare **inside one language and one communication category**.
 Implementation family (locked, concurrent, spsc-ring, …) is a *label*
 inside a category, not a comparison boundary of its own.
 
-`StringOrStream` in the CSV is a serializer leftover:
+CSV `Pattern` (formerly `StringOrStream`):
 
 | Logged value | Queue meaning |
 |--------------|---------------|

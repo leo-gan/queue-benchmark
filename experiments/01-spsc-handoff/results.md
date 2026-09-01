@@ -4,13 +4,13 @@ Times are not comparable across languages.
 
 ## python
 
-Similar set (within 15% of fastest on this sample): spsc-ring, deque-lock
+Similar set (within 15% of fastest on this sample): spsc-ring, steal-deque
 
 See `python/results.md`.
 
 ## rust
 
-Similar set (within 15% of fastest on this sample): crossbeam-queue, steal-deque, crossbeam-channel
+Similar set (within 15% of fastest on this sample): steal-deque, crossbeam-queue
 
 See `rust/results.md`.
 
@@ -22,7 +22,7 @@ See `javascript/results.md`.
 
 ## csharp
 
-Similar set (within 15% of fastest on this sample): ConcurrentQueue
+Similar set (within 15% of fastest on this sample): ConcurrentQueue, Queue+lock
 
 See `csharp/results.md`.
 

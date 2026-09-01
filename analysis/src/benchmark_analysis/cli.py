@@ -419,7 +419,7 @@ def _run_multi_session(
             print(
                 f"  {row.get('test_data')} n={row.get('data_type_instance_count')} "
                 f"{row.get('mode')}: most-often-fastest="
-                f"{top.get('serializer')} "
+                f"{top.get('library') or top.get('queue') or top.get('serializer')} "
                 f"({top.get('wins')}/{row.get('n_sessions_ranked')} sessions)"
             )
 
@@ -494,7 +494,7 @@ def main():
 
     parser = argparse.ArgumentParser(
         description=(
-            "Analyze serializer benchmarks and write unpublished reports "
+            "Analyze queue benchmarks and write unpublished reports "
             "(stats JSON + language markdown; violins only with --violins)."
         ),
         epilog=(
@@ -799,7 +799,7 @@ def main():
             for c in comps:
                 sig = "yes" if c.get("significant_holm", c.get("significant")) else "no"
                 f.write(
-                    f"| {c['serializer']} | {c['test_data']} | {c['mode']} | "
+                    f"| {c.get('library') or c.get('queue') or c.get('serializer')} | {c['test_data']} | {c['mode']} | "
                     f"{c['mean_a_ns']:.0f} | {c['mean_b_ns']:.0f} | "
                     f"{(c.get('pct_change') or 0):+.1f} | {c['cliffs_delta']:.3f} | "
                     f"{c['hedges_g']:.3f} | {c.get('p_value_holm', c['p_value']):.4f} | {sig} |\n"

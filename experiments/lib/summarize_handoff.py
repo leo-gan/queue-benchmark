@@ -29,10 +29,15 @@ def summarize_csv(path: Path) -> list[dict]:
     for r in rows:
         if r.get("RepetitionIndex") == "0":
             continue
-        key = (r.get("SerializerName") or "", r.get("StringOrStream") or "bytes")
+        name = r.get("LibraryName") or r.get("SerializerName") or ""
+        pattern = r.get("Pattern") or r.get("StringOrStream") or "bytes"
+        key = (name, pattern)
+        raw = r.get("TimeHandoff")
+        if raw in (None, ""):
+            raw = r.get("TimeSerAndDeser")
         try:
-            groups.setdefault(key, []).append(float(r["TimeSerAndDeser"]))
-        except (KeyError, ValueError):
+            groups.setdefault(key, []).append(float(raw))
+        except (TypeError, ValueError):
             continue
     out = []
     for (name, mode), vals in sorted(groups.items()):

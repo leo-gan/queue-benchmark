@@ -30,9 +30,7 @@ mix T with A.
 Properties that are **not** categories: bounded vs unbounded, FIFO vs
 priority, blocking vs spin vs yield, SPSC vs MPMC.
 
-## Patterns (CSV `StringOrStream`)
-
-The CSV still uses serializer-benchmark names so analysis stays reusable.
+## Patterns (CSV `Pattern`)
 
 | CSV value | Say this | What actually ran |
 |-----------|----------|-------------------|
@@ -57,10 +55,10 @@ See [Timing honesty](TIMING_HONESTY.md) and [Architecture](architecture.md).
 | Metric | Why |
 |--------|-----|
 | Completed handoffs / s | Producer-only put/s can lie |
-| Enqueue ns (`TimeSer`) | Produce cost |
-| Dequeue ns (`TimeDeser`) | Consume cost |
-| Handoff ns (`TimeSerAndDeser`) | End-to-end; default rank |
-| p50 / p99 / p99.9 (`total_p999_ns`) | Tail matters more than the mean |
+| Enqueue ns (`TimeEnq`) | Produce cost |
+| Dequeue ns (`TimeDeq`) | Consume cost |
+| Handoff ns (`TimeHandoff`) | End-to-end; default rank |
+| p50 / p99 / p99.9 (`handoff_p999_ns`) | Tail matters more than the mean |
 | Peak RSS | Retention after drain |
 | Messages / CPU-second (`msgs_per_cpu_sec`) | Spin can “win” latency and burn cores; needs `CpuTimeNs` |
 | Fidelity | Lost or duplicated items are errors, not speed |

@@ -5,46 +5,46 @@
       "library": "steal-deque",
       "pattern": "bytes",
       "n": 9,
-      "median_handoff_ns": 13782.0,
-      "p50_ns": 13782.0,
-      "mean_ns": 13867.222222222223,
+      "median_handoff_ns": 12698.0,
+      "p50_ns": 12698.0,
+      "mean_ns": 12715.666666666666,
       "rel_to_fastest": 1.0
     },
     {
       "library": "crossbeam-queue",
       "pattern": "bytes",
       "n": 9,
-      "median_handoff_ns": 14313.0,
-      "p50_ns": 14313.0,
-      "mean_ns": 14435.222222222223,
-      "rel_to_fastest": 1.0385285154549413
+      "median_handoff_ns": 12926.0,
+      "p50_ns": 12926.0,
+      "mean_ns": 13922.666666666666,
+      "rel_to_fastest": 1.0179555835564655
     },
     {
       "library": "crossbeam-channel",
       "pattern": "bytes",
       "n": 9,
-      "median_handoff_ns": 26832.0,
-      "p50_ns": 26832.0,
-      "mean_ns": 26612.555555555555,
-      "rel_to_fastest": 1.9468872442316065
-    },
-    {
-      "library": "tokio-mpsc",
-      "pattern": "bytes",
-      "n": 9,
-      "median_handoff_ns": 27065.0,
-      "p50_ns": 27065.0,
-      "mean_ns": 24442.555555555555,
-      "rel_to_fastest": 1.963793353649688
+      "median_handoff_ns": 13908.0,
+      "p50_ns": 13908.0,
+      "mean_ns": 14115.222222222223,
+      "rel_to_fastest": 1.0952905969444007
     },
     {
       "library": "std-mpsc",
       "pattern": "bytes",
       "n": 9,
-      "median_handoff_ns": 27430.0,
-      "p50_ns": 27430.0,
-      "mean_ns": 27735.777777777777,
-      "rel_to_fastest": 1.9902771731243651
+      "median_handoff_ns": 14351.0,
+      "p50_ns": 14351.0,
+      "mean_ns": 15596.444444444445,
+      "rel_to_fastest": 1.1301779807843755
+    },
+    {
+      "library": "tokio-mpsc",
+      "pattern": "bytes",
+      "n": 9,
+      "median_handoff_ns": 15154.0,
+      "p50_ns": 15154.0,
+      "mean_ns": 14929.666666666666,
+      "rel_to_fastest": 1.193416286029296
     }
   ]
 }

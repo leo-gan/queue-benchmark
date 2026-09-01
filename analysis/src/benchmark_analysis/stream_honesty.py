@@ -35,7 +35,7 @@ def summarize_stream_modes(records: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
     stream_rows = 0
     missing = 0
     for r in records:
-        mode = r.get("StringOrStream") or r.get("mode")
+        mode = r.get("Pattern") or r.get("StringOrStream") or r.get("mode")
         if not is_stream_io_mode(mode):
             continue
         stream_rows += 1
@@ -66,8 +66,9 @@ def summarize_stream_modes_from_stats(stats: Dict[Any, Any]) -> Dict[str, Any]:
         if not isinstance(e, dict):
             continue
         rec = {
-            "mode": e.get("mode") or e.get("StringOrStream"),
-            "StringOrStream": e.get("mode") or e.get("StringOrStream"),
+            "mode": e.get("mode") or e.get("Pattern") or e.get("StringOrStream"),
+            "Pattern": e.get("mode") or e.get("Pattern") or e.get("StringOrStream"),
+            "StringOrStream": e.get("mode") or e.get("Pattern") or e.get("StringOrStream"),
             "StreamMode": e.get("StreamMode") or e.get("stream_mode"),
         }
         records.append(rec)

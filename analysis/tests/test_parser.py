@@ -24,7 +24,7 @@ def test_parse_legacy_csv_without_language():
     assert len(recs) == 1
     assert skipped == 0
     assert recs[0]["Language"] == "csharp"
-    assert recs[0]["TimeSer"] == 1000
+    assert recs[0]["TimeEnq"] == 1000
 
 
 def test_parse_v11_csv_with_language():
@@ -42,7 +42,7 @@ def test_parse_v11_csv_with_language():
     assert skipped == 0
     assert recs[0]["Language"] == "rust"
     assert recs[0]["FidelityScore"] == 1.0
-    assert recs[0]["SerializerVersion"] == "1.0.145"
+    assert recs[0]["LibraryVersion"] == "1.0.145"
 
 
 def test_parse_legacy_serializer_version_at_end():
@@ -58,7 +58,7 @@ def test_parse_legacy_serializer_version_at_end():
         path = f.name
     recs, skipped = parse_csv_file(path)
     assert skipped == 0
-    assert recs[0]["SerializerVersion"] == "3.11.9"
+    assert recs[0]["LibraryVersion"] == "3.11.9"
 
 
 def test_infer_language_from_path_cpp_not_c(tmp_path):
@@ -92,6 +92,25 @@ def test_infer_language_from_path_kotlin_not_java(tmp_path):
     recs, _ = parse_csv_file(str(csv))
     assert recs
     assert recs[0]["Language"] == "kotlin"
+
+
+def test_parse_new_library_header():
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False, newline="") as f:
+        w = csv.writer(f)
+        w.writerow(["Language", "Pattern", "TestDataName", "Repetitions", "RepetitionIndex",
+                    "LibraryName", "LibraryVersion", "TimeEnq", "TimeDeq", "Size",
+                    "TimeHandoff", "OpPerSecEnq", "OpPerSecDeq", "OpPerSecHandoff"])
+        w.writerow(["python", "bytes", "message", 10, 1, "deque-lock", "3.11", 1000, 2000, 50,
+                    3000, 1, 1, 1])
+        path = f.name
+    recs, skipped = parse_csv_file(path)
+    assert skipped == 0
+    assert recs[0]["LibraryName"] == "deque-lock"
+    assert recs[0]["LibraryVersion"] == "3.11"
+    assert recs[0]["Pattern"] == "bytes"
+    assert recs[0]["TimeEnq"] == 1000
+    assert recs[0]["TimeDeq"] == 2000
+    assert recs[0]["TimeHandoff"] == 3000
 
 
 def test_parse_size_gzip_zstd():

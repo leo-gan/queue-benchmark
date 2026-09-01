@@ -26,7 +26,7 @@ def load_regression_config(config_path: Optional[str] = None) -> Dict[str, Any]:
     cfg: Dict[str, Any] = {
         "enabled": True,
         "threshold_percent": 10.0,
-        "metric": "total_median_ns",
+        "metric": "handoff_median_ns",
         "combine": "and",  # and | or | practical_only | statistical_only
         "direction": "higher_is_worse",
         "cliffs_delta": {
@@ -60,7 +60,7 @@ def load_regression_config(config_path: Optional[str] = None) -> Dict[str, Any]:
 
 def baseline_key(
     language: str,
-    serializer: str,
+    queue: str,
     test_data: str,
     mode: str,
     *,
@@ -70,13 +70,15 @@ def baseline_key(
     """Stable key for baseline entries (v2 includes batch axes)."""
     ic = instance_count if instance_count not in (None, "") else ""
     th = (type_config_hash or "") if type_config_hash not in (None,) else ""
-    return f"{language}|{serializer}|{test_data}|{ic}|{th}|{mode}"
+    return f"{language}|{queue}|{test_data}|{ic}|{th}|{mode}"
 
 
 def baseline_key_from_stat(stat: Dict[str, Any]) -> str:
+    from .abi import pick_stats
+
     return baseline_key(
         str(stat.get("language") or "unknown"),
-        str(stat.get("serializer") or ""),
+        str(pick_stats(stat, "library") or ""),
         str(stat.get("test_data") or ""),
         str(stat.get("mode") or ""),
         instance_count=stat.get("data_type_instance_count"),
@@ -87,7 +89,7 @@ def baseline_key_from_stat(stat: Dict[str, Any]) -> str:
 def legacy_baseline_key(stat: Dict[str, Any]) -> str:
     """v1 key without instance count / type hash."""
     return (
-        f"{stat.get('language', 'unknown')}|{stat['serializer']}|"
+        f"{stat.get('language', 'unknown')}|{stat.get('library') or stat.get('queue') or stat.get('serializer')}|"
         f"{stat['test_data']}|{stat['mode']}"
     )
 
@@ -104,7 +106,10 @@ def _normalize_baseline_payload(raw: Any) -> Dict[str, Dict[str, Any]]:
         if k in ("schema_version", "saved_at", "entries", "meta"):
             continue
         if isinstance(v, dict) and (
-            "avg_time_total_ns" in v or "total_median_ns" in v
+            "avg_time_handoff_ns" in v
+            or "avg_time_total_ns" in v
+            or "handoff_median_ns" in v
+            or "total_median_ns" in v
         ):
             out[str(k)] = v
     return out
@@ -131,15 +136,34 @@ def _lookup_baseline(
 
 
 def _point(stat_or_base: Dict[str, Any], metric: str) -> float:
+    from .abi import pick_stats
+
     if metric in stat_or_base and stat_or_base[metric] not in (None, ""):
         try:
             return float(stat_or_base[metric])
         except (TypeError, ValueError):
             pass
-    for fallback in ("total_median_ns", "avg_time_total_ns"):
-        if fallback in stat_or_base and stat_or_base[fallback] not in (None, ""):
+    mapped = {
+        "handoff_median_ns": pick_stats(stat_or_base, "handoff_median_ns"),
+        "total_median_ns": stat_or_base.get("total_median_ns"),
+        "avg_time_handoff_ns": pick_stats(stat_or_base, "avg_time_handoff_ns"),
+        "avg_time_total_ns": stat_or_base.get("avg_time_total_ns"),
+    }
+    if metric in mapped and mapped[metric] not in (None, ""):
+        try:
+            return float(mapped[metric])
+        except (TypeError, ValueError):
+            pass
+    for fallback in (
+        "handoff_median_ns",
+        "total_median_ns",
+        "avg_time_handoff_ns",
+        "avg_time_total_ns",
+    ):
+        v = mapped.get(fallback)
+        if v not in (None, ""):
             try:
-                return float(stat_or_base[fallback])
+                return float(v)
             except (TypeError, ValueError):
                 pass
     return 0.0
@@ -171,25 +195,28 @@ def save_baseline(
         if not isinstance(stat, dict):
             continue
         key_str = baseline_key_from_stat(stat)
+        from .abi import pick_stats
+
+        handoff = float(pick_stats(stat, "avg_time_handoff_ns") or 0.0)
         entry: Dict[str, Any] = {
-            "avg_time_total_ns": float(stat.get("avg_time_total_ns") or 0.0),
-            "total_median_ns": float(
-                stat.get("total_median_ns") or stat.get("avg_time_total_ns") or 0.0
+            "avg_time_handoff_ns": handoff,
+            "handoff_median_ns": float(
+                pick_stats(stat, "handoff_median_ns") or handoff
             ),
-            "total_ci_low_ns": float(
-                stat.get("total_ci_low_ns") or stat.get("avg_time_total_ns") or 0.0
+            "handoff_ci_low_ns": float(
+                pick_stats(stat, "handoff_ci_low_ns") or handoff
             ),
-            "total_ci_high_ns": float(
-                stat.get("total_ci_high_ns") or stat.get("avg_time_total_ns") or 0.0
+            "handoff_ci_high_ns": float(
+                pick_stats(stat, "handoff_ci_high_ns") or handoff
             ),
             "avg_ops_per_sec": float(stat.get("avg_ops_per_sec") or 0.0),
             "median_size_bytes": float(stat.get("median_size_bytes") or 0.0),
             "runs": int(stat.get("runs") or 0),
         }
         if store_samples:
-            samples = stat.get("_times_total_filtered") or []
+            samples = stat.get("_times_handoff_filtered") or stat.get("_times_total_filtered") or []
             if samples:
-                entry["samples_total_ns"] = _subsample(samples, max_s)
+                entry["samples_handoff_ns"] = _subsample(samples, max_s)
         entries[key_str] = entry
 
     payload = {
@@ -252,7 +279,7 @@ def check_regression(
 
     baseline = load_baseline(baseline_path)
     threshold = float(cfg.get("threshold_percent", 10.0))
-    metric = str(cfg.get("metric") or "total_median_ns")
+    metric = str(cfg.get("metric") or "handoff_median_ns")
     combine = str(cfg.get("combine") or "and")
     factor = 1.0 + (threshold / 100.0)
 
@@ -274,7 +301,13 @@ def check_regression(
 
         base_point = _point(base, metric)
         cur_point = _point(current, metric)
-        ci_low = float(current.get("total_ci_low_ns") or cur_point)
+        from .abi import pick_stats
+
+        ci_low = float(
+            pick_stats(current, "handoff_ci_low_ns")
+            or current.get("total_ci_low_ns")
+            or cur_point
+        )
 
         if base_point <= 0:
             continue
@@ -286,8 +319,8 @@ def check_regression(
         delta: Optional[float] = None
         effect_slow = None
         if cliffs_enabled:
-            cur_s = current.get("_times_total_filtered") or []
-            base_s = base.get("samples_total_ns") or []
+            cur_s = current.get("_times_handoff_filtered") or current.get("_times_total_filtered") or []
+            base_s = base.get("samples_handoff_ns") or base.get("samples_total_ns") or []
             if len(cur_s) >= 2 and len(base_s) >= 2:
                 try:
                     from .stats import cliffs_delta, cliffs_delta_label
@@ -319,7 +352,7 @@ def check_regression(
         detail = {
             "key": baseline_key_from_stat(current),
             "language": current.get("language"),
-            "serializer": current.get("serializer"),
+            "library": current.get("library") or current.get("serializer"),
             "test_data": current.get("test_data"),
             "mode": current.get("mode"),
             "metric": metric,
@@ -349,13 +382,13 @@ def check_regression(
                 how_parts.append(f"δ={delta:.3f}")
             how = f" [{'+'.join(how_parts)}]" if how_parts else ""
             messages.append(
-                f"REGRESSION: {current.get('serializer')} on {current.get('test_data')} "
+                f"REGRESSION: {current.get('library') or current.get('queue') or current.get('serializer')} on {current.get('test_data')} "
                 f"({current.get('mode')}) - {increase_pct:+.1f}% slower{how} "
                 f"({base_point:,.0f}ns → {cur_point:,.0f}ns, CI low {ci_low:,.0f}ns)"
             )
         elif classification == "unclear":
             messages.append(
-                f"UNCLEAR: {current.get('serializer')} on {current.get('test_data')} "
+                f"UNCLEAR: {current.get('library') or current.get('queue') or current.get('serializer')} on {current.get('test_data')} "
                 f"({current.get('mode')}) - {increase_pct:+.1f}% vs baseline but CI still "
                 f"overlaps the no-regression band (CI low {ci_low:,.0f}ns, "
                 f"band starts {base_point * factor:,.0f}ns)"

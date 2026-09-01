@@ -17,6 +17,8 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
 
+from .abi import pick, pick_stats
+
 # ---------------------------------------------------------------------------
 # Config helpers (optional YAML; safe defaults if PyYAML / file missing)
 # ---------------------------------------------------------------------------
@@ -334,33 +336,33 @@ def _filter_outliers(
 
 
 def filter_outliers_paired(
-    times_ser: List[float],
-    times_deser: List[float],
-    times_total: List[float],
+    times_enq: List[float],
+    times_deq: List[float],
+    times_handoff: List[float],
     method: str = "iqr",
     iqr_k: float = 1.5,
     min_samples: int = 10,
 ) -> Tuple[List[float], List[float], List[float], int]:
-    """All-or-nothing row filter across ser / deser / total.
+    """All-or-nothing row filter across enqueue / dequeue / handoff.
 
     A repetition is discarded if it is an IQR outlier on *any* of the three
     metrics. This preserves paired-sample correspondence required for
-    ser↔deser correlation and for consistent n across table columns.
+    enqueue↔dequeue correlation and for consistent n across table columns.
 
     Winsorize mode clips each series independently but never drops rows.
     """
-    n = len(times_total)
-    if not (len(times_ser) == len(times_deser) == n):
+    n = len(times_handoff)
+    if not (len(times_enq) == len(times_deq) == n):
         raise ValueError(
-            "times_ser, times_deser, and times_total must have equal length "
-            f"(got {len(times_ser)}, {len(times_deser)}, {n})"
+            "times_enq, times_deq, and times_handoff must have equal length "
+            f"(got {len(times_enq)}, {len(times_deq)}, {n})"
         )
     if method == "none" or n < min_samples:
-        return times_ser, times_deser, times_total, 0
+        return times_enq, times_deq, times_handoff, 0
 
-    arr_s = np.asarray(times_ser, dtype=float)
-    arr_d = np.asarray(times_deser, dtype=float)
-    arr_t = np.asarray(times_total, dtype=float)
+    arr_s = np.asarray(times_enq, dtype=float)
+    arr_d = np.asarray(times_deq, dtype=float)
+    arr_t = np.asarray(times_handoff, dtype=float)
 
     if method == "winsorize":
         def _w(a: np.ndarray) -> np.ndarray:
@@ -376,7 +378,7 @@ def filter_outliers_paired(
         & _iqr_keep_mask(arr_t, iqr_k=iqr_k, min_samples=min_samples)
     )
     if not mask.any():
-        return times_ser, times_deser, times_total, 0
+        return times_enq, times_deq, times_handoff, 0
 
     removed = int((~mask).sum())
     return (
@@ -388,21 +390,21 @@ def filter_outliers_paired(
 
 
 def paired_keep_mask(
-    times_ser: Sequence[float],
-    times_deser: Sequence[float],
-    times_total: Sequence[float],
+    times_enq: Sequence[float],
+    times_deq: Sequence[float],
+    times_handoff: Sequence[float],
     method: str = "iqr",
     iqr_k: float = 1.5,
     min_samples: int = 10,
 ) -> np.ndarray:
     """Boolean keep-mask for the all-or-nothing paired filter (same rules as
     :func:`filter_outliers_paired`)."""
-    n = len(times_total)
+    n = len(times_handoff)
     if method == "none" or method == "winsorize" or n < min_samples:
         return np.ones(n, dtype=bool)
-    arr_s = np.asarray(times_ser, dtype=float)
-    arr_d = np.asarray(times_deser, dtype=float)
-    arr_t = np.asarray(times_total, dtype=float)
+    arr_s = np.asarray(times_enq, dtype=float)
+    arr_d = np.asarray(times_deq, dtype=float)
+    arr_t = np.asarray(times_handoff, dtype=float)
     mask = (
         _iqr_keep_mask(arr_s, iqr_k=iqr_k, min_samples=min_samples)
         & _iqr_keep_mask(arr_d, iqr_k=iqr_k, min_samples=min_samples)
@@ -420,8 +422,9 @@ def paired_keep_mask(
 def analysis_group_key(r: Dict[str, Any], language_hint: Optional[str] = None) -> Tuple:
     """Group key for v1 and v2 CSVs.
 
-    v1: (SerializerName, TestDataName, "", "", StringOrStream, Language)
+    v1: (LibraryName, TestDataName, "", "", Pattern, Language)
     v2: includes TypeConfigHash and DataTypeInstanceCount when present.
+    Accepts leftover SerializerName / StringOrStream keys via :func:`pick`.
     """
     lang = r.get("Language") or language_hint or "unknown"
     ic = r.get("DataTypeInstanceCount")
@@ -430,11 +433,11 @@ def analysis_group_key(r: Dict[str, Any], language_hint: Optional[str] = None) -
     else:
         ic_key = ic
     return (
-        r["SerializerName"],
+        pick(r, "LibraryName") or "",
         r["TestDataName"],
         r.get("TypeConfigHash") or "",
         ic_key,
-        r["StringOrStream"],
+        pick(r, "Pattern") or "",
         lang,
     )
 
@@ -457,10 +460,10 @@ def prepare_analysis_records(
     Returns
     -------
     sanitized
-        Row dicts with ``TimeSer`` / ``TimeDeser`` / ``TimeSerAndDeser`` in ns.
+        Row dicts with ``TimeEnq`` / ``TimeDeq`` / ``TimeHandoff`` in ns.
         Ready for aggregation *or* violin melting — same sample population.
     group_meta
-        Per ``(serializer, test_data, mode, language)`` counters:
+        Per ``(queue, test_data, mode, language)`` counters:
         ``warmup_skipped``, ``outliers_removed``, ``runs_raw``.
     """
     cfg = config or load_stats_config()
@@ -485,12 +488,12 @@ def prepare_analysis_records(
             "outliers_removed": 0,
             "values_clipped": 0,
             "runs_raw": 0,
-            "fence_total_low_ns": None,
-            "fence_total_high_ns": None,
-            "fence_ser_low_ns": None,
-            "fence_ser_high_ns": None,
-            "fence_deser_low_ns": None,
-            "fence_deser_high_ns": None,
+            "fence_handoff_low_ns": None,
+            "fence_handoff_high_ns": None,
+            "fence_enq_low_ns": None,
+            "fence_enq_high_ns": None,
+            "fence_deq_low_ns": None,
+            "fence_deq_high_ns": None,
         }
     )
 
@@ -504,29 +507,36 @@ def prepare_analysis_records(
             continue
 
         scale = _scale_for(lang)
-        time_ser = normalize_to_nanoseconds(float(r["TimeSer"]), lang, scale_to_ns=scale)
-        time_deser = normalize_to_nanoseconds(float(r["TimeDeser"]), lang, scale_to_ns=scale)
-        raw_total = r.get("TimeSerAndDeser", r["TimeSer"] + r["TimeDeser"])
-        time_total = normalize_to_nanoseconds(float(raw_total), lang, scale_to_ns=scale)
+        time_enq = normalize_to_nanoseconds(float(pick(r, "TimeEnq", 0) or 0), lang, scale_to_ns=scale)
+        time_deq = normalize_to_nanoseconds(float(pick(r, "TimeDeq", 0) or 0), lang, scale_to_ns=scale)
+        raw_total = pick(r, "TimeHandoff")
+        if raw_total in (None, ""):
+            raw_total = (pick(r, "TimeEnq", 0) or 0) + (pick(r, "TimeDeq", 0) or 0)
+        time_handoff = normalize_to_nanoseconds(float(raw_total), lang, scale_to_ns=scale)
 
         rec = dict(r)
         rec["Language"] = lang
-        rec["TimeSer"] = time_ser
-        rec["TimeDeser"] = time_deser
-        rec["TimeSerAndDeser"] = time_total
+        rec["LibraryName"] = pick(r, "LibraryName") or ""
+        rec["Pattern"] = pick(r, "Pattern") or ""
+        rec["TimeEnq"] = time_enq
+        rec["TimeDeq"] = time_deq
+        rec["TimeHandoff"] = time_handoff
+        qv = pick(r, "LibraryVersion")
+        if qv not in (None, ""):
+            rec["LibraryVersion"] = qv
         buckets[key].append(rec)
 
     sanitized: List[Dict] = []
     for key, recs in buckets.items():
-        ser = [float(x["TimeSer"]) for x in recs]
-        deser = [float(x["TimeDeser"]) for x in recs]
-        total = [float(x["TimeSerAndDeser"]) for x in recs]
+        enq = [float(x["TimeEnq"]) for x in recs]
+        deq = [float(x["TimeDeq"]) for x in recs]
+        handoff = [float(x["TimeHandoff"]) for x in recs]
 
         if outlier_method == "iqr" and len(recs) >= min_out:
             for series, lo_k, hi_k in (
-                (ser, "fence_ser_low_ns", "fence_ser_high_ns"),
-                (deser, "fence_deser_low_ns", "fence_deser_high_ns"),
-                (total, "fence_total_low_ns", "fence_total_high_ns"),
+                (enq, "fence_enq_low_ns", "fence_enq_high_ns"),
+                (deq, "fence_deq_low_ns", "fence_deq_high_ns"),
+                (handoff, "fence_handoff_low_ns", "fence_handoff_high_ns"),
             ):
                 lo, hi = _iqr_fence_bounds(series, iqr_k=iqr_k, min_samples=min_out)
                 group_meta[key][lo_k] = lo
@@ -534,20 +544,19 @@ def prepare_analysis_records(
 
         if outlier_method == "winsorize" and len(recs) >= min_out:
             s_f, d_f, t_f, rem = filter_outliers_paired(
-                ser, deser, total, method="winsorize", iqr_k=iqr_k, min_samples=min_out
+                enq, deq, handoff, method="winsorize", iqr_k=iqr_k, min_samples=min_out
             )
             group_meta[key]["outliers_removed"] = rem  # always 0 for winsorize
             clipped_rows = sum(
                 1
-                for i in range(len(ser))
-                if ser[i] != s_f[i] or deser[i] != d_f[i] or total[i] != t_f[i]
+                for i in range(len(enq))
+                if enq[i] != s_f[i] or deq[i] != d_f[i] or handoff[i] != t_f[i]
             )
             group_meta[key]["values_clipped"] = int(clipped_rows)
-            # Store clip bounds from total (and ser/deser) for provenance
             for series, lo_k, hi_k in (
-                (ser, "fence_ser_low_ns", "fence_ser_high_ns"),
-                (deser, "fence_deser_low_ns", "fence_deser_high_ns"),
-                (total, "fence_total_low_ns", "fence_total_high_ns"),
+                (enq, "fence_enq_low_ns", "fence_enq_high_ns"),
+                (deq, "fence_deq_low_ns", "fence_deq_high_ns"),
+                (handoff, "fence_handoff_low_ns", "fence_handoff_high_ns"),
             ):
                 arr = np.asarray(series, dtype=float)
                 lo, hi = np.percentile(arr, [5, 95])
@@ -555,14 +564,14 @@ def prepare_analysis_records(
                 group_meta[key][hi_k] = float(hi)
             for rec, ts, td, tt in zip(recs, s_f, d_f, t_f):
                 out = dict(rec)
-                out["TimeSer"] = ts
-                out["TimeDeser"] = td
-                out["TimeSerAndDeser"] = tt
+                out["TimeEnq"] = ts
+                out["TimeDeq"] = td
+                out["TimeHandoff"] = tt
                 sanitized.append(out)
             continue
 
         mask = paired_keep_mask(
-            ser, deser, total, method=outlier_method, iqr_k=iqr_k, min_samples=min_out
+            enq, deq, handoff, method=outlier_method, iqr_k=iqr_k, min_samples=min_out
         )
         rem = int((~mask).sum())
         group_meta[key]["outliers_removed"] = rem
@@ -891,7 +900,7 @@ def compute_statistics(
     pre_sanitized: bool = False,
     group_meta: Optional[Dict[Tuple, Dict[str, int]]] = None,
 ) -> Dict:
-    """Compute aggregate statistics by (serializer, test_data, mode) [+ language].
+    """Compute aggregate statistics by (queue, test_data, mode) [+ language].
 
     By default runs the unified :func:`prepare_analysis_records` pipeline so
     summary tables and latency distributions share the same sample population. Pass
@@ -911,31 +920,33 @@ def compute_statistics(
         )
 
     stats = defaultdict(lambda: {
-        "times_ser": [],
-        "times_deser": [],
-        "times_total": [],
+        "times_enq": [],
+        "times_deq": [],
+        "times_handoff": [],
         "sizes": [],
         "fidelity": [],
         "memory_peak": [],
         "cpu_time_ns": [],
         "stream_modes": [],
         "language": None,
-        "serializer_version": None,
+        "library_version": None,
     })
 
     for r in clean:
         lang = r.get("Language") or language_hint or "unknown"
         key = analysis_group_key(r, lang)
         # Times are already normalized to ns by prepare_analysis_records
-        stats[key]["times_ser"].append(float(r["TimeSer"]))
-        stats[key]["times_deser"].append(float(r["TimeDeser"]))
-        stats[key]["times_total"].append(
-            float(r.get("TimeSerAndDeser", r["TimeSer"] + r["TimeDeser"]))
-        )
+        stats[key]["times_enq"].append(float(pick(r, "TimeEnq", 0) or 0))
+        stats[key]["times_deq"].append(float(pick(r, "TimeDeq", 0) or 0))
+        handoff = pick(r, "TimeHandoff")
+        if handoff in (None, ""):
+            handoff = (pick(r, "TimeEnq", 0) or 0) + (pick(r, "TimeDeq", 0) or 0)
+        stats[key]["times_handoff"].append(float(handoff))
         stats[key]["sizes"].append(float(r["Size"]))
         stats[key]["language"] = lang
-        if r.get("SerializerVersion"):
-            stats[key]["serializer_version"] = r["SerializerVersion"]
+        qv = pick(r, "LibraryVersion")
+        if qv not in (None, ""):
+            stats[key]["library_version"] = qv
         if r.get("StreamMode"):
             stats[key]["stream_modes"].append(str(r["StreamMode"]).strip())
         if "FidelityScore" in r and r["FidelityScore"] is not None:
@@ -964,52 +975,50 @@ def compute_statistics(
     results: Dict = {}
 
     for key, data in stats.items():
-        times_ser = data["times_ser"]
-        times_deser = data["times_deser"]
-        times_total = data["times_total"]
+        times_enq = data["times_enq"]
+        times_deq = data["times_deq"]
+        times_handoff = data["times_handoff"]
         m = meta.get(key) or {}
         rem_t = int(m.get("outliers_removed", 0))
         values_clipped = int(m.get("values_clipped", 0))
         warmup_skipped = int(m.get("warmup_skipped", 0))
-        runs_raw = int(m.get("runs_raw", len(times_total) + warmup_skipped + rem_t))
+        runs_raw = int(m.get("runs_raw", len(times_handoff) + warmup_skipped + rem_t))
         total_outliers += rem_t
 
-        ser_stats = _summarize_series(times_ser, cfg, "ser", group_key=key)
-        deser_stats = _summarize_series(times_deser, cfg, "deser", group_key=key)
-        total_stats = _summarize_series(times_total, cfg, "total", group_key=key)
+        enq_stats = _summarize_series(times_enq, cfg, "enq", group_key=key)
+        deq_stats = _summarize_series(times_deq, cfg, "deq", group_key=key)
+        handoff_stats = _summarize_series(times_handoff, cfg, "handoff", group_key=key)
 
-        avg_time_total_ns = total_stats["total_mean_ns"]
-        avg_ops_per_sec = 1e9 / avg_time_total_ns if avg_time_total_ns > 0 else 0.0
-        min_ops = 1e9 / total_stats["total_max_ns"] if total_stats["total_max_ns"] > 0 else 0.0
-        max_ops = 1e9 / total_stats["total_min_ns"] if total_stats["total_min_ns"] > 0 else 0.0
+        avg_time_handoff_ns = handoff_stats["handoff_mean_ns"]
+        avg_ops_per_sec = 1e9 / avg_time_handoff_ns if avg_time_handoff_ns > 0 else 0.0
+        min_ops = 1e9 / handoff_stats["handoff_max_ns"] if handoff_stats["handoff_max_ns"] > 0 else 0.0
+        max_ops = 1e9 / handoff_stats["handoff_min_ns"] if handoff_stats["handoff_min_ns"] > 0 else 0.0
 
         sizes = data["sizes"]
-        # key: (serializer, test_data, type_config_hash, instance_count, mode, language)
+        # key: (queue, test_data, type_config_hash, instance_count, mode, language)
         entry = {
-            "serializer": key[0],
+            "library": key[0],
             "test_data": key[1],
             "type_config_hash": key[2] or None,
             "data_type_instance_count": key[3] if key[3] != "" else None,
             "mode": key[4],
             "language": key[5],
-            "serializer_version": data["serializer_version"],
-            # Backward-compatible primary metrics
-            "avg_time_ser_ns": ser_stats["ser_mean_ns"],
-            "avg_time_deser_ns": deser_stats["deser_mean_ns"],
-            "avg_time_total_ns": avg_time_total_ns,
+            "library_version": data["library_version"],
+            "avg_time_enq_ns": enq_stats["enq_mean_ns"],
+            "avg_time_deq_ns": deq_stats["deq_mean_ns"],
+            "avg_time_handoff_ns": avg_time_handoff_ns,
             "median_size_bytes": float(np.median(sizes)) if sizes else 0.0,
             "avg_ops_per_sec": avg_ops_per_sec,
             "min_ops_per_sec": min_ops,
             "max_ops_per_sec": max_ops,
-            "runs": len(times_total),
+            "runs": len(times_handoff),
             "runs_raw": runs_raw,
             "warmup_skipped": warmup_skipped,
             "outliers_removed": rem_t,
             "values_clipped": values_clipped,
-            # Extended scientific metrics
-            **ser_stats,
-            **deser_stats,
-            **total_stats,
+            **enq_stats,
+            **deq_stats,
+            **handoff_stats,
             "mean_fidelity": float(np.mean(data["fidelity"])) if data["fidelity"] else None,
             "mean_memory_peak_bytes": float(np.mean(data["memory_peak"])) if data["memory_peak"] else None,
             "msgs_per_cpu_sec": (
@@ -1017,8 +1026,7 @@ def compute_statistics(
                 if data.get("cpu_time_ns") and key[3] not in ("", None) and float(np.mean(data["cpu_time_ns"])) > 0
                 else None
             ),
-            # Retain filtered series for effect-size / A-B (not serialized by default consumers)
-            "_times_total_filtered": times_total,
+            "_times_handoff_filtered": times_handoff,
         }
         entry["filter"] = _build_filter_block(
             policy_id=m.get("filter_policy"),
@@ -1107,13 +1115,13 @@ def _infer_policy_id(cfg: Dict[str, Any]) -> Optional[str]:
 
 # Group identity fields shared across filter-policy variants (schema 2.2).
 _EXPORT_IDENTITY_KEYS: Tuple[str, ...] = (
-    "serializer",
+    "library",
     "test_data",
     "type_config_hash",
     "data_type_instance_count",
     "mode",
     "language",
-    "serializer_version",
+    "library_version",
 )
 
 
@@ -1163,12 +1171,12 @@ def _build_filter_block(
         "runs_kept": int(entry.get("runs") or 0),
         "outliers_removed": int(entry.get("outliers_removed") or 0),
         "values_clipped": int(entry.get("values_clipped") or 0),
-        "fence_total_low_ns": meta.get("fence_total_low_ns"),
-        "fence_total_high_ns": meta.get("fence_total_high_ns"),
-        "fence_ser_low_ns": meta.get("fence_ser_low_ns"),
-        "fence_ser_high_ns": meta.get("fence_ser_high_ns"),
-        "fence_deser_low_ns": meta.get("fence_deser_low_ns"),
-        "fence_deser_high_ns": meta.get("fence_deser_high_ns"),
+        "fence_handoff_low_ns": meta.get("fence_handoff_low_ns"),
+        "fence_handoff_high_ns": meta.get("fence_handoff_high_ns"),
+        "fence_enq_low_ns": meta.get("fence_enq_low_ns"),
+        "fence_enq_high_ns": meta.get("fence_enq_high_ns"),
+        "fence_deq_low_ns": meta.get("fence_deq_low_ns"),
+        "fence_deq_high_ns": meta.get("fence_deq_high_ns"),
     }
     if include_catalog_text:
         block["label"] = spec.get("label") or method
@@ -1193,7 +1201,7 @@ def public_stats_entry(entry: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def compute_pareto_front(groups: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """Classical 2D Pareto: minimize avg_time_total_ns and median_size_bytes."""
+    """Classical 2D Pareto: minimize avg_time_handoff_ns and median_size_bytes."""
     front: List[Dict[str, Any]] = []
     workloads: Dict[Tuple[Any, Any], List[Dict[str, Any]]] = {}
     for g in groups:
@@ -1201,7 +1209,7 @@ def compute_pareto_front(groups: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         workloads.setdefault(wkey, []).append(g)
     for items in workloads.values():
         for item in items:
-            t = item.get("avg_time_total_ns")
+            t = pick_stats(item, "avg_time_handoff_ns")
             s = item.get("median_size_bytes")
             if t is None or s is None:
                 continue
@@ -1209,7 +1217,7 @@ def compute_pareto_front(groups: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
             for other in items:
                 if other is item:
                     continue
-                ot = other.get("avg_time_total_ns")
+                ot = pick_stats(other, "avg_time_handoff_ns")
                 os_ = other.get("median_size_bytes")
                 if ot is None or os_ is None:
                     continue
@@ -1219,7 +1227,7 @@ def compute_pareto_front(groups: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
             if not dominated:
                 front.append(
                     {
-                        "serializer": item.get("serializer"),
+                        "library": pick_stats(item, "library"),
                         "test_data": item.get("test_data"),
                         "mode": item.get("mode"),
                         "time": t,
@@ -1392,10 +1400,18 @@ def _attach_effect_sizes(results: Dict, cfg: Dict[str, Any]) -> None:
 
     def _ref_score(entry: Dict[str, Any]) -> float:
         if ref_mode == "median":
-            v = entry.get("total_median_ns")
+            v = pick_stats(entry, "handoff_median_ns")
+            if v is None:
+                v = entry.get("total_median_ns")
             if v is not None and v == v:  # not NaN
                 return float(v)
-        return float(entry.get("avg_time_total_ns") or float("inf"))
+        return float(pick_stats(entry, "avg_time_handoff_ns") or float("inf"))
+
+    def _queue_name(entry: Dict[str, Any]) -> Any:
+        return pick_stats(entry, "library")
+
+    def _times(entry: Dict[str, Any]) -> List[Any]:
+        return entry.get("_times_handoff_filtered") or entry.get("_times_total_filtered") or []
 
     for gkey, items in groups.items():
         if len(items) < 2:
@@ -1406,12 +1422,12 @@ def _attach_effect_sizes(results: Dict, cfg: Dict[str, Any]) -> None:
                 entry["effect_vs_fastest_p_value"] = None
                 entry["effect_vs_fastest_p_value_holm"] = None
                 entry["effect_vs_fastest_significant_holm"] = None
-                entry["fastest_in_group"] = entry["serializer"]
+                entry["fastest_in_group"] = _queue_name(entry)
                 entry["effect_vs_fastest_exploratory"] = True
             continue
 
         fastest_key, fastest_entry = min(items, key=lambda t: _ref_score(t[1]))
-        fast_times = fastest_entry.get("_times_total_filtered") or []
+        fast_times = _times(fastest_entry)
 
         # Collect MWU p-values for non-reference members (stable order)
         non_ref: List[Tuple[Any, Dict[str, Any]]] = []
@@ -1419,7 +1435,7 @@ def _attach_effect_sizes(results: Dict, cfg: Dict[str, Any]) -> None:
         for key, entry in items:
             if key == fastest_key:
                 continue
-            mine = entry.get("_times_total_filtered") or []
+            mine = _times(entry)
             p = 1.0
             if run_test and len(mine) >= 2 and len(fast_times) >= 2:
                 _u, p = mann_whitney_u(mine, fast_times)
@@ -1432,9 +1448,9 @@ def _attach_effect_sizes(results: Dict, cfg: Dict[str, Any]) -> None:
             adj_ps = list(raw_ps)
 
         for (key, entry), p_raw, p_adj in zip(non_ref, raw_ps, adj_ps):
-            entry["fastest_in_group"] = fastest_entry["serializer"]
+            entry["fastest_in_group"] = _queue_name(fastest_entry)
             entry["effect_vs_fastest_exploratory"] = True
-            mine = entry.get("_times_total_filtered") or []
+            mine = _times(entry)
             cd = cliffs_delta(mine, fast_times) if mine and fast_times else 0.0
             hg = hedges_g(mine, fast_times) if mine and fast_times else 0.0
             entry["effect_vs_fastest_cliffs_delta"] = cd
@@ -1452,7 +1468,7 @@ def _attach_effect_sizes(results: Dict, cfg: Dict[str, Any]) -> None:
         for key, entry in items:
             if key != fastest_key:
                 continue
-            entry["fastest_in_group"] = entry["serializer"]
+            entry["fastest_in_group"] = _queue_name(entry)
             entry["effect_vs_fastest_cliffs_delta"] = 0.0
             entry["effect_vs_fastest_cliffs_label"] = "reference"
             entry["effect_vs_fastest_hedges_g"] = 0.0
@@ -1467,9 +1483,9 @@ def compare_versions(
     stats_b: Dict,
     config: Optional[Dict[str, Any]] = None,
 ) -> List[Dict[str, Any]]:
-    """Compare two result sets (e.g., serializer v1 vs v2) with Mann-Whitney + effect sizes.
+    """Compare two result sets (e.g., queue v1 vs v2) with Mann-Whitney + effect sizes.
 
-    Keys are matched on (serializer, test_data, mode, language).
+    Keys are matched on (queue, test_data, mode, language).
     """
     cfg = config or load_stats_config()
     ht = cfg.get("hypothesis_tests") or {}
@@ -1480,22 +1496,24 @@ def compare_versions(
     common_keys = set(stats_a.keys()) & set(stats_b.keys())
     for key in sorted(common_keys, key=str):
         a, b = stats_a[key], stats_b[key]
-        ta = a.get("_times_total_filtered") or []
-        tb = b.get("_times_total_filtered") or []
+        ta = a.get("_times_handoff_filtered") or a.get("_times_total_filtered") or []
+        tb = b.get("_times_handoff_filtered") or b.get("_times_total_filtered") or []
         if len(ta) < 2 or len(tb) < 2:
             continue
         u, p = mann_whitney_u(ta, tb)
         cd = cliffs_delta(ta, tb)
         hg = hedges_g(ta, tb)
-        ratio = (a["avg_time_total_ns"] / b["avg_time_total_ns"]) if b["avg_time_total_ns"] else float("inf")
+        mean_a = pick_stats(a, "avg_time_handoff_ns") or 0.0
+        mean_b = pick_stats(b, "avg_time_handoff_ns") or 0.0
+        ratio = (mean_a / mean_b) if mean_b else float("inf")
         rec = {
             "key": key,
-            "serializer": a["serializer"],
+            "library": pick_stats(a, "library"),
             "test_data": a["test_data"],
             "mode": a["mode"],
             "language": a.get("language"),
-            "mean_a_ns": a["avg_time_total_ns"],
-            "mean_b_ns": b["avg_time_total_ns"],
+            "mean_a_ns": mean_a,
+            "mean_b_ns": mean_b,
             "ratio_a_over_b": ratio,
             "pct_change": (ratio - 1.0) * 100.0 if ratio != float("inf") else None,
             "mann_whitney_u": u,

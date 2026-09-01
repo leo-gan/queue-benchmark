@@ -4,8 +4,8 @@ Normative algorithm — every language benchmark runner must match the golden
 vectors in ``tests/test_schedule.py`` (or re-derive the same steps).
 
 Strategy ``block_shuffle`` (default):
-  cell (fixed) → prepare all serializers (untimed)
-  → mode block → for each rep: Fisher–Yates shuffle serializers → timed trials
+  cell (fixed) → prepare all queues (untimed)
+  → mode block → for each rep: Fisher–Yates shuffle queues → timed trials
 
 Seed for each shuffle:
   key = f"{base_seed}|{type_id}|{instance_count}|{type_config_hash}|{mode}|{rep}"
@@ -89,7 +89,7 @@ def fisher_yates(items: Sequence[T], seed: int) -> List[T]:
     return arr
 
 
-def shuffle_serializer_names(
+def shuffle_queue_names(
     names: Sequence[str],
     *,
     base_seed: int,
@@ -99,16 +99,20 @@ def shuffle_serializer_names(
     mode: str,
     rep: int,
 ) -> List[str]:
-    """Shuffle serializer name strings for one (cell, mode, rep)."""
+    """Shuffle queue name strings for one (cell, mode, rep)."""
     seed = derive_schedule_seed(
         base_seed, type_id, instance_count, type_config_hash, mode, rep
     )
     return fisher_yates(list(names), seed)
 
 
+# Leftover name kept so older tests / callers still import.
+shuffle_serializer_names = shuffle_queue_names
+
+
 def golden_permutation() -> List[str]:
     """Expected order for the published golden vector (A,B,C @ seed 42…)."""
-    return shuffle_serializer_names(
+    return shuffle_queue_names(
         GOLDEN_NAMES,
         base_seed=GOLDEN_BASE_SEED,
         type_id=GOLDEN_TYPE_ID,

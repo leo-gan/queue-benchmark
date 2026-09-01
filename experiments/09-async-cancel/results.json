@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-01T01:00:33Z",
+  "generated_at": "2026-09-01T01:46:07Z",
   "languages": {
     "python": {
       "status": "ok",
@@ -8,9 +8,9 @@
           "library": "asyncio.Queue",
           "pattern": "bytes",
           "n": 9,
-          "median_handoff_ns": 199737.0,
-          "p50_ns": 199737.0,
-          "mean_ns": 202573.55555555556,
+          "median_handoff_ns": 201480.0,
+          "p50_ns": 201480.0,
+          "mean_ns": 202466.0,
           "rel_to_fastest": 1.0
         }
       ]
@@ -22,9 +22,9 @@
           "library": "tokio-mpsc",
           "pattern": "bytes",
           "n": 9,
-          "median_handoff_ns": 127262.0,
-          "p50_ns": 127262.0,
-          "mean_ns": 113812.22222222222,
+          "median_handoff_ns": 195756.0,
+          "p50_ns": 195756.0,
+          "mean_ns": 170203.88888888888,
           "rel_to_fastest": 1.0
         }
       ]
@@ -36,9 +36,9 @@
           "library": "p-queue",
           "pattern": "bytes",
           "n": 9,
-          "median_handoff_ns": 147734.0,
-          "p50_ns": 147734.0,
-          "mean_ns": 133349.66666666666,
+          "median_handoff_ns": 148270.0,
+          "p50_ns": 148270.0,
+          "mean_ns": 140801.33333333334,
           "rel_to_fastest": 1.0
         }
       ]
@@ -50,9 +50,9 @@
           "library": "Channel",
           "pattern": "bytes",
           "n": 9,
-          "median_handoff_ns": 343500.0,
-          "p50_ns": 343500.0,
-          "mean_ns": 353366.6666666667,
+          "median_handoff_ns": 443100.0,
+          "p50_ns": 443100.0,
+          "mean_ns": 443588.8888888889,
           "rel_to_fastest": 1.0
         }
       ]

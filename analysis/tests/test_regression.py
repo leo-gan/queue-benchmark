@@ -27,19 +27,19 @@ def _stat(
 ):
     return {
         "language": lang,
-        "serializer": ser,
+        "library": ser,
         "test_data": data,
         "mode": mode,
         "data_type_instance_count": n,
         "type_config_hash": "abc",
-        "avg_time_total_ns": mean,
-        "total_median_ns": median,
-        "total_ci_low_ns": ci_low,
-        "total_ci_high_ns": mean * 1.1,
+        "avg_time_handoff_ns": mean,
+        "handoff_median_ns": median,
+        "handoff_ci_low_ns": ci_low,
+        "handoff_ci_high_ns": mean * 1.1,
         "avg_ops_per_sec": 1e9 / mean if mean else 0,
         "median_size_bytes": 100,
         "runs": len(samples or [1, 2, 3]),
-        "_times_total_filtered": samples
+        "_times_handoff_filtered": samples
         or [mean * 0.9, mean, mean * 1.1, mean * 0.95, mean * 1.05],
     }
 
@@ -58,7 +58,7 @@ def test_and_does_not_fail_on_mean_alone(tmp_path):
     cfg = load_regression_config()
     cfg["combine"] = "and"
     cfg["threshold_percent"] = 10.0
-    cfg["metric"] = "total_median_ns"
+    cfg["metric"] = "handoff_median_ns"
     has_reg, msgs = check_regression(bad, str(baseline), config=cfg)
     assert not has_reg
     assert any(m.startswith("UNCLEAR") for m in msgs)
@@ -71,7 +71,7 @@ def test_and_fails_when_ci_also_supports(tmp_path):
 
     # +50% and CI low still way above band
     bad = {("k",): _stat(mean=1500.0, median=1500.0, ci_low=1400.0)}
-    cfg = {"combine": "and", "threshold_percent": 10.0, "metric": "total_median_ns",
+    cfg = {"combine": "and", "threshold_percent": 10.0, "metric": "handoff_median_ns",
            "cliffs_delta": {"enabled": False}, "store_samples": False}
     has_reg, msgs = check_regression(bad, str(baseline), config=cfg)
     assert has_reg
@@ -83,7 +83,7 @@ def test_or_fails_on_mean_alone(tmp_path):
     good = {("k",): _stat(mean=1000.0, median=1000.0, ci_low=900.0)}
     save_baseline(good, str(baseline), config={"store_samples": False})
     bad = {("k",): _stat(mean=1150.0, median=1150.0, ci_low=1050.0)}
-    cfg = {"combine": "or", "threshold_percent": 10.0, "metric": "total_median_ns",
+    cfg = {"combine": "or", "threshold_percent": 10.0, "metric": "handoff_median_ns",
            "cliffs_delta": {"enabled": False}}
     has_reg, _ = check_regression(bad, str(baseline), config=cfg)
     assert has_reg
@@ -103,7 +103,7 @@ def test_legacy_v1_baseline_still_readable(tmp_path):
         json.dumps(
             {
                 "python|orjson|message|bytes": {
-                    "avg_time_total_ns": 1000.0,
+                    "avg_time_handoff_ns": 1000.0,
                     "avg_ops_per_sec": 1e6,
                     "median_size_bytes": 50,
                 }
@@ -138,13 +138,13 @@ def test_cliffs_delta_when_samples_stored(tmp_path):
     )
     loaded = load_baseline(str(baseline))
     key = next(iter(loaded))
-    assert "samples_total_ns" in loaded[key]
+    assert "samples_handoff_ns" in loaded[key] or "samples_total_ns" in loaded[key]
 
     bad = {("k",): _stat(mean=200.0, median=200.0, ci_low=180.0, samples=slow)}
     cfg = {
         "combine": "and",
         "threshold_percent": 10.0,
-        "metric": "total_median_ns",
+        "metric": "handoff_median_ns",
         "cliffs_delta": {"enabled": True, "min_delta": 0.147, "require_for_fail": False},
     }
     has_reg, _ = check_regression(bad, str(baseline), config=cfg)
