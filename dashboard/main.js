@@ -582,7 +582,7 @@ function updateCompareStatusLine() {
     state.availableMetrics.length ? state.availableMetrics.includes(k) : true
   ).length;
   if (el) {
-    const serLabel = n === 1 ? 'serializer' : 'serializers';
+    const serLabel = n === 1 ? 'queue' : 'queues';
     const metLabel = m === 1 ? 'metric' : 'metrics';
     el.textContent = `${n} ${serLabel} · ${m} ${metLabel}`;
   }
@@ -891,12 +891,12 @@ function setupEventListeners() {
       return;
     }
     if (state.xlSelected.length >= MAX_COMPARE_COLUMNS) {
-      showNotification(`At most ${MAX_COMPARE_COLUMNS} serializers in Compare.`, 'info');
+      showNotification(`At most ${MAX_COMPARE_COLUMNS} queues in Compare.`, 'info');
       return;
     }
     const group = findCrossLangGroup(lang, serializer);
     if (!group) {
-      showNotification('No data for that serializer under the current data type / mode.', 'error');
+      showNotification('No data for that queue under the current data type / mode.', 'error');
       return;
     }
     state.xlSelectionMode = 'custom';
@@ -1345,7 +1345,7 @@ function updateRunConfigPanel() {
   }
   const serCount = ser.count != null ? ser.count : Array.isArray(ser.items) ? ser.items.length : null;
   if (serCount != null) {
-    appendConfigRow(dl, 'serializers', serCount);
+    appendConfigRow(dl, 'queues', serCount);
   }
   if (run.metrics_profile) {
     appendConfigRow(dl, 'metrics_profile', run.metrics_profile);
@@ -1361,7 +1361,7 @@ function updateRunConfigPanel() {
 
   const serList = buildSerializerNameList(ser.items);
   if (serList) {
-    appendConfigRow(dl, 'Serializers (from CSV)', serList);
+    appendConfigRow(dl, 'Queues (from CSV)', serList);
   }
 
   if (env.machine_id) {
@@ -1400,7 +1400,7 @@ async function loadHistoricalRunIntoDashboard(runId) {
 
     const records = parseCSV(csvText);
     const groups = aggregateCSVRecords(records);
-    if (groups.length === 0) throw new Error('No valid serializer records found in parsed CSV.');
+    if (groups.length === 0) throw new Error('No valid queue records found in parsed CSV.');
 
     state.currentRunId = runId;
     state.currentRunConfigs = configs;
@@ -2873,7 +2873,7 @@ function addSameLanguageSerializer(name) {
     return;
   }
   if (state.detailSerializers.length >= MAX_COMPARE_COLUMNS) {
-    showNotification(`At most ${MAX_COMPARE_COLUMNS} serializers in Compare.`, 'info');
+    showNotification(`At most ${MAX_COMPARE_COLUMNS} queues in Compare.`, 'info');
     return;
   }
   state.detailSerializers = [...state.detailSerializers, name];
@@ -3308,7 +3308,7 @@ function renderTable() {
   const colCount = 1 + (showHonesty ? 1 : 0) + metricKeys.length;
   if (rows.length === 0) {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td colspan="${colCount}" style="text-align:center;color:var(--text-muted);">No serializers match search query</td>`;
+    tr.innerHTML = `<td colspan="${colCount}" style="text-align:center;color:var(--text-muted);">No queues match search query</td>`;
     tbody.appendChild(tr);
     updateSortIndicators();
     return;
@@ -3474,7 +3474,7 @@ function renderCompareMatrix() {
   const colCount = Math.max(1, columns.length + 1);
   if (!columns.length) {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td colspan="${colCount}" style="text-align:center;color:var(--text-muted);">Select one or more serializers</td>`;
+    tr.innerHTML = `<td colspan="${colCount}" style="text-align:center;color:var(--text-muted);">Select one or more queues</td>`;
     tbody.appendChild(tr);
     return;
   }
@@ -3585,7 +3585,7 @@ function copyRosterMarkdown() {
   const u = scales.latency.header;
   const oHdr = scales.ops.header;
   const showHonesty = normalizeMode(state.currentMode) === 'stream';
-  const headers = ['Serializer'];
+  const headers = ['Queue'];
   if (showHonesty) headers.push('Honesty');
   metricSpecs.forEach(({ key, label }) => {
     if (key.startsWith('ops_')) headers.push(`${label} (${oHdr})`);
