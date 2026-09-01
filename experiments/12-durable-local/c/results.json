@@ -7,15 +7,14 @@
       "io": "bytes",
       "n": 9,
       "runs": 9,
-      "median_handoff_ns": 78734619.0,
-      "total_median_ns": 78734619.0,
-      "p50_ns": 78734619.0,
-      "mean_ns": 86041504.55555555,
-      "enq_median_ns": 78685330.0,
-      "write_median_ns": 78685330.0,
-      "deq_median_ns": 48986.0,
-      "read_median_ns": 48986.0,
-      "size_bytes": 25600.0,
+      "median_handoff_ns": 72374812.0,
+      "total_median_ns": 72374812.0,
+      "p50_ns": 72374812.0,
+      "mean_ns": 71250495.0,
+      "enq_median_ns": 72316967.0,
+      "write_median_ns": 72316967.0,
+      "deq_median_ns": 32642.0,
+      "read_median_ns": 32642.0,
       "rel_to_fastest": 1.0
     }
   ]

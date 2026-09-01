@@ -15,7 +15,6 @@
       "write_median_ns": 7656.0,
       "deq_median_ns": 0.0,
       "read_median_ns": 0.0,
-      "size_bytes": 25600.0,
       "rel_to_fastest": 1.0
     },
     {
@@ -32,7 +31,6 @@
       "write_median_ns": 4792.0,
       "deq_median_ns": 4679.0,
       "read_median_ns": 4679.0,
-      "size_bytes": 25600.0,
       "rel_to_fastest": 1.1648380355276906
     },
     {
@@ -49,7 +47,6 @@
       "write_median_ns": 127440.0,
       "deq_median_ns": 6308.0,
       "read_median_ns": 6308.0,
-      "size_bytes": 25600.0,
       "rel_to_fastest": 18.009796238244515
     }
   ]

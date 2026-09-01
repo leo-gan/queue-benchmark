@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-01T20:57:41Z",
+  "generated_at": "2026-09-01T21:41:28Z",
   "languages": {
     "python": {
       "status": "ok",
@@ -10,15 +10,14 @@
           "io": "bytes",
           "n": 9,
           "runs": 9,
-          "median_handoff_ns": 6142108.0,
-          "total_median_ns": 6142108.0,
-          "p50_ns": 6142108.0,
-          "mean_ns": 6278643.666666667,
-          "enq_median_ns": 3071054.0,
-          "write_median_ns": 3071054.0,
-          "deq_median_ns": 3071054.0,
-          "read_median_ns": 3071054.0,
-          "size_bytes": 25600.0,
+          "median_handoff_ns": 6548909.0,
+          "total_median_ns": 6548909.0,
+          "p50_ns": 6548909.0,
+          "mean_ns": 6711990.333333333,
+          "enq_median_ns": 3274454.0,
+          "write_median_ns": 3274454.0,
+          "deq_median_ns": 3274455.0,
+          "read_median_ns": 3274455.0,
           "rel_to_fastest": 1.0
         },
         {
@@ -27,16 +26,15 @@
           "io": "bytes",
           "n": 9,
           "runs": 9,
-          "median_handoff_ns": 7475761.0,
-          "total_median_ns": 7475761.0,
-          "p50_ns": 7475761.0,
-          "mean_ns": 7507737.555555556,
-          "enq_median_ns": 3737880.0,
-          "write_median_ns": 3737880.0,
-          "deq_median_ns": 3737881.0,
-          "read_median_ns": 3737881.0,
-          "size_bytes": 25600.0,
-          "rel_to_fastest": 1.2171327824258382
+          "median_handoff_ns": 7322991.0,
+          "total_median_ns": 7322991.0,
+          "p50_ns": 7322991.0,
+          "mean_ns": 7350721.333333333,
+          "enq_median_ns": 3661495.0,
+          "write_median_ns": 3661495.0,
+          "deq_median_ns": 3661496.0,
+          "read_median_ns": 3661496.0,
+          "rel_to_fastest": 1.1182001460090527
         },
         {
           "library": "queue.Queue",
@@ -44,16 +42,15 @@
           "io": "bytes",
           "n": 9,
           "runs": 9,
-          "median_handoff_ns": 7713169.0,
-          "total_median_ns": 7713169.0,
-          "p50_ns": 7713169.0,
-          "mean_ns": 7935517.0,
-          "enq_median_ns": 3856584.0,
-          "write_median_ns": 3856584.0,
-          "deq_median_ns": 3856585.0,
-          "read_median_ns": 3856585.0,
-          "size_bytes": 25600.0,
-          "rel_to_fastest": 1.2557853101899217
+          "median_handoff_ns": 8240904.0,
+          "total_median_ns": 8240904.0,
+          "p50_ns": 8240904.0,
+          "mean_ns": 8200809.777777778,
+          "enq_median_ns": 4120452.0,
+          "write_median_ns": 4120452.0,
+          "deq_median_ns": 4120452.0,
+          "read_median_ns": 4120452.0,
+          "rel_to_fastest": 1.2583628815120198
         },
         {
           "library": "asyncio.Queue",
@@ -61,16 +58,15 @@
           "io": "bytes",
           "n": 9,
           "runs": 9,
-          "median_handoff_ns": 16547237.0,
-          "total_median_ns": 16547237.0,
-          "p50_ns": 16547237.0,
-          "mean_ns": 18243145.222222224,
-          "enq_median_ns": 8273618.0,
-          "write_median_ns": 8273618.0,
-          "deq_median_ns": 8273619.0,
-          "read_median_ns": 8273619.0,
-          "size_bytes": 25600.0,
-          "rel_to_fastest": 2.694064806414996
+          "median_handoff_ns": 16344784.0,
+          "total_median_ns": 16344784.0,
+          "p50_ns": 16344784.0,
+          "mean_ns": 17958898.888888888,
+          "enq_median_ns": 8172392.0,
+          "write_median_ns": 8172392.0,
+          "deq_median_ns": 8172392.0,
+          "read_median_ns": 8172392.0,
+          "rel_to_fastest": 2.495802583300516
         },
         {
           "library": "janus",
@@ -78,16 +74,15 @@
           "io": "bytes",
           "n": 9,
           "runs": 9,
-          "median_handoff_ns": 18691503.0,
-          "total_median_ns": 18691503.0,
-          "p50_ns": 18691503.0,
-          "mean_ns": 19124731.666666668,
-          "enq_median_ns": 9345751.0,
-          "write_median_ns": 9345751.0,
-          "deq_median_ns": 9345752.0,
-          "read_median_ns": 9345752.0,
-          "size_bytes": 25600.0,
-          "rel_to_fastest": 3.0431739396311492
+          "median_handoff_ns": 18992528.0,
+          "total_median_ns": 18992528.0,
+          "p50_ns": 18992528.0,
+          "mean_ns": 20315443.888888888,
+          "enq_median_ns": 9496264.0,
+          "write_median_ns": 9496264.0,
+          "deq_median_ns": 9496264.0,
+          "read_median_ns": 9496264.0,
+          "rel_to_fastest": 2.900105651185564
         }
       ]
     },
@@ -108,7 +103,6 @@
           "write_median_ns": 4869.0,
           "deq_median_ns": 3579.0,
           "read_median_ns": 3579.0,
-          "size_bytes": 25600.0,
           "rel_to_fastest": 1.0
         },
         {
@@ -125,7 +119,6 @@
           "write_median_ns": 5171.0,
           "deq_median_ns": 3602.0,
           "read_median_ns": 3602.0,
-          "size_bytes": 25600.0,
           "rel_to_fastest": 1.044776119402985
         },
         {
@@ -142,7 +135,6 @@
           "write_median_ns": 4853.0,
           "deq_median_ns": 4666.0,
           "read_median_ns": 4666.0,
-          "size_bytes": 25600.0,
           "rel_to_fastest": 1.1226012793176972
         },
         {
@@ -159,7 +151,6 @@
           "write_median_ns": 6686.0,
           "deq_median_ns": 3985.0,
           "read_median_ns": 3985.0,
-          "size_bytes": 25600.0,
           "rel_to_fastest": 1.2671167969675432
         }
       ]
@@ -181,7 +172,6 @@
           "write_median_ns": 8933.0,
           "deq_median_ns": 0.0,
           "read_median_ns": 0.0,
-          "size_bytes": 25600.0,
           "rel_to_fastest": 1.0
         },
         {
@@ -198,7 +188,6 @@
           "write_median_ns": 4877.0,
           "deq_median_ns": 4460.0,
           "read_median_ns": 4460.0,
-          "size_bytes": 25600.0,
           "rel_to_fastest": 1.0817194671442965
         },
         {
@@ -215,7 +204,6 @@
           "write_median_ns": 127556.0,
           "deq_median_ns": 7100.0,
           "read_median_ns": 7100.0,
-          "size_bytes": 25600.0,
           "rel_to_fastest": 15.073435575954326
         }
       ]
@@ -237,7 +225,6 @@
           "write_median_ns": 1700.0,
           "deq_median_ns": 1300.0,
           "read_median_ns": 1300.0,
-          "size_bytes": 25600.0,
           "rel_to_fastest": 1.0
         },
         {
@@ -254,7 +241,6 @@
           "write_median_ns": 3100.0,
           "deq_median_ns": 2700.0,
           "read_median_ns": 2700.0,
-          "size_bytes": 25600.0,
           "rel_to_fastest": 1.9333333333333333
         },
         {
@@ -271,7 +257,6 @@
           "write_median_ns": 6400.0,
           "deq_median_ns": 7000.0,
           "read_median_ns": 7000.0,
-          "size_bytes": 25600.0,
           "rel_to_fastest": 4.566666666666666
         }
       ]
@@ -285,33 +270,15 @@
           "io": "bytes",
           "n": 9,
           "runs": 9,
-          "median_handoff_ns": 945.0,
-          "total_median_ns": 945.0,
-          "p50_ns": 945.0,
-          "mean_ns": 946.4444444444445,
-          "enq_median_ns": 473.0,
-          "write_median_ns": 473.0,
-          "deq_median_ns": 472.0,
-          "read_median_ns": 472.0,
-          "size_bytes": 25600.0,
+          "median_handoff_ns": 1085.0,
+          "total_median_ns": 1085.0,
+          "p50_ns": 1085.0,
+          "mean_ns": 1093.2222222222222,
+          "enq_median_ns": 546.0,
+          "write_median_ns": 546.0,
+          "deq_median_ns": 538.0,
+          "read_median_ns": 538.0,
           "rel_to_fastest": 1.0
-        },
-        {
-          "library": "steal-deque",
-          "pattern": "bytes",
-          "io": "bytes",
-          "n": 9,
-          "runs": 9,
-          "median_handoff_ns": 1275.0,
-          "total_median_ns": 1275.0,
-          "p50_ns": 1275.0,
-          "mean_ns": 1278.5555555555557,
-          "enq_median_ns": 759.0,
-          "write_median_ns": 759.0,
-          "deq_median_ns": 511.0,
-          "read_median_ns": 511.0,
-          "size_bytes": 25600.0,
-          "rel_to_fastest": 1.3492063492063493
         },
         {
           "library": "mutex-queue",
@@ -319,16 +286,31 @@
           "io": "bytes",
           "n": 9,
           "runs": 9,
-          "median_handoff_ns": 2742.0,
-          "total_median_ns": 2742.0,
-          "p50_ns": 2742.0,
-          "mean_ns": 2136.0,
-          "enq_median_ns": 1371.0,
-          "write_median_ns": 1371.0,
-          "deq_median_ns": 1371.0,
-          "read_median_ns": 1371.0,
-          "size_bytes": 25600.0,
-          "rel_to_fastest": 2.9015873015873015
+          "median_handoff_ns": 3183.0,
+          "total_median_ns": 3183.0,
+          "p50_ns": 3183.0,
+          "mean_ns": 3191.0,
+          "enq_median_ns": 1593.0,
+          "write_median_ns": 1593.0,
+          "deq_median_ns": 1590.0,
+          "read_median_ns": 1590.0,
+          "rel_to_fastest": 2.9336405529953917
+        },
+        {
+          "library": "steal-deque",
+          "pattern": "bytes",
+          "io": "bytes",
+          "n": 9,
+          "runs": 9,
+          "median_handoff_ns": 3309.0,
+          "total_median_ns": 3309.0,
+          "p50_ns": 3309.0,
+          "mean_ns": 3266.6666666666665,
+          "enq_median_ns": 1655.0,
+          "write_median_ns": 1655.0,
+          "deq_median_ns": 1652.0,
+          "read_median_ns": 1652.0,
+          "rel_to_fastest": 3.0497695852534563
         },
         {
           "library": "lfqueue",
@@ -336,16 +318,15 @@
           "io": "bytes",
           "n": 9,
           "runs": 9,
-          "median_handoff_ns": 13431.0,
-          "total_median_ns": 13431.0,
-          "p50_ns": 13431.0,
-          "mean_ns": 13433.666666666666,
-          "enq_median_ns": 5361.0,
-          "write_median_ns": 5361.0,
-          "deq_median_ns": 8057.0,
-          "read_median_ns": 8057.0,
-          "size_bytes": 25600.0,
-          "rel_to_fastest": 14.212698412698412
+          "median_handoff_ns": 22559.0,
+          "total_median_ns": 22559.0,
+          "p50_ns": 22559.0,
+          "mean_ns": 22592.0,
+          "enq_median_ns": 8929.0,
+          "write_median_ns": 8929.0,
+          "deq_median_ns": 13634.0,
+          "read_median_ns": 13634.0,
+          "rel_to_fastest": 20.791705069124426
         }
       ]
     }
