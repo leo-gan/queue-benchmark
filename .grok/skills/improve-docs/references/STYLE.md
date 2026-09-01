@@ -38,15 +38,17 @@ Do not measure or display payload **size** as a library result. Size is the data
 ### Voice
 
 - **Textbook quality for a high-school student.** Complete sentences. One idea, then the reason. Define a term the first time it is not everyday English.
+- This Voice section applies to **replies to the user** as well as published copy. A chat explanation is reader-facing.
 - No slang (“at 3 a.m.”, “chatty ping”, “get user”).
 - No telegraphic fragments (“Keep YAML on disk. Convert once.”). Write the sentence out.
 - No unexplained jargon (stream, socket, pickle, gzip) unless the next sentence says what it is.
+- **No clipped systems metaphors.** Do not write “pass a handle”, “pointer-bound”, “copy-bound”, “pack collapse”, “size barely moves them”, or “the knee” as if those were ordinary English. First say what the computer does, then what the clocks did. Example: the queue either copies every byte of the message, or it stores a short reference to a message that is already in memory. A larger message then either takes longer (because every byte is copied) or it does not (because only the reference is moved).
 - Direct, calm. Not marketing hype (“blazing”, “crush”).
 - “We measure …” not “We revolutionize …”.
 - **No slogan stacks** under the title (“Same A. Same B. Same C.”).
 - **No lede hedges** that argue with imaginary critics (“not marketing microbenchmarks”).
 
-This rule applies to **every** reader-facing surface: Dashboard story cards (Why / Example / Trade-off), experiment YAML, `docs/experiments/`, Learn pages, README. The Dashboard reads Example and Trade-off from `experiments/*/experiment.yaml` via `sync-experiments.py`.
+This rule applies to **every** reader-facing surface: replies to the user, Dashboard story cards (Why / Example / Trade-off), experiment YAML, `results.md`, `experiments/PLAN.md`, `docs/experiments/`, Learn pages, README. The Dashboard reads Example and Trade-off from `experiments/*/experiment.yaml` via `sync-experiments.py`.
 
 ### README-specific (authoritative)
 

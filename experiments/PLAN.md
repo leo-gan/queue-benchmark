@@ -31,12 +31,15 @@ build opaque byte strings. The five published names are five lengths between
 
 Sweep (1 B, 64 B, 256 B, 4 KiB, 64 KiB; n = 100; 99 trials after warmup):
 
-- Python, C, C#, JavaScript: first place never changes. Mid-pack swaps are
-  tight pairs (often a nanosecond). Times stay flat even at 64 KiB
-  (pointer / handle passing).
-- Rust: 1 B and 64 B match 256 B. At 4 KiB the pack collapses (about 9×
-  slower, 1.19× spread) — copy cost erases the small-payload ranking. At
-  64 KiB the order inverts (Spearman −0.36, about 280× slower).
+- Python, C, C#, and JavaScript: the fastest queue stays the same at every
+  size. Nearby libraries sometimes swap places by a nanosecond. Making the
+  message larger does not make the handoff much slower, because these
+  queues store a short reference to the bytes already in memory instead of
+  copying every byte.
+- Rust: 1 B and 64 B match 256 B. At 4 KiB the queues copy the bytes, so
+  every library takes about nine times longer and they finish within about
+  20 percent of each other. At 64 KiB the copy is so expensive that the
+  small-message order reverses (Spearman −0.36, about 280 times slower).
 
 **Default matrix: two sizes, 256 B (`message`) and 4 KiB (`document`).**
 Drop `event` / `telemetry` / `strings`. Keep 64 KiB as this experiment, not
