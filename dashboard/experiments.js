@@ -244,43 +244,44 @@ function selectHtml(id, label, values, current, labelFn) {
 
 function renderWhyExperiments() {
   return `
-    <details class="exp-howto exp-why glass-panel" open>
+    <details class="exp-howto exp-why glass-panel">
       <summary>Why experiments, if the Dashboard already has every number?</summary>
       <p>
-        The main Dashboard is the <strong>full warehouse</strong>: every library, every record shape.
-        That is the right place to browse. It is the wrong place to pick a library for a real service
-        by sorting on speed.
+        The main Dashboard is the <strong>full warehouse</strong>: every library, every payload size,
+        every pattern. That is the right place to browse. It is the wrong place to pick a queue
+        for a real service by sorting on speed.
       </p>
       <p>
-        The fastest row in the big table may be a library you <strong>cannot use</strong>.
-        It might write bytes that only one language can read.
-        It might drop field names so partners cannot parse the text.
-        It might be built for a file you write once, not for a web request you write on every click.
-        The Dashboard will still put it first, because it is fast.
+        The fastest row in the big table may be a queue you <strong>cannot use</strong>.
+        It might only work with one writer and one reader. It might be an async queue
+        while your workers are operating-system threads. It might be a scheduler that
+        does not hand a payload from a producer to a consumer. The Dashboard will still
+        put it first, because it is fast on that slice.
       </p>
       <p>
         An experiment starts with a <strong>decision</strong>, not a sort.
-        Example: “We must keep JSON on the public website. Which JSON library is fast enough?”
-        We keep only the libraries that could be the answer. We time one shared record.
+        Example: “One request thread puts work; one worker takes it. The ticket is
+        256 bytes. Which in-process queue is fast enough?”
+        We keep only the libraries that could be the answer. We time one shared payload.
         We write down what we would give up.
       </p>
       <p>
-        Think of a grocery store and a recipe. The store has every product — that is the main Dashboard.
-        The recipe lists only what you need for dinner, and why — that is an experiment.
-        You need both. The store does not tell you what to cook.
+        Think of a grocery store and a recipe. The store has every product — that is the
+        main Dashboard. The recipe lists only what you need for dinner, and why — that
+        is an experiment. You need both. The store does not tell you what to cook.
       </p>
       <p>
         Concrete traps the big table does not prevent:
       </p>
       <ul>
-        <li><strong>Different jobs in one list.</strong> JSON, compact bytes, and a Python-only format can share a table. “What is fastest?” is not one question.</li>
-        <li><strong>A tiny gap looks like a winner.</strong> 1.7 µs vs 1.8 µs is not a reason to rewrite a service.</li>
-        <li><strong>Your constraint is invisible.</strong> If browsers must keep JSON, the big table still shows every format.</li>
-        <li><strong>One record is not one hundred.</strong> The winner at 1 can lose at 100.</li>
-        <li><strong>Numbers without a story.</strong> “Binary is faster” is how teams break a public website.</li>
+        <li><strong>Different jobs in one list.</strong> A 1P1C ring and a 4P4C channel can share a table. “What is fastest?” is not one question.</li>
+        <li><strong>A tiny gap looks like a winner.</strong> A few percent is not a reason to rewrite a service.</li>
+        <li><strong>Your constraint is invisible.</strong> If you must use threads, the big table still shows async queues.</li>
+        <li><strong>One size is not another.</strong> The winner at 256 bytes can lose at 4 KiB.</li>
+        <li><strong>One pattern is not another.</strong> The winner at 1P1C can lose at 4P4C.</li>
       </ul>
       <p>
-        We do not run a second benchmark. We cut the same numbers down to a fair contest
+        We do not run a second clock. We cut the same numbers down to a fair contest
         and put the story next to them.
         <a href="../experiments/">Longer notes</a>
       </p>
