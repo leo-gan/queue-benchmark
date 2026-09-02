@@ -371,7 +371,7 @@ def write_combined_md(
         "",
         "Times are not comparable across languages.",
         "",
-        "Question: which SPSC payload sizes change the ranking?",
+        "Question: which 1P1C payload sizes change the ranking?",
         "",
         "## Recommendation",
         "",
@@ -408,17 +408,14 @@ def write_combined_md(
         lines.append("")
     lines.extend(
         [
-            "## What this means for the named types",
+            "## What this means for the published matrix",
             "",
-            "The published catalog names `message`, `event`, `telemetry`, "
-            "`strings`, and `document` are already five lengths: 256 B, 512 B, "
-            "1 KiB, 2 KiB, and 4 KiB. Runners do not serialize those object "
-            "graphs. The warehouse SPSC ranks on those names match this sweep: "
-            "Python and C never change first place; JavaScript and C# only "
-            "shuffle a mid-pack pair; Rust first becomes copy-bound at 4 KiB. "
-            "512 B, 1 KiB, and 2 KiB do not add a ranking question. Keep "
-            "`message` (256 B) and `document` (4 KiB). Drop the three names "
-            "in between from the default matrix when that change is applied.",
+            "Every runner builds an opaque byte string. This sweep asked which "
+            "lengths change 1P1C ranking. Python and C never change first "
+            "place. JavaScript and C# only shuffle a close pair. Rust first "
+            "changes at 4 KiB, when the queue copies every byte. Keep 256 B "
+            "and 4 KiB on the default matrix. 1 B and 64 B match 256 B. "
+            "64 KiB is a later research cell, not a third published size.",
             "",
             "## Per language vs 256 B",
             "",
@@ -470,7 +467,7 @@ def main() -> int:
     recommendation = recommend(lang_reports)
     payload = {
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "question": "Which SPSC payload sizes change the ranking?",
+        "question": "Which 1P1C payload sizes change the ranking?",
         "sizes_bytes": [SIZE_BYTES[t] for t in SIZE_ORDER],
         "baseline_bytes": SIZE_BYTES[BASELINE],
         "recommendation": recommendation,

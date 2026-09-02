@@ -1,6 +1,6 @@
 {
   "generated_at": "2026-09-01T22:23:00Z",
-  "question": "Which SPSC payload sizes change the ranking?",
+  "question": "Which 1P1C payload sizes change the ranking?",
   "sizes_bytes": [
     1,
     64,

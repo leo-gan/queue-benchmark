@@ -2,15 +2,14 @@ schema: gld.experiment.config/1
 id: 13-payload-size-sweep
 title: Which payload sizes change the ranking?
 question: >
-  Same SPSC handoff, five payload sizes (1 B, 64 B, 256 B, 4 KiB, 64 KiB).
+  Same 1P1C handoff, five payload sizes (1 B, 64 B, 256 B, 4 KiB, 64 KiB).
   Which sizes produce a different ranking, and which are just more of the
   same?
 story:
   why: >
-    The default suite names five data types, but every runner builds an
-    opaque byte string of a chosen length. If ranking only moves at a
-    couple of lengths, the published matrix should keep those lengths and
-    drop the rest.
+    Every runner builds an opaque byte string of a chosen length. If ranking
+    only moves at a couple of lengths, the published matrix should keep those
+    lengths and drop the rest.
   example: >
     A ticket is a few hundred bytes. An HTTP body is a few kilobytes. A
     file chunk can be tens of kilobytes. We need to know which of those

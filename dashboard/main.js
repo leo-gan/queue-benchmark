@@ -1878,7 +1878,7 @@ function populateDataTypeSelect(options, cfg = {}) {
     batchCompound.forEach(addOpt);
   }
   if (allTypes.length) {
-    addSep('── compounded data types ──');
+    addSep('── compounded data sizes ──');
     allTypes.forEach(addOpt);
   }
   if (allAll.length) {
@@ -2231,20 +2231,20 @@ function discoverDataTypeOptions(allGroups) {
   }
   batchCompound.sort();
 
-  // Cross-type at fixed n
+  // Both published sizes at one item count: all@100, all@1000.
   const allTypes = [];
-  if (nsGlobal.has(1)) allTypes.push('all@1');
-  if (nsGlobal.has(100)) allTypes.push('all@100');
-
-  // Everything
-  const allAll = natural.length ? ['all@all'] : [];
+  if (byBase.size >= 2) {
+    for (const n of [...nsGlobal].sort((a, b) => a - b)) {
+      allTypes.push(`all@${n}`);
+    }
+  }
 
   return {
     natural,
     batchCompound,
     allTypes,
-    allAll,
-    all: [...natural, ...batchCompound, ...allTypes, ...allAll],
+    allAll: [],
+    all: [...natural, ...batchCompound, ...allTypes],
   };
 }
 
@@ -3420,7 +3420,7 @@ function renderTable() {
       scopeNote =
         ` <strong>Compounded batch</strong>: mean of <code>${escapeHtml(scope.base)}@n=${scope.nA}</code> and <code>${escapeHtml(scope.base)}@n=${scope.nB}</code>.`;
     } else if (scope.kind === 'all_n') {
-      scopeNote = ` <strong>Compounded data types</strong> at <code>n=${scope.n}</code>.`;
+      scopeNote = ` <strong>Both sizes</strong> at <code>${scope.n}</code> items.`;
     } else if (scope.kind === 'all_all') {
       scopeNote = ` <strong>Compounded all</strong> (<code>all@all</code>).`;
     }
@@ -3730,7 +3730,7 @@ function copyRosterMarkdown() {
         return `Scope: compounded batch ${state.currentTestData} · mode ${state.currentMode}`;
       }
       if (s.kind === 'all_n') {
-        return `Scope: all data types @ n=${s.n} · mode ${state.currentMode}`;
+        return `Scope: both sizes · ${s.n} items · ${modeDisplayLabel(normalizeMode(state.currentMode))}`;
       }
       if (s.kind === 'all_all') {
         return `Scope: all@all (all types × all n) · mode ${state.currentMode}`;

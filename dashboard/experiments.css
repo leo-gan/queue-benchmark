@@ -49,6 +49,11 @@ body.dash-view-experiments #filter-policy-meta {
   margin: 0.5rem 0 0;
 }
 
+.exp-why[open] {
+  max-height: min(28rem, 55vh);
+  overflow: auto;
+}
+
 .exp-story p {
   margin: 0.35rem 0;
 }
