@@ -1,0 +1,645 @@
+{
+  "schema": "gld.dashboard.experiments/1",
+  "generated_at": "2026-09-02T00:00:42Z",
+  "count": 13,
+  "with_results": 13,
+  "experiments": [
+    {
+      "id": "01-spsc-handoff",
+      "folder": "01-spsc-handoff",
+      "number": 1,
+      "slug": "spsc-handoff",
+      "title": "Which queue is fastest for SPSC handoff?",
+      "question": "One producer hands one small message (256 bytes) to one consumer, many times. Which in-process queue is fastest in each language?\n",
+      "story": {
+        "why": "Most services start with one writer and one reader in the same process.",
+        "example": "A request thread puts work on a queue; a worker thread takes it.",
+        "tradeoff": "A lock around a deque is simple. A lock-free or async channel may be faster, but only if the extra machinery is cheaper than the lock."
+      },
+      "sample_preview": [],
+      "has_results": true,
+      "payload": "experiments/01-spsc-handoff.json.gz",
+      "generated_at": "2026-09-01T21:41:18Z",
+      "sample": {
+        "kind": "message",
+        "n": 100
+      },
+      "languages": [
+        {
+          "id": "python",
+          "status": "ok",
+          "rows": 7
+        },
+        {
+          "id": "rust",
+          "status": "ok",
+          "rows": 7
+        },
+        {
+          "id": "javascript",
+          "status": "ok",
+          "rows": 6
+        },
+        {
+          "id": "csharp",
+          "status": "ok",
+          "rows": 5
+        },
+        {
+          "id": "c",
+          "status": "ok",
+          "rows": 4
+        }
+      ],
+      "source_bytes": 14403
+    },
+    {
+      "id": "02-payload-size",
+      "folder": "02-payload-size",
+      "number": 2,
+      "slug": "payload-size",
+      "title": "Does payload size change the ranking?",
+      "question": "Same SPSC handoff as experiment 1, but the payload is a 4 KiB document instead of a 256-byte message. Does the ranking stay the same?\n",
+      "story": {
+        "why": "A ranking on tiny messages can hide copy cost that only shows up on bigger payloads.",
+        "example": "A worker queue that moves whole HTTP bodies, not 256-byte tickets.",
+        "tradeoff": "If the ranking flips, the \u201cfastest queue\u201d from experiment 1 is not a general answer."
+      },
+      "sample_preview": [],
+      "has_results": true,
+      "payload": "experiments/02-payload-size.json.gz",
+      "generated_at": "2026-09-01T21:41:22Z",
+      "sample": {
+        "kind": "document",
+        "n": 100
+      },
+      "languages": [
+        {
+          "id": "python",
+          "status": "ok",
+          "rows": 7
+        },
+        {
+          "id": "rust",
+          "status": "ok",
+          "rows": 7
+        },
+        {
+          "id": "javascript",
+          "status": "ok",
+          "rows": 6
+        },
+        {
+          "id": "csharp",
+          "status": "ok",
+          "rows": 5
+        },
+        {
+          "id": "c",
+          "status": "ok",
+          "rows": 4
+        }
+      ],
+      "source_bytes": 14455
+    },
+    {
+      "id": "03-contention",
+      "folder": "03-contention",
+      "number": 3,
+      "slug": "contention",
+      "title": "Does ranking change under 1P4C, 4P1C, and 4P4C?",
+      "question": "Same small message, but one producer and four consumers, four producers and one consumer, then four of each. Does the SPSC ranking still hold?\n",
+      "story": {
+        "why": "Real services rarely have exactly one writer and one reader.",
+        "example": "Several request threads put work; a pool of workers take it.",
+        "tradeoff": "A lock that looked cheap at 1P1C can convoy under many producers."
+      },
+      "sample_preview": [],
+      "has_results": true,
+      "payload": "experiments/03-contention.json.gz",
+      "generated_at": "2026-09-01T21:41:26Z",
+      "sample": {
+        "kind": "message",
+        "n": 100
+      },
+      "languages": [
+        {
+          "id": "python",
+          "status": "ok",
+          "rows": 18
+        },
+        {
+          "id": "rust",
+          "status": "ok",
+          "rows": 15
+        },
+        {
+          "id": "javascript",
+          "status": "ok",
+          "rows": 6
+        },
+        {
+          "id": "csharp",
+          "status": "ok",
+          "rows": 12
+        },
+        {
+          "id": "c",
+          "status": "ok",
+          "rows": 9
+        }
+      ],
+      "source_bytes": 29731
+    },
+    {
+      "id": "04-backpressure",
+      "folder": "04-backpressure",
+      "number": 4,
+      "slug": "backpressure",
+      "title": "What happens when the queue is bounded and the consumer is slower?",
+      "question": "The queue holds at most 32 messages. Consumers wait 5 microseconds per item. How do enqueue time and handoff change?\n",
+      "story": {
+        "why": "A bounded queue is backpressure. Unbounded queues hide overload until memory is gone.",
+        "example": "A worker cannot keep up; producers must wait instead of filling RAM.",
+        "tradeoff": "Blocking on full is a feature, not a failure."
+      },
+      "sample_preview": [],
+      "has_results": true,
+      "payload": "experiments/04-backpressure.json.gz",
+      "generated_at": "2026-09-01T21:41:28Z",
+      "sample": {
+        "kind": "message",
+        "n": 100
+      },
+      "languages": [
+        {
+          "id": "python",
+          "status": "ok",
+          "rows": 5
+        },
+        {
+          "id": "rust",
+          "status": "ok",
+          "rows": 4
+        },
+        {
+          "id": "javascript",
+          "status": "ok",
+          "rows": 3
+        },
+        {
+          "id": "csharp",
+          "status": "ok",
+          "rows": 3
+        },
+        {
+          "id": "c",
+          "status": "ok",
+          "rows": 4
+        }
+      ],
+      "source_bytes": 9605
+    },
+    {
+      "id": "05-wakeup",
+      "folder": "05-wakeup",
+      "number": 5,
+      "slug": "wakeup",
+      "title": "How long does an empty-queue consumer take to wake?",
+      "question": "The consumer waits on an empty queue. The producer sleeps, then puts one item. How long until the consumer has the item?\n",
+      "story": {
+        "why": "Handoff time when the queue is already full of work is not the same as wakeup cost.",
+        "example": "A worker parks until the next request arrives.",
+        "tradeoff": "A condition variable sleeps the core; a spin loop burns it."
+      },
+      "sample_preview": [],
+      "has_results": true,
+      "payload": "experiments/05-wakeup.json.gz",
+      "generated_at": "2026-09-01T21:42:16Z",
+      "sample": {
+        "kind": "message",
+        "n": 100
+      },
+      "languages": [
+        {
+          "id": "python",
+          "status": "ok",
+          "rows": 6
+        },
+        {
+          "id": "rust",
+          "status": "ok",
+          "rows": 7
+        },
+        {
+          "id": "javascript",
+          "status": "ok",
+          "rows": 6
+        },
+        {
+          "id": "csharp",
+          "status": "ok",
+          "rows": 4
+        },
+        {
+          "id": "c",
+          "status": "ok",
+          "rows": 1
+        }
+      ],
+      "source_bytes": 12670
+    },
+    {
+      "id": "06-burst",
+      "folder": "06-burst",
+      "number": 6,
+      "slug": "burst",
+      "title": "How fast can a queue absorb a burst and then drain?",
+      "question": "The producer dumps 1000 small messages as fast as it can, then the consumer drains. What is fill time and drain time?\n",
+      "story": {
+        "why": "Traffic is often a spike, not a steady trickle.",
+        "example": "A fan-in of events after a deploy.",
+        "tradeoff": "A huge burst needs either a large bound or fast drain."
+      },
+      "sample_preview": [],
+      "has_results": true,
+      "payload": "experiments/06-burst.json.gz",
+      "generated_at": "2026-09-01T21:42:20Z",
+      "sample": {
+        "kind": "message",
+        "n": 1000
+      },
+      "languages": [
+        {
+          "id": "python",
+          "status": "ok",
+          "rows": 6
+        },
+        {
+          "id": "rust",
+          "status": "ok",
+          "rows": 7
+        },
+        {
+          "id": "javascript",
+          "status": "ok",
+          "rows": 6
+        },
+        {
+          "id": "csharp",
+          "status": "ok",
+          "rows": 5
+        },
+        {
+          "id": "c",
+          "status": "ok",
+          "rows": 4
+        }
+      ],
+      "source_bytes": 14072
+    },
+    {
+      "id": "07-async-waiters",
+      "folder": "07-async-waiters",
+      "number": 7,
+      "slug": "async-waiters",
+      "title": "How does an async queue behave with many waiting consumers?",
+      "question": "One producer, 32 waiting async consumers, small messages. What is handoff time?\n",
+      "story": {
+        "why": "Event loops can have thousands of parked tasks. That is not the same as two threads.",
+        "example": "An asyncio service with many waiters on one queue.",
+        "tradeoff": "A library that is fast with two tasks can crawl with 32 waiters."
+      },
+      "sample_preview": [],
+      "has_results": true,
+      "payload": "experiments/07-async-waiters.json.gz",
+      "generated_at": "2026-09-01T21:42:22Z",
+      "sample": {
+        "kind": "message",
+        "n": 100
+      },
+      "languages": [
+        {
+          "id": "python",
+          "status": "ok",
+          "rows": 6
+        },
+        {
+          "id": "rust",
+          "status": "ok",
+          "rows": 5
+        },
+        {
+          "id": "javascript",
+          "status": "ok",
+          "rows": 1
+        },
+        {
+          "id": "csharp",
+          "status": "ok",
+          "rows": 4
+        },
+        {
+          "id": "c",
+          "status": "ok",
+          "rows": 1
+        }
+      ],
+      "source_bytes": 8752
+    },
+    {
+      "id": "08-async-backpressure",
+      "folder": "08-async-backpressure",
+      "number": 8,
+      "slug": "async-backpressure",
+      "title": "Does a bounded async queue apply backpressure?",
+      "question": "An async queue with maxsize 32 and a slow consumer. Do producers wait instead of growing memory?\n",
+      "story": {
+        "why": "Async backpressure uses the event loop, not an OS mutex.",
+        "example": "An async worker is slow; producers must await put().",
+        "tradeoff": "The same bound as threads, different waiter."
+      },
+      "sample_preview": [],
+      "has_results": true,
+      "payload": "experiments/08-async-backpressure.json.gz",
+      "generated_at": "2026-09-01T21:42:26Z",
+      "sample": {
+        "kind": "message",
+        "n": 100
+      },
+      "languages": [
+        {
+          "id": "python",
+          "status": "ok",
+          "rows": 5
+        },
+        {
+          "id": "rust",
+          "status": "ok",
+          "rows": 7
+        },
+        {
+          "id": "javascript",
+          "status": "ok",
+          "rows": 3
+        },
+        {
+          "id": "csharp",
+          "status": "ok",
+          "rows": 5
+        },
+        {
+          "id": "c",
+          "status": "ok",
+          "rows": 2
+        }
+      ],
+      "source_bytes": 11117
+    },
+    {
+      "id": "09-async-cancel",
+      "folder": "09-async-cancel",
+      "number": 9,
+      "slug": "async-cancel",
+      "title": "How fast can waiting async consumers be cancelled?",
+      "question": "Many tasks wait on an empty async queue. Cancel them all. How long does teardown take, and is the queue still sound?\n",
+      "story": {
+        "why": "Cancelled waiters are a common source of leaks and double-gets.",
+        "example": "A request times out while its worker is parked on get().",
+        "tradeoff": "Fast cancel that loses or doubles a message is not a win."
+      },
+      "sample_preview": [],
+      "has_results": true,
+      "payload": "experiments/09-async-cancel.json.gz",
+      "generated_at": "2026-09-01T21:42:29Z",
+      "sample": {
+        "kind": "message",
+        "n": 100
+      },
+      "languages": [
+        {
+          "id": "python",
+          "status": "ok",
+          "rows": 2
+        },
+        {
+          "id": "rust",
+          "status": "ok",
+          "rows": 2
+        },
+        {
+          "id": "javascript",
+          "status": "ok",
+          "rows": 1
+        },
+        {
+          "id": "csharp",
+          "status": "ok",
+          "rows": 1
+        },
+        {
+          "id": "c",
+          "status": "ok",
+          "rows": 2
+        }
+      ],
+      "source_bytes": 4190
+    },
+    {
+      "id": "10-process-ipc",
+      "folder": "10-process-ipc",
+      "number": 10,
+      "slug": "process-ipc",
+      "title": "What does a cross-process queue cost versus in-process?",
+      "question": "Python multiprocessing.Queue moves the same 256-byte message. How does handoff compare to queue.Queue?\n",
+      "story": {
+        "why": "The GIL pushes some work into processes. Serialization is part of that number.",
+        "example": "A parent process hands jobs to worker processes.",
+        "tradeoff": "IPC is a different category. Do not plot it next to deque-lock."
+      },
+      "sample_preview": [],
+      "has_results": true,
+      "payload": "experiments/10-process-ipc.json.gz",
+      "generated_at": "2026-09-01T21:42:35Z",
+      "sample": {
+        "kind": "message",
+        "n": 100
+      },
+      "languages": [
+        {
+          "id": "python",
+          "status": "ok",
+          "rows": 9
+        },
+        {
+          "id": "rust",
+          "status": "ok",
+          "rows": 8
+        },
+        {
+          "id": "javascript",
+          "status": "ok",
+          "rows": 7
+        },
+        {
+          "id": "csharp",
+          "status": "ok",
+          "rows": 6
+        },
+        {
+          "id": "c",
+          "status": "ok",
+          "rows": 5
+        }
+      ],
+      "source_bytes": 17459
+    },
+    {
+      "id": "11-shared-memory",
+      "folder": "11-shared-memory",
+      "number": 11,
+      "slug": "shared-memory",
+      "title": "Does a shared-memory ring beat pickle IPC on a small payload?",
+      "question": "A mapped SPSC ring versus multiprocessing.Queue for a 256-byte message.\n",
+      "story": {
+        "why": "Shared memory skips pickle of the body. That only matters if the copy path is the cost.",
+        "example": "Two processes share a ring of bytes.",
+        "tradeoff": "Still category S, not T."
+      },
+      "sample_preview": [],
+      "has_results": true,
+      "payload": "experiments/11-shared-memory.json.gz",
+      "generated_at": "2026-09-01T21:42:40Z",
+      "sample": {
+        "kind": "message",
+        "n": 100
+      },
+      "languages": [
+        {
+          "id": "python",
+          "status": "ok",
+          "rows": 1
+        },
+        {
+          "id": "rust",
+          "status": "ok",
+          "rows": 1
+        },
+        {
+          "id": "javascript",
+          "status": "ok",
+          "rows": 1
+        },
+        {
+          "id": "csharp",
+          "status": "ok",
+          "rows": 1
+        },
+        {
+          "id": "c",
+          "status": "ok",
+          "rows": 1
+        }
+      ],
+      "source_bytes": 2857
+    },
+    {
+      "id": "12-durable-local",
+      "folder": "12-durable-local",
+      "number": 12,
+      "slug": "durable-local",
+      "title": "What does local durability cost versus an in-memory queue?",
+      "question": "A SQLite-backed queue with fsync off, then on. How much slower is a durable put/get than queue.Queue?\n",
+      "story": {
+        "why": "Disk and fsync dominate. This is not a lock benchmark.",
+        "example": "A crash-safe local job table.",
+        "tradeoff": "Never rank this next to a deque."
+      },
+      "sample_preview": [],
+      "has_results": true,
+      "payload": "experiments/12-durable-local.json.gz",
+      "generated_at": "2026-09-01T21:42:49Z",
+      "sample": {
+        "kind": "message",
+        "n": 100
+      },
+      "languages": [
+        {
+          "id": "python",
+          "status": "ok",
+          "rows": 1
+        },
+        {
+          "id": "rust",
+          "status": "ok",
+          "rows": 1
+        },
+        {
+          "id": "javascript",
+          "status": "ok",
+          "rows": 1
+        },
+        {
+          "id": "csharp",
+          "status": "ok",
+          "rows": 1
+        },
+        {
+          "id": "c",
+          "status": "ok",
+          "rows": 1
+        }
+      ],
+      "source_bytes": 2877
+    },
+    {
+      "id": "13-payload-size-sweep",
+      "folder": "13-payload-size-sweep",
+      "number": 13,
+      "slug": "payload-size-sweep",
+      "title": "Which payload sizes change the ranking?",
+      "question": "Same 1P1C handoff, five payload sizes (1 B, 64 B, 256 B, 4 KiB, 64 KiB). Which sizes produce a different ranking, and which are just more of the same?\n",
+      "story": {
+        "why": "Every runner builds an opaque byte string of a chosen length. If ranking only moves at a couple of lengths, the published matrix should keep those lengths and drop the rest.\n",
+        "example": "A ticket is a few hundred bytes. An HTTP body is a few kilobytes. A file chunk can be tens of kilobytes. We need to know which of those worlds actually changes which queue wins.\n",
+        "tradeoff": "Extra sizes cost machine time and make the dashboard harder to read. One size is enough if copy cost never changes the order. Two sizes are enough if a small payload and a large payload tell different stories.\n"
+      },
+      "sample_preview": [],
+      "has_results": true,
+      "payload": "experiments/13-payload-size-sweep.json.gz",
+      "generated_at": "2026-09-01T22:23:00Z",
+      "sample": {
+        "kind": "size_256",
+        "n": 100
+      },
+      "languages": [
+        {
+          "id": "python",
+          "status": "ok",
+          "rows": 35
+        },
+        {
+          "id": "rust",
+          "status": "ok",
+          "rows": 35
+        },
+        {
+          "id": "javascript",
+          "status": "ok",
+          "rows": 30
+        },
+        {
+          "id": "csharp",
+          "status": "ok",
+          "rows": 25
+        },
+        {
+          "id": "c",
+          "status": "ok",
+          "rows": 20
+        }
+      ],
+      "source_bytes": 97628
+    }
+  ]
+}
